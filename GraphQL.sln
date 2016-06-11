@@ -7,14 +7,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{20410A75-C8E
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{23E3096A-BB26-45FB-B449-69C5A3C58387}"
 	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "GraphQL.Parser", "src\GraphQL\GraphQL.Parser.xproj", "{174E41CB-364C-47F1-90D4-838EAE75E755}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{650371FA-695E-4487-B31C-A8049D9643E6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "GraphQL.Parser.Tests", "test\GraphQL.Tests\GraphQL.Parser.Tests.xproj", "{6B63BCC0-2884-4515-9A92-E408ACF4C98E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "GraphQL.Parser", "src\GraphQL.Parser\GraphQL.Parser.xproj", "{174E41CB-364C-47F1-90D4-838EAE75E755}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "GraphQL.Parser.Tests", "test\GraphQL.Parser.Tests\GraphQL.Parser.Tests.xproj", "{6B63BCC0-2884-4515-9A92-E408ACF4C98E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
