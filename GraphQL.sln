@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{20410A75-C8E6-45E4-B70A-9E88F8267359}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{23E3096A-BB26-45FB-B449-69C5A3C58387}"
+	ProjectSection(SolutionItems) = preProject
+		global.json = global.json
+	EndProjectSection
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "GraphQL.Parser", "src\GraphQL\GraphQL.Parser.xproj", "{174E41CB-364C-47F1-90D4-838EAE75E755}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{650371FA-695E-4487-B31C-A8049D9643E6}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "GraphQL.Parser.Tests", "test\GraphQL.Tests\GraphQL.Parser.Tests.xproj", "{6B63BCC0-2884-4515-9A92-E408ACF4C98E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{174E41CB-364C-47F1-90D4-838EAE75E755}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{174E41CB-364C-47F1-90D4-838EAE75E755}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{174E41CB-364C-47F1-90D4-838EAE75E755}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{174E41CB-364C-47F1-90D4-838EAE75E755}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B63BCC0-2884-4515-9A92-E408ACF4C98E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B63BCC0-2884-4515-9A92-E408ACF4C98E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B63BCC0-2884-4515-9A92-E408ACF4C98E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B63BCC0-2884-4515-9A92-E408ACF4C98E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{174E41CB-364C-47F1-90D4-838EAE75E755} = {20410A75-C8E6-45E4-B70A-9E88F8267359}
+		{6B63BCC0-2884-4515-9A92-E408ACF4C98E} = {650371FA-695E-4487-B31C-A8049D9643E6}
+	EndGlobalSection
+EndGlobal
