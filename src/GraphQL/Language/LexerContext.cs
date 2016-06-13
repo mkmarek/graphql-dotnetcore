@@ -20,12 +20,12 @@ namespace GraphQL.Language
 
         public Token GetToken()
         {
-            CurrentIndex = GetPositionAfterWhitespace(Source.Body, CurrentIndex);
+            this.CurrentIndex = GetPositionAfterWhitespace(this.Source.Body, this.CurrentIndex);
 
-            if (CurrentIndex >= Source.Body.Length)
+            if (this.CurrentIndex >= this.Source.Body.Length)
                 return CreateEOFToken();
 
-            var code = Source.Body[CurrentIndex];
+            var code = this.Source.Body[this.CurrentIndex];
 
             this.ValidateCharacterCode(code);
 
@@ -49,8 +49,8 @@ namespace GraphQL.Language
         {
             return new Token()
             {
-                Start = CurrentIndex,
-                End = CurrentIndex,
+                Start = this.CurrentIndex,
+                End = this.CurrentIndex,
                 Kind = TokenKind.EOF
             };
         }
@@ -58,8 +58,8 @@ namespace GraphQL.Language
         public Token ReadNumber()
         {
             var isFloat = false;
-            var start = CurrentIndex;
-            var code = Source.Body[start];
+            var start = this.CurrentIndex;
+            var code = this.Source.Body[start];
 
             if (code == '-')
                 code = NextCode();
@@ -98,7 +98,7 @@ namespace GraphQL.Language
                 Kind = TokenKind.STRING,
                 Value = value,
                 Start = start,
-                End = CurrentIndex + 1
+                End = this.CurrentIndex + 1
             };
         }
 
@@ -117,7 +117,7 @@ namespace GraphQL.Language
 
         private string AppendCharactersFromLastChunk(string value, int chunkStart)
         {
-            return value + Source.Body.Substring(chunkStart, CurrentIndex - chunkStart - 1);
+            return value + this.Source.Body.Substring(chunkStart, this.CurrentIndex - chunkStart - 1);
         }
 
         private string AppendToValueByCode(string value, char code)
@@ -166,7 +166,7 @@ namespace GraphQL.Language
 
         private Token CheckForSpreadOperator()
         {
-            if (Source.Body[CurrentIndex + 1] == '.' && Source.Body[CurrentIndex + 2] == '.')
+            if (this.Source.Body[this.CurrentIndex + 1] == '.' && this.Source.Body[this.CurrentIndex + 2] == '.')
             {
                 return this.CreatePunctuationToken(TokenKind.SPREAD, 3);
             }
@@ -179,7 +179,7 @@ namespace GraphQL.Language
             {
                 Kind = TokenKind.FLOAT,
                 Start = start,
-                End = CurrentIndex,
+                End = this.CurrentIndex,
                 Value = Convert.ToSingle(this.Source.Body.Substring(start, this.CurrentIndex - start))
             };
         }
@@ -190,7 +190,7 @@ namespace GraphQL.Language
             {
                 Kind = TokenKind.INT,
                 Start = start,
-                End = CurrentIndex,
+                End = this.CurrentIndex,
                 Value = Convert.ToInt32(this.Source.Body.Substring(start, this.CurrentIndex - start))
             };
         }
@@ -200,7 +200,7 @@ namespace GraphQL.Language
             return new Token()
             {
                 Start = start,
-                End = CurrentIndex,
+                End = this.CurrentIndex,
                 Kind = TokenKind.NAME,
                 Value = this.Source.Body.Substring(start, this.CurrentIndex - start)
             };
@@ -210,8 +210,8 @@ namespace GraphQL.Language
         {
             return new Token()
             {
-                Start = CurrentIndex,
-                End = CurrentIndex + offset,
+                Start = this.CurrentIndex,
+                End = this.CurrentIndex + offset,
                 Kind = kind,
                 Value = null
             };
@@ -219,8 +219,8 @@ namespace GraphQL.Language
 
         private char GetCode()
         {
-            return CurrentIndex < Source.Body.Length
-                ? Source.Body[CurrentIndex]
+            return this.CurrentIndex < this.Source.Body.Length
+                ? this.Source.Body[this.CurrentIndex]
                 : (char)0;
         }
 
@@ -263,22 +263,22 @@ namespace GraphQL.Language
 
         private char NextCode()
         {
-            return ++CurrentIndex < Source.Body.Length
-                ? Source.Body[CurrentIndex]
+            return ++this.CurrentIndex < this.Source.Body.Length
+                ? this.Source.Body[this.CurrentIndex]
                 : (char)0;
         }
 
         private char ProcessCharacter(ref string value, ref int chunkStart)
         {
             var code = GetCode();
-            ++CurrentIndex;
+            ++this.CurrentIndex;
 
             if (code == '\\')
             {
                 value = AppendToValueByCode(AppendCharactersFromLastChunk(value, chunkStart), GetCode());
 
-                ++CurrentIndex;
-                chunkStart = CurrentIndex;
+                ++this.CurrentIndex;
+                chunkStart = this.CurrentIndex;
             }
 
             return GetCode();
@@ -286,17 +286,17 @@ namespace GraphQL.Language
 
         private string ProcessStringChunks()
         {
-            var chunkStart = ++CurrentIndex;
+            var chunkStart = ++this.CurrentIndex;
             var code = GetCode();
             var value = "";
 
-            while (CurrentIndex < Source.Body.Length && code != 0x000A && code != 0x000D && code != '"')
+            while (this.CurrentIndex < this.Source.Body.Length && code != 0x000A && code != 0x000D && code != '"')
             {
                 code = ProcessCharacter(ref value, ref chunkStart);
             }
 
             CheckStringTermination(code);
-            value += Source.Body.Substring(chunkStart, CurrentIndex - chunkStart);
+            value += this.Source.Body.Substring(chunkStart, this.CurrentIndex - chunkStart);
             return value;
         }
 
@@ -319,17 +319,17 @@ namespace GraphQL.Language
 
         private char ReadDigitsFromOwnSource(char code)
         {
-            CurrentIndex = ReadDigits(Source, CurrentIndex, code);
+            this.CurrentIndex = ReadDigits(Source, this.CurrentIndex, code);
             code = GetCode();
             return code;
         }
 
         private Token ReadName()
         {
-            var start = CurrentIndex;
+            var start = this.CurrentIndex;
             var code = (char)0;
 
-            while (++CurrentIndex != Source.Body.Length && (code = GetCode()) != 0 && IsValidNameCharacter(code)) { }
+            while (++this.CurrentIndex != this.Source.Body.Length && (code = GetCode()) != 0 && IsValidNameCharacter(code)) { }
             return CreateNameToken(start);
         }
 
