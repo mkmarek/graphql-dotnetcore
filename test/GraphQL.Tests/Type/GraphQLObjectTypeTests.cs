@@ -29,7 +29,6 @@
         public void SetUp()
         {
             this.type = new GraphQLObjectType<TestModel>("Test", "Test description");
-            this.type.AddField<GraphQLInt>("TestField", m => m.Test);
         }
 
         public class TestModel
