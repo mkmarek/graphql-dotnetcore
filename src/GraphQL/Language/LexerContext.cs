@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 
 namespace GraphQL.Language
@@ -42,7 +43,7 @@ namespace GraphQL.Language
             if (code == '"')
                 return ReadString();
 
-            return null;
+            throw new NotImplementedException();
         }
 
         private Token CreateEOFToken()
@@ -180,7 +181,7 @@ namespace GraphQL.Language
                 Kind = TokenKind.FLOAT,
                 Start = start,
                 End = this.CurrentIndex,
-                Value = Convert.ToSingle(this.Source.Body.Substring(start, this.CurrentIndex - start))
+                Value = Convert.ToSingle(this.Source.Body.Substring(start, this.CurrentIndex - start), CultureInfo.InvariantCulture)
             };
         }
 
@@ -191,7 +192,7 @@ namespace GraphQL.Language
                 Kind = TokenKind.INT,
                 Start = start,
                 End = this.CurrentIndex,
-                Value = Convert.ToInt32(this.Source.Body.Substring(start, this.CurrentIndex - start))
+                Value = Convert.ToInt32(this.Source.Body.Substring(start, this.CurrentIndex - start), CultureInfo.InvariantCulture)
             };
         }
 
@@ -245,10 +246,10 @@ namespace GraphQL.Language
                         position = this.WaitForEndOfComment(body, position, code);
                         break;
                     default:
-                        goto Done;
+                        return position;
                 }
             }
-            Done:
+
             return position;
         }
 
@@ -340,7 +341,7 @@ namespace GraphQL.Language
                 throw new InvalidCharacterException($"Invalid character \"\\u{code.ToString("D4")}\"");
             };
         }
-
+         
         private int WaitForEndOfComment(string body, int position, char code)
         {
             while (++position < body.Length && (code = body[position]) != 0 && (code > 0x001F || code == 0x0009) && code != 0x000A && code != 0x000D)
