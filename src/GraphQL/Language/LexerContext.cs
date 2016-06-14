@@ -5,8 +5,6 @@ namespace GraphQL.Language
 {
     public class LexerContext : IDisposable
     {
-        private static readonly int[] NameCharacters = new int[] { 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 95, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122 };
-        private static readonly int[] NumberCharacters = new int[] { 45, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57 };
         private int CurrentIndex;
         private ISource Source;
 
@@ -22,27 +20,27 @@ namespace GraphQL.Language
 
         public Token GetToken()
         {
-            this.CurrentIndex = this.GetPositionAfterWhitespace(this.Source.Body, this.CurrentIndex);
+            this.CurrentIndex = GetPositionAfterWhitespace(this.Source.Body, this.CurrentIndex);
 
             if (this.CurrentIndex >= this.Source.Body.Length)
-                return this.CreateEOFToken();
+                return CreateEOFToken();
 
-            int code = this.Source.Body[this.CurrentIndex];
+            var code = this.Source.Body[this.CurrentIndex];
 
             this.ValidateCharacterCode(code);
 
-            var token = this.CheckForPunctuationTokens(code);
+            var token = CheckForPunctuationTokens(code);
             if (token != null)
                 return token;
 
-            if (NameCharacters.Contains(code))
-                return this.ReadName();
+            if (char.IsLetter(code))
+                return ReadName();
 
-            if (NumberCharacters.Contains(code))
-                return this.ReadNumber();
+            if (char.IsNumber(code) || code == '-')
+                return ReadNumber();
 
-            if (code == 34)
-                return this.ReadString();
+            if (code == '"')
+                return ReadString();
 
             return null;
         }
@@ -59,33 +57,32 @@ namespace GraphQL.Language
 
         public Token ReadNumber()
         {
-            bool isFloat = false;
-            int start = this.CurrentIndex;
-            int code = this.Source.Body[start];
+            var isFloat = false;
+            var start = this.CurrentIndex;
+            var code = this.Source.Body[start];
 
-            if (code == 45)
-                code = this.NextCode();
+            if (code == '-')
+                code = NextCode();
 
-            if (code == 48)
-                code = this.NextCode();
-            else
-                code = this.ReadDigitsFromOwnSource(code);
+            code = code == '0'
+                ? NextCode()
+                : ReadDigitsFromOwnSource(code);
 
-            if (code == 46)
+            if (code == '.')
             {
                 isFloat = true;
-                code = this.ReadDigitsFromOwnSource(this.NextCode());
+                code = ReadDigitsFromOwnSource(NextCode());
             }
 
-            if (code == 69 || code == 101)
+            if (code == 'E' || code == 'e')
             {
                 isFloat = true;
-                code = this.NextCode();
-                if (code == 43 || code == 45)
+                code = NextCode();
+                if (code == '+' || code == '-')
                 {
-                    code = this.NextCode();
+                    code = NextCode();
                 }
-                code = this.ReadDigitsFromOwnSource(code);
+                code = ReadDigitsFromOwnSource(code);
             }
 
             return isFloat ? CreateFloatToken(start) : CreateIntToken(start);
@@ -93,7 +90,7 @@ namespace GraphQL.Language
 
         public Token ReadString()
         {
-            int start = this.CurrentIndex;
+            var start = this.CurrentIndex;
             var value = ProcessStringChunks();
 
             return new Token()
@@ -105,21 +102,17 @@ namespace GraphQL.Language
             };
         }
 
-        private static void CheckStringTermination(int code)
+        private static void CheckStringTermination(char code)
         {
-            if (code != 34)
+            if (code != '"')
             {
                 throw new InvalidCharacterException($"Unterminated string");
             }
         }
 
-        private static bool IsValidNameCharacter(int code)
+        private static bool IsValidNameCharacter(char code)
         {
-            return
-                code == 95 || //
-                code >= 48 && code <= 57 || // 0-9
-                code >= 65 && code <= 90 || // A-Z
-                code >= 97 && code <= 122; // a-z
+            return code == '_' || char.IsLetterOrDigit(code);
         }
 
         private string AppendCharactersFromLastChunk(string value, int chunkStart)
@@ -127,75 +120,56 @@ namespace GraphQL.Language
             return value + this.Source.Body.Substring(chunkStart, this.CurrentIndex - chunkStart - 1);
         }
 
-        private string AppendToValueByCode(string value, int code)
+        private string AppendToValueByCode(string value, char code)
         {
             switch (code)
             {
-                case 34: value += '"'; break;
-                case 47: value += '/'; break;
-                case 92: value += '\\'; break;
-                case 98: value += '\b'; break;
-                case 102: value += '\f'; break;
-                case 110: value += '\n'; break;
-                case 114: value += '\r'; break;
-                case 116: value += '\t'; break;
-                case 117: value += this.GetUnicodeChar(); break;
+                case '"': value += '"'; break;
+                case '/': value += '/'; break;
+                case '\\': value += '\\'; break;
+                case 'b': value += '\b'; break;
+                case 'f': value += '\f'; break;
+                case 'n': value += '\n'; break;
+                case 'r': value += '\r'; break;
+                case 't': value += '\t'; break;
+                case 'u': value += this.GetUnicodeChar(); break;
+                default: return value;
             }
-
             return value;
         }
 
-        private int CharToHex(int code)
+        private byte CharToHex(char code)
         {
-            return
-                code >= 48 && code <= 57 ? code - 48 : // 0-9
-                code >= 65 && code <= 70 ? code - 55 : // code-F
-                code >= 97 && code <= 102 ? code - 87 : // code-f
-                -1;
+            return Convert.ToByte(code.ToString(), 16);
         }
 
-        private Token CheckForPunctuationTokens(int code)
+        private Token CheckForPunctuationTokens(char code)
         {
             switch (code)
             {
-                case 33: return this.CreatePunctuationToken(TokenKind.BANG, 1);
-                // $
-                case 36: return this.CreatePunctuationToken(TokenKind.DOLLAR, 1);
-                // (
-                case 40: return this.CreatePunctuationToken(TokenKind.PAREN_L, 1);
-                // )
-                case 41: return this.CreatePunctuationToken(TokenKind.PAREN_R, 1);
-                // .
-                case 46: return this.CheckForSpreadOperator();
-                // :
-                case 58: return this.CreatePunctuationToken(TokenKind.COLON, 1);
-                // =
-                case 61: return this.CreatePunctuationToken(TokenKind.EQUALS, 1);
-                // @
-                case 64: return this.CreatePunctuationToken(TokenKind.AT, 1);
-                // [
-                case 91: return this.CreatePunctuationToken(TokenKind.BRACKET_L, 1);
-                // ]
-                case 93: return this.CreatePunctuationToken(TokenKind.BRACKET_R, 1);
-                // {
-                case 123: return this.CreatePunctuationToken(TokenKind.BRACE_L, 1);
-                // |
-                case 124: return this.CreatePunctuationToken(TokenKind.PIPE, 1);
-                // }
-                case 125: return this.CreatePunctuationToken(TokenKind.BRACE_R, 1);
+                case '!': return this.CreatePunctuationToken(TokenKind.BANG, 1);
+                case '$': return this.CreatePunctuationToken(TokenKind.DOLLAR, 1);
+                case '(': return this.CreatePunctuationToken(TokenKind.PAREN_L, 1);
+                case ')': return this.CreatePunctuationToken(TokenKind.PAREN_R, 1);
+                case '.': return this.CheckForSpreadOperator();
+                case ':': return this.CreatePunctuationToken(TokenKind.COLON, 1);
+                case '=': return this.CreatePunctuationToken(TokenKind.EQUALS, 1);
+                case '@': return this.CreatePunctuationToken(TokenKind.AT, 1);
+                case '[': return this.CreatePunctuationToken(TokenKind.BRACKET_L, 1);
+                case ']': return this.CreatePunctuationToken(TokenKind.BRACKET_R, 1);
+                case '{': return this.CreatePunctuationToken(TokenKind.BRACE_L, 1);
+                case '|': return this.CreatePunctuationToken(TokenKind.PIPE, 1);
+                case '}': return this.CreatePunctuationToken(TokenKind.BRACE_R, 1);
+                default: return null;
             }
-
-            return null;
         }
 
         private Token CheckForSpreadOperator()
         {
-            if (this.Source.Body[this.CurrentIndex + 1] == 46 &&
-                       this.Source.Body[this.CurrentIndex + 2] == 46)
+            if (this.Source.Body[this.CurrentIndex + 1] == '.' && this.Source.Body[this.CurrentIndex + 2] == '.')
             {
                 return this.CreatePunctuationToken(TokenKind.SPREAD, 3);
             }
-
             return null;
         }
 
@@ -245,78 +219,78 @@ namespace GraphQL.Language
 
         private char GetCode()
         {
-            return this.CurrentIndex < this.Source.Body.Length ? this.Source.Body[this.CurrentIndex] : (char)0;
+            return this.CurrentIndex < this.Source.Body.Length
+                ? this.Source.Body[this.CurrentIndex]
+                : (char)0;
         }
 
         private int GetPositionAfterWhitespace(string body, int start)
         {
-            int position = start;
+            var position = start;
 
             while (position < body.Length)
             {
-                int code = body[position];
-
-                if (
-                      code == 0xFEFF || // BOM
-                      code == 0x0009 || // tab
-                      code == 0x0020 || // space
-                      code == 0x000A || // new line
-                      code == 0x000D || // carriage return
-                      code == 0x002C    // Comma
-                    )
+                var code = body[position];
+                switch (code)
                 {
-                    ++position;
-                }
-                else if (code == 35) // #
-                {
-                    position = this.WaitForEndOfComment(body, position, code);
-                }
-                else
-                {
-                    break;
+                    case '\xFEFF': // BOM
+                    case '\t': // tab
+                    case ' ': // space
+                    case '\n': // new line
+                    case '\r': // carriage return
+                    case ',': // Comma
+                        ++position;
+                        break;
+                    case '#':
+                        position = this.WaitForEndOfComment(body, position, code);
+                        break;
+                    default:
+                        goto Done;
                 }
             }
-
+            Done:
             return position;
         }
 
         private char GetUnicodeChar()
         {
-            return (char)(this.CharToHex(this.NextCode()) << 12 |
-                this.CharToHex(this.NextCode()) << 8 |
-                this.CharToHex(this.NextCode()) << 4 |
-                this.CharToHex(this.NextCode()));
+            return (char)(
+                CharToHex(NextCode()) << 12 |
+                CharToHex(NextCode()) << 8 |
+                CharToHex(NextCode()) << 4 |
+                CharToHex(NextCode()));
         }
 
         private char NextCode()
         {
-            return ++this.CurrentIndex < this.Source.Body.Length ? this.Source.Body[this.CurrentIndex] : (char)0;
+            return ++this.CurrentIndex < this.Source.Body.Length
+                ? this.Source.Body[this.CurrentIndex]
+                : (char)0;
         }
 
-        private int ProcessCharacter(ref string value, ref int chunkStart)
+        private char ProcessCharacter(ref string value, ref int chunkStart)
         {
-            int code = this.GetCode();
+            var code = GetCode();
             ++this.CurrentIndex;
 
-            if (code == 92)
+            if (code == '\\')
             {
-                value = AppendToValueByCode(this.AppendCharactersFromLastChunk(value, chunkStart), this.GetCode());
+                value = AppendToValueByCode(AppendCharactersFromLastChunk(value, chunkStart), GetCode());
 
                 ++this.CurrentIndex;
                 chunkStart = this.CurrentIndex;
             }
 
-            return this.GetCode();
+            return GetCode();
         }
 
         private string ProcessStringChunks()
         {
-            int start = this.CurrentIndex;
-            int chunkStart = ++this.CurrentIndex;
-            int code = this.GetCode();
-            string value = "";
+            var chunkStart = ++this.CurrentIndex;
+            var code = GetCode();
+            var value = "";
 
-            while (this.CurrentIndex < this.Source.Body.Length && code != 0x000A && code != 0x000D && code != 34)
+            while (this.CurrentIndex < this.Source.Body.Length && code != 0x000A && code != 0x000D && code != '"')
             {
                 code = ProcessCharacter(ref value, ref chunkStart);
             }
@@ -326,28 +300,26 @@ namespace GraphQL.Language
             return value;
         }
 
-        private int ReadDigits(ISource source, int start, int firstCode)
+        private int ReadDigits(ISource source, int start, char firstCode)
         {
             var body = source.Body;
-            int position = start;
-            int code = firstCode;
+            var position = start;
+            var code = firstCode;
 
-            if (code >= 48 && code <= 57)
-            { // 0 - 9
-                do
-                {
-                    code = ++position < body.Length ? body[position] : 0;
-                } while (code >= 48 && code <= 57); // 0 - 9
+            if (!char.IsNumber(code)) throw new NotImplementedException();
+            do
+            {
+                code = ++position < body.Length
+                    ? body[position]
+                    : (char)0;
+            } while (char.IsNumber(code));
 
-                return position;
-            }
-
-            throw new NotImplementedException();
+            return position;
         }
 
-        private int ReadDigitsFromOwnSource(int code)
+        private char ReadDigitsFromOwnSource(char code)
         {
-            this.CurrentIndex = this.ReadDigits(this.Source, this.CurrentIndex, code);
+            this.CurrentIndex = ReadDigits(Source, this.CurrentIndex, code);
             code = GetCode();
             return code;
         }
@@ -355,9 +327,9 @@ namespace GraphQL.Language
         private Token ReadName()
         {
             var start = this.CurrentIndex;
-            int code = 0;
+            var code = (char)0;
 
-            while (++this.CurrentIndex != this.Source.Body.Length && (code = this.GetCode()) != 0 && IsValidNameCharacter(code)) { }
+            while (++this.CurrentIndex != this.Source.Body.Length && (code = GetCode()) != 0 && IsValidNameCharacter(code)) { }
             return CreateNameToken(start);
         }
 
@@ -369,7 +341,7 @@ namespace GraphQL.Language
             };
         }
 
-        private int WaitForEndOfComment(string body, int position, int code)
+        private int WaitForEndOfComment(string body, int position, char code)
         {
             while (++position < body.Length && (code = body[position]) != 0 && (code > 0x001F || code == 0x0009) && code != 0x000A && code != 0x000D)
             {
