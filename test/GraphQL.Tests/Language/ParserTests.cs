@@ -135,7 +135,7 @@
 
         private static string LoadKitchenSink()
         {
-            string dataFilePath = Directory.GetCurrentDirectory() + "\\data\\KitchenSink.graphql";
+            string dataFilePath = Directory.GetCurrentDirectory() + "/data/KitchenSink.graphql";
             return File.ReadAllText(dataFilePath);
         }
 

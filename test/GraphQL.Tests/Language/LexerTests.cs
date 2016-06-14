@@ -1069,18 +1069,12 @@
 
         private static Token GetSingleNameTokenLexerSurroundedWithWhitespaces()
         {
-            return new Lexer().Lex(new Source(@"
-        foo
-
-    "));
+            return new Lexer().Lex(new Source("\r\n        foo\r\n\r\n    "));
         }
 
         private static Token GetSingleNameTokenLexerWithComments()
         {
-            return new Lexer().Lex(new Source(@"
-#comment
-foo#comment
-"));
+            return new Lexer().Lex(new Source("\r\n#comment\r\nfoo#comment"));
         }
 
         private static Token GetSingleNameWithBOMHeaderTokenLexer()
