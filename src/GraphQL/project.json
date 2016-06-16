@@ -6,7 +6,8 @@
     "System.Linq.Expressions": "4.0.11-rc2-24027",
     "System.Dynamic.Runtime": "4.0.11-rc2-24027",
     "System.Runtime": "4.1.0-rc2-24027",
-    "System.Collections": "4.0.11-rc2-24027"
+    "System.Collections": "4.0.11-rc2-24027",
+    "Castle.Core": "4.0.0-alpha001"
   },
 
   "frameworks": {

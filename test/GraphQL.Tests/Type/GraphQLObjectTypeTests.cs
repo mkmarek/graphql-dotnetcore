@@ -1,8 +1,9 @@
 ﻿namespace GraphQL.Tests.Type
 {
+    using Exceptions;
     using GraphQL.Type;
-    using GraphQL.Type.Scalars;
     using NUnit.Framework;
+
     public class GraphQLObjectTypeTests
     {
         private GraphQLObjectType<TestModel> type;
@@ -23,6 +24,42 @@
         public void Description_HasCorrectDescription()
         {
             Assert.AreEqual("Test description", type.Description);
+        }
+
+        [Test]
+        public void AddField_TwoResolversWithSameNames_ThrowsException()
+        {
+            var exception = Assert.Throws<GraphQLException>(new TestDelegate(() =>
+            {
+                type.AddField("A", () => "x");
+                type.AddField("A", () => "y");
+            }));
+
+            Assert.AreEqual("Can't insert two fields with the same name.", exception.Message);
+        }
+
+        [Test]
+        public void AddField_OneResolverAndOnveAcessorWithSameNames_ThrowsException()
+        {
+            var exception = Assert.Throws<GraphQLException>(new TestDelegate(() =>
+            {
+                type.AddField("A", () => "x");
+                type.AddField("A", model => model.Test);
+            }));
+
+            Assert.AreEqual("Can't insert two fields with the same name.", exception.Message);
+        }
+
+        [Test]
+        public void AddField_TwoAcessorsWithSameNames_ThrowsException()
+        {
+            var exception = Assert.Throws<GraphQLException>(new TestDelegate(() =>
+            {
+                type.AddField("A", model => model.Test);
+                type.AddField("A", model => model.Test);
+            }));
+
+            Assert.AreEqual("Can't insert two fields with the same name.", exception.Message);
         }
 
         [SetUp]

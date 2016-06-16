@@ -1,6 +1,7 @@
 ﻿namespace GraphQL.Language
 {
     using AST;
+    using Exceptions;
     using System;
     using System.Collections.Generic;
 
@@ -97,6 +98,8 @@
         {
             if (this.CurrentToken.Kind == kind)
                 this.Advance();
+            else
+                throw new GraphQLException($"Expected {kind} but found {this.CurrentToken.Kind}");
         }
 
         private void ExpectKeyword(string keyword)
