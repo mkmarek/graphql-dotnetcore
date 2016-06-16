@@ -1,0 +1,19 @@
+version: 1.0.{build}
+configuration: Release
+environment:
+  COVERALLS_REPO_TOKEN:
+    secure: VaoXqrBdXlsfTTyw2gXbSCvLkOKmb+ick5BAhLdERh/bM6cbgIkOS44IMFL/jH5/
+init:
+  - ps: iex ((new-object net.webclient).DownloadString('https://gist.githubusercontent.com/PureKrome/0f79e25693d574807939/raw/8cf3160c9516ef1f4effc825c0a44acc918a0b5a/appveyor-build-info.ps'))
+before_build:
+  - nuget install OpenCover -Version 4.6.519 -OutputDirectory .\OpenCover
+  - nuget install coveralls.net -Version 0.6.0 -OutputDirectory .\coveralls.net
+  - dotnet restore
+build_script:
+  - dotnet build src\GraphQL --configuration Release
+  - dotnet build test\GraphQL.Tests --configuration Release
+test_script:
+  - dotnet test .\test\GraphQL.Tests\
+  - where dotnet
+  - .\OpenCover\OpenCover.4.6.519\tools\OpenCover.Console.exe -target:"C:\\Program Files\\dotnet\\dotnet.exe" -targetargs:"test .\test\GraphQL.Tests" -output:coverage.xml -register:user
+  - .\coveralls.net\coveralls.net.0.6.0\tools\csmacnz.coveralls.exe --opencover -i .\coverage.xml
