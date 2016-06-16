@@ -3,7 +3,7 @@ sudo: required
 dist: trusty  
 env:  
   - CLI_VERSION=latest
-addons:  
+addons:
   apt:
     packages:
     - gettext
@@ -11,18 +11,26 @@ addons:
     - libicu-dev
     - libssl-dev
     - libunwind8
-    - zlib1g
-mono:  
-  - 4.2.3
+
+mono:
+  - latest
 os:  
   - linux
-  - osx
 osx_image: xcode7.1
 before_install:  
   - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install openssl; brew link --force openssl; fi
 install:  
   - export DOTNET_INSTALL_DIR="$PWD/.dotnetcli"
   - curl -sSL https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/dotnet-install.sh | bash /dev/stdin --version "$CLI_VERSION" --install-dir "$DOTNET_INSTALL_DIR"
-  - export PATH="$DOTNET_INSTALL_DIR:$PATH"  
+  - export PATH="$DOTNET_INSTALL_DIR:$PATH" 
+  - nuget install NUnit.Console -Version 3.0.0-beta-3
+  - nuget install coveralls.net -Version 0.6.0
 script:  
-  - ./build.sh
+  - dotnet restore
+  - dotnet build src/GraphQL
+  - dotnet build test/GraphQL.Tests
+  - dotnet test test/GraphQL.Tests -f netcoreapp1.0
+after_success:
+  - mono --profile=monocov:outfile=monocovCoverage.cov ./NUnit.Console.3.0.0-beta-3/tools/nunit-console.exe --process=Single ./test/GraphQL.Tests/bin/Release/test/GraphQL.Tests.dll
+  - monocov --export-xml=monocovCoverage monocovCoverage.cov
+  - mono ./coveralls.net.0.6.0/tools/csmacnz.Coveralls.exe  --monocov -i ./monocovCoverage --repoToken $COVERALLS_REPO_TOKEN --commitId $TRAVIS_COMMIT --commitBranch $TRAVIS_BRANCH --commitAuthor "$REPO_COMMIT_AUTHOR" --commitEmail "$REPO_COMMIT_AUTHOR_EMAIL" --commitMessage "$REPO_COMMIT_MESSAGE" --jobId $TRAVIS_JOB_ID  --serviceName travis-ci --useRelativePaths
