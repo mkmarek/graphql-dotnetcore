@@ -60,6 +60,7 @@
         private object ExecuteField(Func<IList<GraphQLArgument>, object> fieldResolver, GraphQLFieldSelection selection, IList<GraphQLArgument> arguments)
         {
             var args = arguments.ToList();
+            args.RemoveAll(e => selection.Arguments.Any(arg => arg.Name.Value.Equals(e.Name.Value)));
             args.AddRange(selection.Arguments);
 
             return this.CompleteValue(fieldResolver(args), selection, args);

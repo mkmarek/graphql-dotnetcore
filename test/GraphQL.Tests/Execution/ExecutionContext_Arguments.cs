@@ -21,9 +21,9 @@
         [Test]
         public void Execute_NestedEntityFetchedWithArguments_PrintsCorrectValues()
         {
-            dynamic result = this.schema.Execute("{ nested(id: 42) { nested { text(str: \"string argument\") } } }");
+            dynamic result = this.schema.Execute("{ nested(id: 42) { nested(id: 24) { text(str: \"string argument\") } } }");
 
-            Assert.AreEqual("42 is from the parent and string argument is the current type", result.nested.nested.text);
+            Assert.AreEqual("24 is from the parent and string argument is the current type", result.nested.nested.text);
         }
 
         [SetUp]
