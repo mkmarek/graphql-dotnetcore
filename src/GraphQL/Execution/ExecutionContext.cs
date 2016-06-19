@@ -38,33 +38,44 @@
             var type = this.GetOperationRootType();
             var fields = this.CollectFields(type, this.Operation.SelectionSet);
 
-            return this.ExecuteFields(type, fields);
+            return this.ExecuteFields(type, fields, new List<GraphQLArgument>());
         }
 
-        private dynamic ExecuteFields(GraphQLObjectType type, Dictionary<string, IList<GraphQLFieldSelection>> fields)
+        private dynamic ExecuteFields(GraphQLObjectType type, Dictionary<string, IList<GraphQLFieldSelection>> fields, IList<GraphQLArgument> arguments)
         {
             var result = new ExpandoObject();
             var dictionary = (IDictionary<string, object>)result;
 
             foreach (var field in fields)
                 foreach (var selection in field.Value)
-                    dictionary.Add(field.Key, this.CompleteValue(type.ResolveField(selection, this.ResolvedObjectCache), selection));
+                    dictionary.Add(
+                        field.Key, 
+                        this.ExecuteField(
+                            (args) => type.ResolveField(selection, this.ResolvedObjectCache, args),
+                            selection, arguments));
 
             return result;
         }
 
-        private object CompleteValue(object input, GraphQLFieldSelection selection)
+        private object ExecuteField(Func<IList<GraphQLArgument>, object> fieldResolver, GraphQLFieldSelection selection, IList<GraphQLArgument> arguments)
+        {
+            var args = arguments.ToList();
+            args.AddRange(selection.Arguments);
+
+            return this.CompleteValue(fieldResolver(args), selection, args);
+        }
+
+        private object CompleteValue(object input, GraphQLFieldSelection selection, IList<GraphQLArgument> arguments)
         {
             if (input is GraphQLObjectType)
-                return this.CompleteObjectType((GraphQLObjectType)input, selection);
+                return this.CompleteObjectType((GraphQLObjectType)input, selection, arguments);
 
             return input;
         }
 
-        private object CompleteObjectType(GraphQLObjectType input, GraphQLFieldSelection selection)
+        private object CompleteObjectType(GraphQLObjectType input, GraphQLFieldSelection selection, IList<GraphQLArgument> arguments)
         {
-            var fields = this.CollectFields(input, selection.SelectionSet);
-            return this.ExecuteFields(input, fields);
+            return this.ExecuteFields(input, this.CollectFields(input, selection.SelectionSet), arguments);
         }
 
         private Dictionary<string, IList<GraphQLFieldSelection>> CollectFields(GraphQLObjectType runtimeType, GraphQLSelectionSet selectionSet)
@@ -132,26 +143,28 @@
         private bool ShouldIncludeNode(IEnumerable<GraphQLDirective> directives)
         {
             var skipAST = directives?.FirstOrDefault(e => e.Name.Value == "skip");
-            if (skipAST != null && this.GetArgumentValue(skipAST, "if") == true)
+            if (skipAST != null && GetArgumentValue(skipAST.Arguments, "if").Equals(true))
                 return false;
 
             var includeAST = directives?.FirstOrDefault(e => e.Name.Value == "include");
-            if (includeAST != null && this.GetArgumentValue(includeAST, "if") == false)
+            if (includeAST != null && GetArgumentValue(includeAST.Arguments, "if").Equals(false))
                 return false;
 
             return true;
         }
 
-        private bool GetArgumentValue(GraphQLDirective directive, string argumentName)
+        public static object GetArgumentValue(IEnumerable<GraphQLArgument> arguments, string argumentName)
         {
-            var value = directive.Arguments.SingleOrDefault(e => e.Name.Value == argumentName).Value;
+            var value = arguments.SingleOrDefault(e => e.Name.Value == argumentName).Value;
 
             switch(value.Kind)
             {
                 case ASTNodeKind.BooleanValue: return ((GraphQLValue<bool>)value).Value;
+                case ASTNodeKind.IntValue: return ((GraphQLValue<int>)value).Value;
+                case ASTNodeKind.StringValue: return ((GraphQLValue<string>)value).Value;
             }
 
-            return false;
+            throw new NotImplementedException();
         }
 
         private string GetFieldEntryKey(GraphQLFieldSelection selection)

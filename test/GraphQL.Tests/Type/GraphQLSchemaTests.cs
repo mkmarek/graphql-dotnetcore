@@ -27,7 +27,7 @@
         {
             var rootType = new GraphQLObjectType<TestType>("RootQueryType", "");
             this.schema = new GraphQLSchema(rootType);
-            rootType.AddField("hello", o => o.Hello);
+            rootType.Field("hello", o => o.Hello);
 
             var exception = Assert.Throws<GraphQLException>(
                 new TestDelegate(() => this.schema.Execute("{ hello }")));

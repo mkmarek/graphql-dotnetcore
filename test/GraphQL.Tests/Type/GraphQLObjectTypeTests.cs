@@ -44,7 +44,7 @@
             var exception = Assert.Throws<GraphQLException>(new TestDelegate(() =>
             {
                 type.Field("A", () => "x");
-                type.AddField("A", model => model.Test);
+                type.Field("A", model => model.Test);
             }));
 
             Assert.AreEqual("Can't insert two fields with the same name.", exception.Message);
@@ -55,8 +55,8 @@
         {
             var exception = Assert.Throws<GraphQLException>(new TestDelegate(() =>
             {
-                type.AddField("A", model => model.Test);
-                type.AddField("A", model => model.Test);
+                type.Field("A", model => model.Test);
+                type.Field("A", model => model.Test);
             }));
 
             Assert.AreEqual("Can't insert two fields with the same name.", exception.Message);

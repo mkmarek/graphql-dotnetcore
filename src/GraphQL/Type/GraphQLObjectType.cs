@@ -3,9 +3,11 @@
     using System.Collections.Generic;
     using System.Linq.Expressions;
     using Language.AST;
-    using System.Linq;
     using Exceptions;
-    using System;
+    using Utils;
+    using System.Linq;
+    using Execution;
+
     public class GraphQLObjectType : GraphQLScalarType
     {
         private Dictionary<string, LambdaExpression> Resolvers;
@@ -17,8 +19,8 @@
             this.Interfaces = new List<GraphQLInterface>();
         }
 
-        public void Field<TFieldType>(
-            string fieldName, Expression<Func<TFieldType>> resolver)
+        internal void Field<TFieldType>(
+            string fieldName, LambdaExpression resolver)
         {
             this.AddResolver(fieldName, resolver);
         }
@@ -26,6 +28,13 @@
         public virtual bool ContainsField(string fieldName)
         {
             return this.Resolvers.ContainsKey(fieldName);
+        }
+
+        protected object[] FetchArgumentValues(LambdaExpression expression, IList<GraphQLArgument> arguments)
+        {
+            return ReflectionUtilities.GetParameterNames(expression)
+                .Select(e => ExecutionContext.GetArgumentValue(arguments, e))
+                .ToArray();
         }
 
         protected void AddResolver(string fieldName, LambdaExpression resolver)
@@ -46,11 +55,13 @@
             return selection.Name?.Value ?? selection.Alias?.Value;
         }
 
-        internal virtual object ResolveField(GraphQLFieldSelection field, Dictionary<int, object> ResolvedObjectCache)
+        internal virtual object ResolveField(
+            GraphQLFieldSelection field, Dictionary<int, object> ResolvedObjectCache, IList<GraphQLArgument> arguments)
         {
             var resolver = this.Resolvers[this.GetFieldName(field)];
+            var argumentValues = this.FetchArgumentValues(resolver, arguments);
 
-            return resolver.Compile().DynamicInvoke();
+            return resolver.Compile().DynamicInvoke(argumentValues);
         }
     }
 }

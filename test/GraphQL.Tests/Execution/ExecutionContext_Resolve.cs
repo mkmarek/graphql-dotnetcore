@@ -94,8 +94,8 @@
 
             var typeWithAccessor = new GraphQLObjectType<TestType>("CustomObject", "test");
             typeWithAccessor.SetResolver(() => new TestType() { Hello = "world", Test = "stuff" });
-            typeWithAccessor.AddField("Hello", e => e.Hello);
-            typeWithAccessor.AddField("Test", e => e.Test);
+            typeWithAccessor.Field("Hello", e => e.Hello);
+            typeWithAccessor.Field("Test", e => e.Test);
 
             rootType.Field("acessorBasedProp", () => typeWithAccessor);
             this.schema = new GraphQLSchema(rootType);

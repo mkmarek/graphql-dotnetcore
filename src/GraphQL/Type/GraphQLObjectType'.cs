@@ -5,11 +5,13 @@
     using Language.AST;
     using Exceptions;
     using System.Collections.Generic;
-
+    using Utils;
+    using System.Linq;
+    using Execution;
     public class GraphQLObjectType<T> : GraphQLObjectType
         where T : class
     {
-        private Func<T> Resolver;
+        private LambdaExpression Resolver;
         private Dictionary<string, LambdaExpression> Acessors;
 
         public GraphQLObjectType(string name, string description) : base(name, description)
@@ -22,10 +24,15 @@
             return this.Acessors.ContainsKey(fieldName) || base.ContainsField(fieldName);
         }
 
-        public void AddField<TFieldType>(
+        public void Field<TFieldType>(
             string fieldName, Expression<Func<T, TFieldType>> accessor)
         {
             this.AddAcessor(fieldName, accessor);
+        }
+
+        public void Field<TFieldType>(Expression<Func<T, TFieldType>> accessor)
+        {
+            this.Field(ReflectionUtilities.GetPropertyInfo(accessor).Name, accessor);
         }
 
         protected void AddAcessor(string fieldName, LambdaExpression accessor)
@@ -36,37 +43,37 @@
             this.Acessors.Add(fieldName, accessor);
         }
 
-        internal override object ResolveField(GraphQLFieldSelection field, Dictionary<int, object> ResolvedObjectCache)
+        internal override object ResolveField(
+            GraphQLFieldSelection selection, Dictionary<int, object> ResolvedObjectCache, IList<GraphQLArgument> arguments)
         {
-            if (base.ContainsField(this.GetFieldName(field)))
-                return base.ResolveField(field, ResolvedObjectCache);
+            if (base.ContainsField(this.GetFieldName(selection)))
+                return base.ResolveField(selection, ResolvedObjectCache, arguments);
 
-            var instance = this.ResolveInstance(field, ResolvedObjectCache);
+            var instance = this.ResolveInstance(selection, ResolvedObjectCache, arguments);
 
-            return this.Acessors[this.GetFieldName(field)].Compile().DynamicInvoke(instance);
+            return this.Acessors[this.GetFieldName(selection)].Compile().DynamicInvoke(instance);
         }
 
-        private object ResolveInstance(GraphQLFieldSelection field, Dictionary<int, object> ResolvedObjectCache)
+        private object ResolveInstance(
+            GraphQLFieldSelection field, Dictionary<int, object> ResolvedObjectCache, IList<GraphQLArgument> arguments)
         {
-            object instance;
+            return ResolvedObjectCache.ContainsKey(field.Location.Start)
+                ? ResolvedObjectCache[field.Location.Start]
+                : ExecuteResolver(field, ResolvedObjectCache, arguments);
+        }
 
-            if (!ResolvedObjectCache.ContainsKey(field.Location.Start))
-            {
-                if (this.Resolver == null)
-                    throw new GraphQLException($"GraphQLObjectType {this.Name} doesn't have a resolver");
+        private object ExecuteResolver(GraphQLFieldSelection field, Dictionary<int, object> ResolvedObjectCache, IList<GraphQLArgument> arguments)
+        {
+            if (this.Resolver == null)
+                throw new GraphQLException($"GraphQLObjectType {this.Name} doesn't have a resolver");
 
-                instance = this.Resolver.DynamicInvoke();
-                ResolvedObjectCache.Add(field.Location.Start, instance);
-            }
-            else
-            {
-                instance = ResolvedObjectCache[field.Location.Start];
-            }
+            var instance = this.Resolver.Compile().DynamicInvoke(this.FetchArgumentValues(this.Resolver, arguments));
+            ResolvedObjectCache.Add(field.Location.Start, instance);
 
             return instance;
         }
 
-        public void SetResolver(Func<T> resolver)
+        internal void SetResolver(LambdaExpression resolver)
         {
             this.Resolver = resolver;
         }
