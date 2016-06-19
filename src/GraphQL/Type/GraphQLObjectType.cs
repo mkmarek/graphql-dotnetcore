@@ -9,14 +9,15 @@
     public class GraphQLObjectType : GraphQLScalarType
     {
         private Dictionary<string, LambdaExpression> Resolvers;
-
+        private IList<GraphQLInterface> Interfaces;
 
         public GraphQLObjectType(string name, string description) : base(name, description)
         {
-            this.Resolvers = new Dictionary<string, LambdaExpression>();;
+            this.Resolvers = new Dictionary<string, LambdaExpression>();
+            this.Interfaces = new List<GraphQLInterface>();
         }
 
-        public void AddField<TFieldType>(
+        public void Field<TFieldType>(
             string fieldName, Expression<Func<TFieldType>> resolver)
         {
             this.AddResolver(fieldName, resolver);
@@ -33,6 +34,11 @@
                 throw new GraphQLException("Can't insert two fields with the same name.");
 
             this.Resolvers.Add(fieldName, resolver);
+        }
+
+        public void Implements(GraphQLInterface nestedInteface)
+        {
+            this.Interfaces.Add(nestedInteface);
         }
 
         protected string GetFieldName(GraphQLFieldSelection selection)

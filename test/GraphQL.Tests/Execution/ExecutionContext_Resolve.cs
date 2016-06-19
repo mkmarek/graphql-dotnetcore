@@ -80,24 +80,24 @@
         public void SetUp()
         {
             var rootType = new GraphQLObjectType("RootQueryType", "");
-            rootType.AddField("hello", () => "world");
-            rootType.AddField("test", () => "test");
+            rootType.Field("hello", () => "world");
+            rootType.Field("test", () => "test");
 
             var nestedType = new GraphQLObjectType("NestedQueryType", "");
-            nestedType.AddField("howdy", () => "xzyt");
+            nestedType.Field("howdy", () => "xzyt");
 
             var anotherSestedType = new GraphQLObjectType("AnotherNestedQueryType", "");
-            anotherSestedType.AddField("stuff", () => "a");
+            anotherSestedType.Field("stuff", () => "a");
 
-            nestedType.AddField("anotherNested", () => anotherSestedType);
-            rootType.AddField("nested", () => nestedType);
+            nestedType.Field("anotherNested", () => anotherSestedType);
+            rootType.Field("nested", () => nestedType);
 
             var typeWithAccessor = new GraphQLObjectType<TestType>("CustomObject", "test");
             typeWithAccessor.SetResolver(() => new TestType() { Hello = "world", Test = "stuff" });
             typeWithAccessor.AddField("Hello", e => e.Hello);
             typeWithAccessor.AddField("Test", e => e.Test);
 
-            rootType.AddField("acessorBasedProp", () => typeWithAccessor);
+            rootType.Field("acessorBasedProp", () => typeWithAccessor);
             this.schema = new GraphQLSchema(rootType);
         }
 

@@ -40,8 +40,8 @@
         public void SetUp()
         {
             var rootType = new GraphQLObjectType("RootQueryType", "");
-            rootType.AddField("hello", () => "world");
-            rootType.AddField("test",  () => "test");
+            rootType.Field("hello", () => "world");
+            rootType.Field("test",  () => "test");
 
             this.schema = new GraphQLSchema(rootType);
         }

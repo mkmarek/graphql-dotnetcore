@@ -165,14 +165,14 @@
         public void SetUp()
         {
             var rootType = new GraphQLObjectType("RootQueryType", "");
-            rootType.AddField("a", () => "world");
-            rootType.AddField("b", () => "test");
+            rootType.Field("a", () => "world");
+            rootType.Field("b", () => "test");
 
             var nestedType = new GraphQLObjectType("NestedQueryType", "");
-            nestedType.AddField("a", () => "1");
-            nestedType.AddField("b", () => "2");
+            nestedType.Field("a", () => "1");
+            nestedType.Field("b", () => "2");
 
-            rootType.AddField("nested", () => nestedType);
+            rootType.Field("nested", () => nestedType);
 
             this.schema = new GraphQLSchema(rootType);
         }

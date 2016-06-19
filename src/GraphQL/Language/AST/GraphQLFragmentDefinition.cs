@@ -5,10 +5,8 @@ using System.Threading.Tasks;
 
 namespace GraphQL.Language.AST
 {
-    public class GraphQLFragmentDefinition : ASTNode
+    public class GraphQLFragmentDefinition : GraphQLInlineFragment
     {
-        public IEnumerable<GraphQLDirective> Directives { get; set; }
-
         public override ASTNodeKind Kind
         {
             get
@@ -18,7 +16,5 @@ namespace GraphQL.Language.AST
         }
 
         public GraphQLName Name { get; set; }
-        public GraphQLSelectionSet SelectionSet { get; set; }
-        public GraphQLNamedType TypeCondition { get; set; }
     }
 }

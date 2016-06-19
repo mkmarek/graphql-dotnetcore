@@ -36,7 +36,7 @@
                 throw new Exception("Must provide an operation.");
 
             var type = this.GetOperationRootType();
-            var fields = this.CollectFields(this.Operation.SelectionSet);
+            var fields = this.CollectFields(type, this.Operation.SelectionSet);
 
             return this.ExecuteFields(type, fields);
         }
@@ -63,38 +63,57 @@
 
         private object CompleteObjectType(GraphQLObjectType input, GraphQLFieldSelection selection)
         {
-            var fields = this.CollectFields(selection.SelectionSet);
+            var fields = this.CollectFields(input, selection.SelectionSet);
             return this.ExecuteFields(input, fields);
         }
 
-        private Dictionary<string, IList<GraphQLFieldSelection>> CollectFields(GraphQLSelectionSet selectionSet)
+        private Dictionary<string, IList<GraphQLFieldSelection>> CollectFields(GraphQLObjectType runtimeType, GraphQLSelectionSet selectionSet)
         {
             var fields = new Dictionary<string, IList<GraphQLFieldSelection>>();
 
             foreach (var selection in selectionSet.Selections)
-                this.CollectFieldsInSelection(selection, fields);
+                this.CollectFieldsInSelection(runtimeType, selection, fields);
 
             return fields;
         }
 
-        private void CollectFieldsInSelection(ASTNode selection, Dictionary<string, IList<GraphQLFieldSelection>> fields)
+        private void CollectFieldsInSelection(GraphQLObjectType runtimeType, ASTNode selection, Dictionary<string, IList<GraphQLFieldSelection>> fields)
         {
             switch (selection.Kind)
             {
                 case ASTNodeKind.Field: this.CollectField((GraphQLFieldSelection)selection, fields); break;
-                case ASTNodeKind.FragmentSpread: this.CollectFragmentFields((GraphQLFragmentSpread)selection, fields); break;
+                case ASTNodeKind.FragmentSpread: this.CollectFragmentSpreadFields(runtimeType, (GraphQLFragmentSpread)selection, fields); break;
+                case ASTNodeKind.InlineFragment: this.CollectFragmentFields(runtimeType, (GraphQLInlineFragment)selection, fields); break;
             }
         }
 
-        private void CollectFragmentFields(GraphQLFragmentSpread fragmentSpread, Dictionary<string, IList<GraphQLFieldSelection>> fields)
+        private void CollectFragmentSpreadFields(GraphQLObjectType runtimeType, GraphQLFragmentSpread fragmentSpread, Dictionary<string, IList<GraphQLFieldSelection>> fields)
         {
             var fragment = this.Fragments[fragmentSpread.Name.Value];
+            CollectFragmentFields(runtimeType, fragment, fields);
+        }
 
+        private void CollectFragmentFields(GraphQLObjectType runtimeType, GraphQLInlineFragment fragment, Dictionary<string, IList<GraphQLFieldSelection>> fields)
+        {
             if (!this.ShouldIncludeNode(fragment.Directives))
                 return;
 
-            this.CollectFields(fragment.SelectionSet)
+            if (!this.DoesFragmentConditionMatch(runtimeType, fragment))
+                return;
+
+            this.CollectFields(runtimeType, fragment.SelectionSet)
                 .ToList().ForEach(e => fields.Add(e.Key, e.Value));
+        }
+
+        private bool DoesFragmentConditionMatch(GraphQLObjectType runtimeType, GraphQLInlineFragment fragment)
+        {
+            if (fragment.TypeCondition == null)
+                return true;
+
+            if (fragment.TypeCondition.Name.Value == runtimeType.Name)
+                return true;
+
+            return false;
         }
 
         private void CollectField(GraphQLFieldSelection selection, Dictionary<string, IList<GraphQLFieldSelection>> fields)
