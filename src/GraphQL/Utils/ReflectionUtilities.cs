@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -26,9 +28,57 @@ namespace GraphQL.Utils
             return propInfo;
         }
 
-        public static string[] GetParameterNames(LambdaExpression resolver)
+        public static ParameterExpression[] GetParameters(LambdaExpression resolver)
         {
-            return resolver.Parameters.Select(e => e.Name).ToArray();
+            return resolver.Parameters.ToArray();
+        }
+
+        public static object Cast(System.Type type, object input)
+        {
+            var cast = typeof(Enumerable).GetRuntimeMethod("Cast", new System.Type[] { typeof(IEnumerable) })
+                .MakeGenericMethod(type);
+
+            return cast.Invoke(null, new object[] { input });
+        }
+
+        public static object ToArray(System.Type type, object input)
+        {
+            var toArray = typeof(Enumerable).GetRuntimeMethods()
+                .SingleOrDefault(e => e.Name == "ToArray")
+                .MakeGenericMethod(type);
+
+            return toArray.Invoke(null, new object[] { input });
+        }
+
+        public static object ToList(System.Type type, object input)
+        {
+            var toList = typeof(Enumerable).GetRuntimeMethods()
+                .SingleOrDefault(e => e.Name == "ToList")
+                .MakeGenericMethod(type);
+
+            return toList.Invoke(null, new object[] { input });
+        }
+
+        public static object ChangeToCollection(object input, ParameterExpression parameter)
+        {
+            if (parameter.Type.IsArray)
+                return ChangeToArrayCollection(input, parameter);
+
+            return ChangeToListCollection(input, parameter);
+        }
+
+        public static object ChangeToArrayCollection(object input, ParameterExpression parameter)
+        {
+            var elementType = parameter.Type.GetElementType();
+
+            return ToArray(elementType, Cast(elementType, input));
+        }
+
+        public static object ChangeToListCollection(object input, ParameterExpression parameter)
+        {
+            var elementType = parameter.Type.GenericTypeArguments.Single();
+
+            return ToList(elementType, Cast(elementType, input));
         }
     }
 }

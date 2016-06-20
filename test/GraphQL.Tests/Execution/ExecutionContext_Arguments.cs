@@ -3,7 +3,8 @@
     using GraphQL.Type;
     using Microsoft.CSharp.RuntimeBinder;
     using NUnit.Framework;
-
+    using System.Collections.Generic;
+    using System.Linq;
     [TestFixture]
     public class ExecutionContext_Arguments
     {
@@ -26,6 +27,30 @@
             Assert.AreEqual("24 is from the parent and string argument is the current type", result.nested.nested.text);
         }
 
+        [Test]
+        public void Execute_ArrayViaArgument_PrintsCorrectList()
+        {
+            dynamic result = this.schema.Execute("{ withArray(ids: [1,2,3]) }");
+
+            Assert.AreEqual(3, result.withArray);
+        }
+
+        [Test]
+        public void Execute_ListViaArgument_PrintsCorrectList()
+        {
+            dynamic result = this.schema.Execute("{ withList(ids: [1,2,3]) }");
+
+            Assert.AreEqual(3, result.withList);
+        }
+
+        [Test]
+        public void Execute_IEnumerableViaArgument_PrintsCorrectList()
+        {
+            dynamic result = this.schema.Execute("{ withIEnumerable(ids: [1,2,3]) }");
+
+            Assert.AreEqual(3, result.withIEnumerable);
+        }
+
         [SetUp]
         public void SetUp()
         {
@@ -41,6 +66,10 @@
 
             nestedType.Field("nested", () => nestedTypeNonGeneric);
             rootType.Field("nested", () => nestedType);
+
+            rootType.Field("withArray", (int[] ids) => ids.Count());
+            rootType.Field("withList", (List<int> ids) => ids.Count());
+            rootType.Field("withIEnumerable", (IEnumerable<int> ids) => ids.Count());
 
             this.schema = new GraphQLSchema(rootType);
         }

@@ -32,9 +32,17 @@
 
         protected object[] FetchArgumentValues(LambdaExpression expression, IList<GraphQLArgument> arguments)
         {
-            return ReflectionUtilities.GetParameterNames(expression)
-                .Select(e => ExecutionContext.GetArgumentValue(arguments, e))
+            return ReflectionUtilities.GetParameters(expression)
+                .Select(e => this.ChangeValueType(ExecutionContext.GetArgumentValue(arguments, e.Name), e))
                 .ToArray();
+        }
+
+        protected object ChangeValueType(object input, ParameterExpression parameter)
+        {
+            if (input is IEnumerable<object>)
+                return ReflectionUtilities.ChangeToCollection(input, parameter);
+
+            return input;
         }
 
         protected void AddResolver(string fieldName, LambdaExpression resolver)

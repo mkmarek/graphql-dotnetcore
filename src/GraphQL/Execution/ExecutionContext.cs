@@ -158,14 +158,31 @@
         {
             var value = arguments.SingleOrDefault(e => e.Name.Value == argumentName).Value;
 
-            switch(value.Kind)
+            return GetValue(value);
+        }
+
+        private static object GetValue(GraphQLValue value)
+        {
+            switch (value.Kind)
             {
                 case ASTNodeKind.BooleanValue: return ((GraphQLValue<bool>)value).Value;
                 case ASTNodeKind.IntValue: return ((GraphQLValue<int>)value).Value;
                 case ASTNodeKind.StringValue: return ((GraphQLValue<string>)value).Value;
+                case ASTNodeKind.ListValue: return GetListValue(value);
             }
 
             throw new NotImplementedException();
+        }
+
+        private static IEnumerable GetListValue(GraphQLValue value)
+        {
+            IList output = new List<object>();
+            var list = ((GraphQLValue<IEnumerable<GraphQLValue>>)value).Value;
+
+            foreach (var item in list)
+                output.Add(GetValue(item));
+
+            return output;
         }
 
         private string GetFieldEntryKey(GraphQLFieldSelection selection)
