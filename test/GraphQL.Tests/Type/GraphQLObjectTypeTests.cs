@@ -65,7 +65,7 @@
         [SetUp]
         public void SetUp()
         {
-            this.type = new GraphQLObjectType<TestModel>("Test", "Test description");
+            this.type = new GraphQLObjectType<TestModel>("Test", "Test description", new GraphQLSchema());
         }
 
         public class TestModel

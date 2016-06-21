@@ -25,9 +25,10 @@
         [Test]
         public void Execute_GenericObjectWithoutResolver_ThrowsException()
         {
-            var rootType = new GraphQLObjectType<TestType>("RootQueryType", "");
-            this.schema = new GraphQLSchema(rootType);
+            this.schema = new GraphQLSchema();
+            var rootType = new GraphQLObjectType<TestType>("RootQueryType", "", this.schema);
             rootType.Field("hello", o => o.Hello);
+            schema.SetRoot(rootType);
 
             var exception = Assert.Throws<GraphQLException>(
                 new TestDelegate(() => this.schema.Execute("{ hello }")));
@@ -39,11 +40,12 @@
         [SetUp]
         public void SetUp()
         {
-            var rootType = new GraphQLObjectType("RootQueryType", "");
+            this.schema = new GraphQLSchema();
+            var rootType = new GraphQLObjectType("RootQueryType", "", this.schema);
             rootType.Field("hello", () => "world");
             rootType.Field("test",  () => "test");
 
-            this.schema = new GraphQLSchema(rootType);
+            schema.SetRoot(rootType);
         }
 
         public class TestType

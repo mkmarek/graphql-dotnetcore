@@ -34,7 +34,7 @@ namespace GraphQL.Language
             if (token != null)
                 return token;
 
-            if (char.IsLetter(code))
+            if (char.IsLetter(code) || code == '_')
                 return ReadName();
 
             if (char.IsNumber(code) || code == '-')

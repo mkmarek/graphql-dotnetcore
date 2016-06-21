@@ -7,7 +7,7 @@ namespace GraphQL.Type
     {
         private IList<GraphQLInterfaceType> Types;
 
-        public GraphQLInterface(string name, string description) : base(name, description)
+        public GraphQLInterface(string name, string description, GraphQLSchema schema) : base(name, description, schema)
         {
             this.Types = new List<GraphQLInterfaceType>();
         }

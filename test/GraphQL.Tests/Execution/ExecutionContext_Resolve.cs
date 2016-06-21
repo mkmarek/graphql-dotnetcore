@@ -79,26 +79,29 @@
         [SetUp]
         public void SetUp()
         {
-            var rootType = new GraphQLObjectType("RootQueryType", "");
+            this.schema = new GraphQLSchema();
+
+            var rootType = new GraphQLObjectType("RootQueryType", "", this.schema);
             rootType.Field("hello", () => "world");
             rootType.Field("test", () => "test");
 
-            var nestedType = new GraphQLObjectType("NestedQueryType", "");
+            var nestedType = new GraphQLObjectType("NestedQueryType", "", this.schema);
             nestedType.Field("howdy", () => "xzyt");
 
-            var anotherSestedType = new GraphQLObjectType("AnotherNestedQueryType", "");
+            var anotherSestedType = new GraphQLObjectType("AnotherNestedQueryType", "", this.schema);
             anotherSestedType.Field("stuff", () => "a");
 
             nestedType.Field("anotherNested", () => anotherSestedType);
             rootType.Field("nested", () => nestedType);
 
-            var typeWithAccessor = new GraphQLObjectType<TestType>("CustomObject", "test");
+            var typeWithAccessor = new GraphQLObjectType<TestType>("CustomObject", "test", this.schema);
             typeWithAccessor.SetResolver(() => new TestType() { Hello = "world", Test = "stuff" });
             typeWithAccessor.Field("Hello", e => e.Hello);
             typeWithAccessor.Field("Test", e => e.Test);
 
             rootType.Field("acessorBasedProp", () => typeWithAccessor);
-            this.schema = new GraphQLSchema(rootType);
+
+            this.schema.SetRoot(rootType);
         }
 
         public class TestType

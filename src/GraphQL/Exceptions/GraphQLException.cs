@@ -11,5 +11,9 @@ namespace GraphQL.Exceptions
         {
 
         }
+
+        public GraphQLException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
     }
 }

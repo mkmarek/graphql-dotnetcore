@@ -7,13 +7,14 @@
     using Utils;
     using System.Linq;
     using Execution;
-
+    using System;
+    using Introspection;
     public class GraphQLObjectType : GraphQLScalarType
     {
         private Dictionary<string, LambdaExpression> Resolvers;
         private IList<GraphQLInterface> Interfaces;
 
-        public GraphQLObjectType(string name, string description) : base(name, description)
+        public GraphQLObjectType(string name, string description, GraphQLSchema schema) : base(name, description, schema)
         {
             this.Resolvers = new Dictionary<string, LambdaExpression>();
             this.Interfaces = new List<GraphQLInterface>();
@@ -39,10 +40,30 @@
 
         protected object ChangeValueType(object input, ParameterExpression parameter)
         {
-            if (input is IEnumerable<object>)
+            if (input is IEnumerable<object> && ReflectionUtilities.IsCollection(parameter.Type))
                 return ReflectionUtilities.ChangeToCollection(input, parameter);
 
-            return input;
+            return TryConvertToParameterType(input, parameter);
+        }
+
+        private static object TryConvertToParameterType(object input, ParameterExpression parameter)
+        {
+            try
+            {
+                return Convert.ChangeType(input, parameter.Type);
+            }
+            catch (Exception ex)
+            {
+                throw new GraphQLException($"Can't convert input of type {input.GetType().Name} to {parameter.Type.Name}.", ex);
+            }
+        }
+
+        public IEnumerable<Type> GetFieldTypes()
+        {
+            return this.Resolvers?
+                .Select(e => e.Value?.Type)
+                .Where(e => e != null)
+                .ToList() ?? new List<Type>();
         }
 
         protected void AddResolver(string fieldName, LambdaExpression resolver)
@@ -70,6 +91,12 @@
             var argumentValues = this.FetchArgumentValues(resolver, arguments);
 
             return resolver.Compile().DynamicInvoke(argumentValues);
+        }
+
+        internal virtual object ResolveField(string name)
+        {
+            var resolver = this.Resolvers[name];
+            return resolver.Compile().DynamicInvoke();
         }
     }
 }

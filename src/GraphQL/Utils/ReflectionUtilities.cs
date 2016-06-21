@@ -41,6 +41,11 @@ namespace GraphQL.Utils
             return cast.Invoke(null, new object[] { input });
         }
 
+        internal static bool IsCollection(System.Type type)
+        {
+            return (type.IsArray || typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo())) && type != typeof(string);
+        }
+
         public static object ToArray(System.Type type, object input)
         {
             var toArray = typeof(Enumerable).GetRuntimeMethods()

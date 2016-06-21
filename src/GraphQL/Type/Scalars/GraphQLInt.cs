@@ -5,10 +5,9 @@ namespace GraphQL.Type.Scalars
 {
     public class GraphQLInt : GraphQLScalarType
     {
-        private const string NAME = "Int";
-        private const string DESCRIPTION = "The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.";
-
-        public GraphQLInt() : base(NAME, DESCRIPTION)
+        public GraphQLInt(GraphQLSchema schema) : base("Int", 
+            "The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.",
+            schema)
         {
         }
 

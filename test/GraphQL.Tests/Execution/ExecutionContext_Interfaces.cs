@@ -21,21 +21,23 @@
         [SetUp]
         public void SetUp()
         {
-            var nestedInteface = new GraphQLInterface("TestInterface", "");
+            this.schema = new GraphQLSchema();
+
+            var nestedInteface = new GraphQLInterface("TestInterface", "", this.schema);
             nestedInteface.AddField<string>("a");
 
-            var rootType = new GraphQLObjectType("RootQueryType", "");
+            var rootType = new GraphQLObjectType("RootQueryType", "", this.schema);
             rootType.Field("a", () => "world");
             rootType.Field("b", () => "test");
 
-            var nestedType = new GraphQLObjectType("NestedQueryType", "");
+            var nestedType = new GraphQLObjectType("NestedQueryType", "", this.schema);
             nestedType.Field("a", () => "1");
             nestedType.Field("b", () => "2");
             nestedType.Implements(nestedInteface);
 
             rootType.Field("nested", () => nestedType);
-
-            this.schema = new GraphQLSchema(rootType);
+            
+            this.schema.SetRoot(rootType);
         }
     }
 }

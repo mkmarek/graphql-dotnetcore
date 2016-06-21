@@ -7,6 +7,8 @@
     using Type;
     using System.Dynamic;
     using System.Linq;
+    using Type.Introspection;
+    using Utils;
     public class ExecutionContext : IDisposable
     {
         private GraphQLDocument AST;
@@ -49,12 +51,20 @@
             foreach (var field in fields)
                 foreach (var selection in field.Value)
                     dictionary.Add(
-                        field.Key, 
+                        field.Key,
                         this.ExecuteField(
-                            (args) => type.ResolveField(selection, this.ResolvedObjectCache, args),
+                            GetFieldDefinition(type, selection),
                             selection, arguments));
 
             return result;
+        }
+
+        private Func<IList<GraphQLArgument>, object> GetFieldDefinition(GraphQLObjectType type, GraphQLFieldSelection selection)
+        {
+            if (selection.Name.Value == GraphQLSchema.__Schema.Name.ToLower())
+                return (args) => GraphQLSchema.__Schema;
+
+            return (args) => type.ResolveField(selection, this.ResolvedObjectCache, args);
         }
 
         private object ExecuteField(Func<IList<GraphQLArgument>, object> fieldResolver, GraphQLFieldSelection selection, IList<GraphQLArgument> arguments)
@@ -71,7 +81,19 @@
             if (input is GraphQLObjectType)
                 return this.CompleteObjectType((GraphQLObjectType)input, selection, arguments);
 
+            if (ReflectionUtilities.IsCollection(input.GetType()))
+                return this.CompleteCollectionType((IEnumerable)input, selection, arguments);
+
             return input;
+        }
+
+        private object CompleteCollectionType(IEnumerable input, GraphQLFieldSelection selection, IList<GraphQLArgument> arguments)
+        {
+            var result = new List<object>();
+            foreach (var element in input)
+                result.Add(this.CompleteValue(element, selection, arguments));
+
+            return result;
         }
 
         private object CompleteObjectType(GraphQLObjectType input, GraphQLFieldSelection selection, IList<GraphQLArgument> arguments)
@@ -167,6 +189,7 @@
             {
                 case ASTNodeKind.BooleanValue: return ((GraphQLValue<bool>)value).Value;
                 case ASTNodeKind.IntValue: return ((GraphQLValue<int>)value).Value;
+                case ASTNodeKind.FloatValue: return ((GraphQLValue<float>)value).Value;
                 case ASTNodeKind.StringValue: return ((GraphQLValue<string>)value).Value;
                 case ASTNodeKind.ListValue: return GetListValue(value);
             }

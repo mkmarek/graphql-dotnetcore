@@ -14,7 +14,7 @@
         private LambdaExpression Resolver;
         private Dictionary<string, LambdaExpression> Acessors;
 
-        public GraphQLObjectType(string name, string description) : base(name, description)
+        public GraphQLObjectType(string name, string description, GraphQLSchema schema) : base(name, description, schema)
         {
             this.Acessors = new Dictionary<string, LambdaExpression>();
         }

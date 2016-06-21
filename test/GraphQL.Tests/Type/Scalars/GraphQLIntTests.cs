@@ -47,7 +47,7 @@
         [SetUp]
         public void SetUp()
         {
-            this.type = new GraphQLInt();
+            this.type = new GraphQLInt(new GraphQL.Type.GraphQLSchema());
         }
     }
 }
