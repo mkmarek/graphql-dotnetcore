@@ -60,10 +60,9 @@
 
         public IEnumerable<Type> GetFieldTypes()
         {
-            return this.Resolvers?
-                .Select(e => e.Value?.Type)
-                .Where(e => e != null)
-                .ToList() ?? new List<Type>();
+            return this.Resolvers
+                .Select(e => ReflectionUtilities.GetReturnValueFromLambdaExpression(e.Value))
+                .ToList();
         }
 
         protected void AddResolver(string fieldName, LambdaExpression resolver)

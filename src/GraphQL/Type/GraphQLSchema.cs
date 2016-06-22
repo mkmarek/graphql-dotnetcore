@@ -12,36 +12,78 @@
     public class GraphQLSchema
     {
         public __Schema __Schema { get; private set; }
-        public List<__Type> SchemaTypes { get; private set; }
         public GraphQLObjectType RootType { get; private set; }
 
+        private List<GraphQLScalarType> schemaTypes;
 
         public GraphQLSchema()
         {
-            this.SchemaTypes = new List<__Type>();
+            this.schemaTypes = new List<GraphQLScalarType>();
+            this.schemaTypes.Add(new __Type("", "", null));
             this.__Schema = new __Schema(this);
+        }
+
+        public IEnumerable<__Type> Introspect()
+        {
+            var result = new List<__Type>();
+
+            foreach (var type in this.schemaTypes)
+            {
+                result.Add(new __Type(type, null));
+                if (type is GraphQLObjectType)
+                    AppendObjectTypes(result, (GraphQLObjectType)type);
+            }
+
+            return result;
+        }
+
+        private void AppendObjectTypes(List<__Type> result, GraphQLObjectType objectType)
+        {
+            var types = this.IntrospectObjectFieldTypes(objectType);
+
+            foreach (var type in types)
+            {
+                if (!GetTypeNames(result).Contains(GetTypeName(type)))
+                    result.Add(type);
+            }
+        }
+
+        private static string[] GetTypeNames(List<__Type> typeList)
+        {
+            return typeList.Select(e => GetTypeName(e)).ToArray();
+        }
+
+        private static string GetTypeName(__Type e)
+        {
+            return (string)e.ResolveField("name");
         }
 
         internal void RegisterType(GraphQLScalarType value)
         {
-            this.SchemaTypes.Add(new __Type(value, null));
-
-            if (value is GraphQLObjectType)
-                this.AddObjectFieldTypes((GraphQLObjectType)value);
+            this.schemaTypes.Add(value);
         }
 
-        private void AddObjectFieldTypes(GraphQLObjectType value)
+        private IEnumerable<__Type> IntrospectObjectFieldTypes(GraphQLObjectType value)
         {
             var types = value.GetFieldTypes();
 
-            this.SchemaTypes.AddRange(
-                types.Select(e => this.ResolveObjectFieldType(e)).Where(e => e != null));
+            return types.Select(e => this.ResolveObjectFieldType(e))
+                .Where(e => e != null);
         }
 
         private __Type ResolveObjectFieldType(Type type)
         {
             if (typeof(int) == type)
                 return new __Type(new GraphQLInt(null), null);
+
+            if (typeof(bool) == type)
+                return new __Type(new GraphQLBoolean(null), null);
+
+            if (typeof(float) == type || typeof(double) == type)
+                return new __Type(new GraphQLFloat(null), null);
+
+            if (typeof(string) == type)
+                return new __Type(new GraphQLString(null), null);
 
             return null;
         }

@@ -15,7 +15,7 @@ namespace GraphQL.Type.Introspection
         {
             this.schema = schema;
 
-            this.Field("types", () => schema.SchemaTypes);
+            this.Field("types", () => schema.Introspect());
         }
     }
 }

@@ -28,6 +28,11 @@ namespace GraphQL.Utils
             return propInfo;
         }
 
+        public static System.Type GetReturnValueFromLambdaExpression(LambdaExpression expression)
+        {
+            return expression.Type.GenericTypeArguments.LastOrDefault();
+        }
+
         public static ParameterExpression[] GetParameters(LambdaExpression resolver)
         {
             return resolver.Parameters.ToArray();
