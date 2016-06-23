@@ -58,7 +58,7 @@
             }
         }
 
-        public IEnumerable<Type> GetFieldTypes()
+        public virtual IEnumerable<Type> GetFieldTypes()
         {
             return this.Resolvers
                 .Select(e => ReflectionUtilities.GetReturnValueFromLambdaExpression(e.Value))

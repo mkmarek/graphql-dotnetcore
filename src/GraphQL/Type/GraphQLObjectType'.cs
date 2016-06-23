@@ -43,6 +43,13 @@
             this.Acessors.Add(fieldName, accessor);
         }
 
+        public override IEnumerable<Type> GetFieldTypes()
+        {
+            return base.GetFieldTypes()
+                .Union(this.Acessors.Select(e => ReflectionUtilities.GetReturnValueFromLambdaExpression(e.Value)))
+                .ToList();
+        }
+
         internal override object ResolveField(
             GraphQLFieldSelection selection, Dictionary<int, object> ResolvedObjectCache, IList<GraphQLArgument> arguments)
         {

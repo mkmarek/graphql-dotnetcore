@@ -1,76 +1,140 @@
 ﻿namespace GraphQL.Tests.Execution
 {
     using GraphQL.Type;
-    using Microsoft.CSharp.RuntimeBinder;
+    using GraphQL.Type.Introspection;
     using NUnit.Framework;
     using System.Collections.Generic;
     using System.Linq;
+
     [TestFixture]
     public class ExecutionContext_IntroSpection
     {
         private GraphQLSchema schema;
 
         [Test]
-        public void Execute_IntrospectingSchemaTypeNames_ContainsDefinedRootQueryType()
+        public void Execute_IntrospectingRootQueryType_IsTypeKindObject()
         {
-            var result = GetSchemaFields();
-            Assert.IsNotNull(result.SingleOrDefault(e => e.name == "RootQueryType"));
+            var result = GetSchemaFields().SingleOrDefault(e => e.name == "RootQueryType");
+            Assert.AreEqual("OBJECT", result.kind);
         }
 
         [Test]
-        public void Execute_IntrospectingSchemaTypeNames_ContainsT1()
+        public void Execute_IntrospectingT1_IsTypeKindObject()
         {
-            var result = GetSchemaFields();
-            Assert.IsNotNull(result.SingleOrDefault(e => e.name == "T1"));
+            var result = GetSchemaFields().SingleOrDefault(e => e.name == "T1");
+            Assert.AreEqual("OBJECT", result.kind);
         }
 
         [Test]
-        public void Execute_IntrospectingSchemaTypeNames_ContainsT2()
+        public void Execute_IntrospectingT2_IsTypeKindObject()
         {
-            var result = GetSchemaFields();
-            Assert.IsNotNull(result.SingleOrDefault(e => e.name == "T2"));
+            var result = GetSchemaFields().SingleOrDefault(e => e.name == "T2");
+            Assert.AreEqual("OBJECT", result.kind);
         }
 
         [Test]
-        public void Execute_IntrospectingSchemaTypeNames_Contains__Schema()
+        public void Execute_Introspecting__Schema_IsTypeKindObject()
         {
-            var result = GetSchemaFields();
-            Assert.IsNotNull(result.SingleOrDefault(e => e.name == "__Schema"));
+            var result = GetSchemaFields().SingleOrDefault(e => e.name == "__Schema");
+            Assert.AreEqual("OBJECT", result.kind);
         }
 
         [Test]
-        public void Execute_IntrospectingSchemaTypeNames_Contains__Type()
+        public void Execute_Introspecting__Type_IsTypeKindObject()
         {
-            var result = GetSchemaFields();
-            Assert.IsNotNull(result.SingleOrDefault(e => e.name == "__Type"));
+            var result = GetSchemaFields().SingleOrDefault(e => e.name == "__Schema");
+            Assert.AreEqual("OBJECT", result.kind);
         }
 
         [Test]
-        public void Execute_IntrospectingSchemaTypeNames_ContainsInt()
+        public void Execute_IntrospectingInt_IsTypeKindScalar()
         {
-            var result = GetSchemaFields();
-            Assert.IsNotNull(result.SingleOrDefault(e => e.name == "Int"));
+            var result = GetSchemaFields().SingleOrDefault(e => e.name == "Int");
+            Assert.AreEqual("SCALAR", result.kind);
         }
 
         [Test]
-        public void Execute_IntrospectingSchemaTypeNames_ContainsBoolean()
+        public void Execute_IntrospectingBoolean_IsTypeKindScalar()
         {
-            var result = GetSchemaFields();
-            Assert.IsNotNull(result.SingleOrDefault(e => e.name == "Boolean"));
+            var result = GetSchemaFields().SingleOrDefault(e => e.name == "Boolean");
+            Assert.AreEqual("SCALAR", result.kind);
         }
 
         [Test]
-        public void Execute_IntrospectingSchemaTypeNames_ContainsString()
+        public void Execute_IntrospectingString_IsTypeKindScalar()
         {
-            var result = GetSchemaFields();
-            Assert.IsNotNull(result.SingleOrDefault(e => e.name == "String"));
+            var result = GetSchemaFields().SingleOrDefault(e => e.name == "String");
+            Assert.AreEqual("SCALAR", result.kind);
         }
 
         [Test]
-        public void Execute_IntrospectingSchemaTypeNames_ContainsFloat()
+        public void Execute_IntrospectingFloat_IsTypeKindScalar()
         {
-            var result = GetSchemaFields();
-            Assert.IsNotNull(result.SingleOrDefault(e => e.name == "Float"));
+            var result = GetSchemaFields().SingleOrDefault(e => e.name == "Float");
+            Assert.AreEqual("SCALAR", result.kind);
+        }
+
+        [Test]
+        public void Execute_IntrospectingRootQueryType_HasDescription()
+        {
+            var result = GetSchemaFields().SingleOrDefault(e => e.name == "RootQueryType");
+            Assert.IsNotNull(result.description);
+        }
+
+        [Test]
+        public void Execute_IntrospectingT1_HasDescription()
+        {
+            var result = GetSchemaFields().SingleOrDefault(e => e.name == "T1");
+            Assert.IsNotNull(result.description);
+        }
+
+        [Test]
+        public void Execute_IntrospectingT2_HasDescription()
+        {
+            var result = GetSchemaFields().SingleOrDefault(e => e.name == "T2");
+            Assert.IsNotNull(result.description);
+        }
+
+        [Test]
+        public void Execute_Introspecting__Schema_HasDescription()
+        {
+            var result = GetSchemaFields().SingleOrDefault(e => e.name == "__Schema");
+            Assert.IsNotNull(result.description);
+        }
+
+        [Test]
+        public void Execute_Introspecting__Type_HasDescription()
+        {
+            var result = GetSchemaFields().SingleOrDefault(e => e.name == "__Schema");
+            Assert.IsNotNull(result.description);
+        }
+
+        [Test]
+        public void Execute_IntrospectingInt_HasDescription()
+        {
+            var result = GetSchemaFields().SingleOrDefault(e => e.name == "Int");
+            Assert.IsNotNull(result.description);
+        }
+
+        [Test]
+        public void Execute_IntrospectingBoolean_HasDescription()
+        {
+            var result = GetSchemaFields().SingleOrDefault(e => e.name == "Boolean");
+            Assert.IsNotNull(result.description);
+        }
+
+        [Test]
+        public void Execute_IntrospectingString_HasDescription()
+        {
+            var result = GetSchemaFields().SingleOrDefault(e => e.name == "String");
+            Assert.IsNotNull(result.description);
+        }
+
+        [Test]
+        public void Execute_IntrospectingFloat_HasDescription()
+        {
+            var result = GetSchemaFields().SingleOrDefault(e => e.name == "Float");
+            Assert.IsNotNull(result.description);
         }
 
         private IEnumerable<dynamic> GetSchemaFields()
@@ -80,6 +144,8 @@
               __schema {
                 types {
                   name
+                  kind
+                  description
                 }
               }
             }
@@ -95,15 +161,23 @@
             var type1 = new GraphQLObjectType("T1", "", this.schema);
             type1.Field("a", () => "1");
             type1.Field("b", () => 2);
+            type1.Field("c", () => new int[] { 1, 2, 3 });
 
-            var type2 = new GraphQLObjectType("T2", "", this.schema);
-            type2.Field("a", () => true);
-            type2.Field("b", () => 1.2);
+            var type2 = new GraphQLObjectType<TestType>("T2", "", this.schema);
+            type2.Field("a", e => e.A);
+            type2.Field("b", e => e.B);
 
             rootType.Field("type1", () => type1);
             type1.Field("type1", () => type2);
 
             this.schema.SetRoot(rootType);
+        }
+
+        private class TestType
+        {
+            public bool A { get; set; }
+            public float B { get; set; }
+            public int C { get; set; }
         }
     }
 }

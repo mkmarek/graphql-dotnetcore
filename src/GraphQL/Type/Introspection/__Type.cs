@@ -8,11 +8,11 @@ namespace GraphQL.Type.Introspection
 {
     public class __Type : GraphQLObjectType
     {
-        private GraphQLInt graphQLInt;
+        private TypeKind kind;
 
-        public __Type(GraphQLScalarType scalarType, GraphQLSchema schema) : this(scalarType.Name, scalarType.Description, schema)
+        public __Type(GraphQLScalarType type, GraphQLSchema schema) : this(type.Name, type.Description, schema)
         {
-
+            this.kind = this.ResolveKind(type);
         }
 
         public __Type(string fieldName, string fieldDescription, GraphQLSchema schema) : base("__Type", "The fundamental unit of any GraphQL Schema is the type.There are " +
@@ -26,7 +26,16 @@ namespace GraphQL.Type.Introspection
         {
 
             this.Field("name", () => fieldName);
+            this.Field("kind", () => this.kind.ToString());
             this.Field("description", () => fieldDescription);
+        }
+
+        private TypeKind ResolveKind(GraphQLScalarType type) 
+        {
+            if (type is GraphQLObjectType)
+                return TypeKind.OBJECT;
+
+            return TypeKind.SCALAR;
         }
     }
 }
