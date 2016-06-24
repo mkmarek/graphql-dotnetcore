@@ -1,1 +1,0 @@
-dotnet watch --command test --

@@ -1,2 +1,0 @@
-%USERPROFILE%\AppData\Local\Apps\OpenCover\OpenCover.Console.exe -target:"C:\Program Files\dotnet\dotnet.exe" -targetargs:"test" -output:coverage.xml -register:user
-%USERPROFILE%\.nuget\packages\ReportGenerator\2.4.5\tools\ReportGenerator.exe -reports:coverage.xml -targetdir:coverage
