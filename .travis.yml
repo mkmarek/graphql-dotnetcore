@@ -25,6 +25,6 @@ install:
   - export PATH="$DOTNET_INSTALL_DIR:$PATH"
 script:
   - dotnet restore
-  - dotnet build src/GraphQL
+  - dotnet build src/GraphQLCore
   - dotnet build test/GraphQLCore.Tests
   - dotnet test test/GraphQLCore.Tests -f netcoreapp1.0
