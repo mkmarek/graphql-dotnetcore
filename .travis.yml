@@ -26,5 +26,5 @@ install:
 script:
   - dotnet restore
   - dotnet build src/GraphQL
-  - dotnet build test/GraphQL.Tests
-  - dotnet test test/GraphQL.Tests -f netcoreapp1.0
+  - dotnet build test/GraphQLCore.Tests
+  - dotnet test test/GraphQLCore.Tests -f netcoreapp1.0
