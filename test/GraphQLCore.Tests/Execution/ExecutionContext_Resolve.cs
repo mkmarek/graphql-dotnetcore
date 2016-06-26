@@ -4,18 +4,17 @@
     using Microsoft.CSharp.RuntimeBinder;
     using NUnit.Framework;
 
-
     [TestFixture]
     public class ExecutionContext_Resolve
     {
         private GraphQLSchema schema;
 
         [Test]
-        public void Execute_FieldSelectionQuery_OutputsFieldBasedOnResolver()
+        public void Execute_AcessorBasedProperty_ReturnsDefinedValue()
         {
-            dynamic result = this.schema.Execute("{ hello }");
+            dynamic result = this.schema.Execute("{ acessorBasedProp { Hello } }");
 
-            Assert.AreEqual("world", result.hello);
+            Assert.AreEqual("world", result.acessorBasedProp.Hello);
         }
 
         [Test]
@@ -27,12 +26,11 @@
         }
 
         [Test]
-        public void Execute_FieldSelectionQuery_OutputsTwoFieldsBasedOnResolver()
+        public void Execute_FieldSelectionQuery_OutputsFieldBasedOnResolver()
         {
-            dynamic result = this.schema.Execute("{ hello, test }");
+            dynamic result = this.schema.Execute("{ hello }");
 
             Assert.AreEqual("world", result.hello);
-            Assert.AreEqual("test", result.test);
         }
 
         [Test]
@@ -45,6 +43,23 @@
         }
 
         [Test]
+        public void Execute_FieldSelectionQuery_OutputsTwoFieldsBasedOnResolver()
+        {
+            dynamic result = this.schema.Execute("{ hello, test }");
+
+            Assert.AreEqual("world", result.hello);
+            Assert.AreEqual("test", result.test);
+        }
+
+        [Test]
+        public void Execute_FieldSelectionTwoIdenticalFieldsQuery_IgnoresDuplicates()
+        {
+            dynamic result = this.schema.Execute("{ hello, hello }");
+
+            Assert.AreEqual("world", result.hello);
+        }
+
+        [Test]
         public void Execute_NestedFieldSelectionQuery_OutputsNestedField()
         {
             dynamic result = this.schema.Execute("{ nested { howdy } }");
@@ -53,27 +68,19 @@
         }
 
         [Test]
-        public void Execute_TwicelyNestedFieldSelectionQuery_OutputsNestedField()
-        {
-            dynamic result = this.schema.Execute("{ nested { anotherNested { stuff } } }");
-
-            Assert.AreEqual("a", result.nested.anotherNested.stuff);
-        }
-
-        [Test]
-        public void Execute_AcessorBasedProperty_ReturnsDefinedValue()
-        {
-            dynamic result = this.schema.Execute("{ acessorBasedProp { Hello } }");
-
-            Assert.AreEqual("world", result.acessorBasedProp.Hello);
-        }
-
-        [Test]
         public void Execute_NestedPropertyWithParentAlias_ReturnsDefinedValue()
         {
             dynamic result = this.schema.Execute("{ aliasedProp : acessorBasedProp { Test } }");
 
             Assert.AreEqual("stuff", result.aliasedProp.Test);
+        }
+
+        [Test]
+        public void Execute_TwicelyNestedFieldSelectionQuery_OutputsNestedField()
+        {
+            dynamic result = this.schema.Execute("{ nested { anotherNested { stuff } } }");
+
+            Assert.AreEqual("a", result.nested.anotherNested.stuff);
         }
 
         [SetUp]
@@ -95,11 +102,10 @@
             rootType.Field("nested", () => nestedType);
 
             var typeWithAccessor = new GraphQLObjectType<TestType>("CustomObject", "test", this.schema);
-            typeWithAccessor.SetResolver(() => new TestType() { Hello = "world", Test = "stuff" });
             typeWithAccessor.Field("Hello", e => e.Hello);
             typeWithAccessor.Field("Test", e => e.Test);
 
-            rootType.Field("acessorBasedProp", () => typeWithAccessor);
+            rootType.Field("acessorBasedProp", () => typeWithAccessor.WithValue(new TestType() { Hello = "world", Test = "stuff" }));
 
             this.schema.SetRoot(rootType);
         }

@@ -1,9 +1,9 @@
 ﻿namespace GraphQLCore.GraphiQLExample.Controllers
 {
     using Microsoft.AspNetCore.Mvc;
-    using Type;
-    using Schema;
     using Models;
+    using Schema;
+    using Type;
 
     [Route("api/[controller]")]
     public class GraphQLController : Controller
@@ -13,7 +13,7 @@
         {
             GraphQLSchema schema = GetSchema();
 
-            return this.Json(schema.Execute(input.Query));
+            return this.Json(new { data = schema.Execute(input.Query) });
         }
 
         private static GraphQLSchema GetSchema()

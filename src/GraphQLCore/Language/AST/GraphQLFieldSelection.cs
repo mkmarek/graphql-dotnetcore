@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace GraphQLCore.Language.AST
 {
@@ -24,5 +21,4 @@ namespace GraphQLCore.Language.AST
         public GraphQLName Name { get; set; }
         public GraphQLSelectionSet SelectionSet { get; set; }
     }
-
 }

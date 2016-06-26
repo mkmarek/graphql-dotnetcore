@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using System.Linq;
 
 namespace GraphQLCore.Language
 {
@@ -47,16 +46,6 @@ namespace GraphQLCore.Language
                 return ReadString();
 
             throw new NotImplementedException();
-        }
-
-        private Token CreateEOFToken()
-        {
-            return new Token()
-            {
-                Start = this.CurrentIndex,
-                End = this.CurrentIndex,
-                Kind = TokenKind.EOF
-            };
         }
 
         public Token ReadNumber()
@@ -177,6 +166,16 @@ namespace GraphQLCore.Language
             return null;
         }
 
+        private Token CreateEOFToken()
+        {
+            return new Token()
+            {
+                Start = this.CurrentIndex,
+                End = this.CurrentIndex,
+                Kind = TokenKind.EOF
+            };
+        }
+
         private Token CreateFloatToken(int start)
         {
             return new Token()
@@ -245,9 +244,11 @@ namespace GraphQLCore.Language
                     case ',': // Comma
                         ++position;
                         break;
+
                     case '#':
                         position = this.WaitForEndOfComment(body, position, code);
                         break;
+
                     default:
                         return position;
                 }
@@ -344,7 +345,7 @@ namespace GraphQLCore.Language
                 throw new InvalidCharacterException($"Invalid character \"\\u{code.ToString("D4")}\"");
             };
         }
-         
+
         private int WaitForEndOfComment(string body, int position, char code)
         {
             while (++position < body.Length && (code = body[position]) != 0 && (code > 0x001F || code == 0x0009) && code != 0x000A && code != 0x000D)

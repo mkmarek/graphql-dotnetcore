@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace GraphQLCore.Language.AST
+﻿namespace GraphQLCore.Language.AST
 {
     public class GraphQLOperationTypeDefinition : ASTNode
     {
@@ -18,5 +13,4 @@ namespace GraphQLCore.Language.AST
         public OperationType Operation { get; set; }
         public GraphQLNamedType Type { get; set; }
     }
-
 }

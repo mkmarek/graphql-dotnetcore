@@ -1,7 +1,4 @@
-﻿using System;
-using GraphQLCore.Language.AST;
-
-namespace GraphQLCore.Type.Scalars
+﻿namespace GraphQLCore.Type.Scalars
 {
     public class GraphQLBoolean : GraphQLScalarType
     {

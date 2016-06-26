@@ -7,22 +7,6 @@
     public class LexerTests
     {
         [Test]
-        public void Lex_NullInput_ReturnsEOF()
-        {
-            var token = new Lexer().Lex(new Source(null));
-
-            Assert.AreEqual(TokenKind.EOF, token.Kind);
-        }
-
-        [Test]
-        public void Lex_EmptySource_ReturnsEOF()
-        {
-            var token = new Lexer().Lex(new Source(""));
-
-            Assert.AreEqual(TokenKind.EOF, token.Kind);
-        }
-
-        [Test]
         public void Lex_ATPunctuation_HasCorrectEnd()
         {
             var token = GetATPunctuationTokenLexer();
@@ -132,6 +116,14 @@
         {
             var token = GetDollarPunctuationTokenLexer();
             Assert.IsNull(token.Value);
+        }
+
+        [Test]
+        public void Lex_EmptySource_ReturnsEOF()
+        {
+            var token = new Lexer().Lex(new Source(""));
+
+            Assert.AreEqual(TokenKind.EOF, token.Kind);
         }
 
         [Test]
@@ -365,6 +357,14 @@
         {
             var token = GetSingleNameTokenLexerSurroundedWithWhitespaces();
             Assert.AreEqual(TokenKind.NAME, token.Kind);
+        }
+
+        [Test]
+        public void Lex_NullInput_ReturnsEOF()
+        {
+            var token = new Lexer().Lex(new Source(null));
+
+            Assert.AreEqual(TokenKind.EOF, token.Kind);
         }
 
         [Test]

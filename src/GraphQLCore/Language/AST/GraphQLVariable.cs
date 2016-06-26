@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace GraphQLCore.Language.AST
+﻿namespace GraphQLCore.Language.AST
 {
     public class GraphQLVariable : GraphQLValue
     {
@@ -14,6 +9,7 @@ namespace GraphQLCore.Language.AST
                 return ASTNodeKind.Variable;
             }
         }
+
         public GraphQLName Name { get; set; }
     }
 }

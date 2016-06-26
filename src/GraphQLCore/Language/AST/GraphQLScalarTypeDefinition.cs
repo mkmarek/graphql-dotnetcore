@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace GraphQLCore.Language.AST
 {
     public class GraphQLScalarTypeDefinition : GraphQLTypeDefinition
     {
+        public IEnumerable<GraphQLDirective> Directives { get; set; }
+
         public override ASTNodeKind Kind
         {
             get
@@ -16,6 +15,5 @@ namespace GraphQLCore.Language.AST
         }
 
         public GraphQLName Name { get; set; }
-        public IEnumerable<GraphQLDirective> Directives { get; set; }
     }
 }

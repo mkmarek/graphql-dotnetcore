@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace GraphQLCore.Language.AST
+﻿namespace GraphQLCore.Language.AST
 {
     public enum ASTNodeKind
     {
@@ -51,5 +46,4 @@ namespace GraphQLCore.Language.AST
         Mutation,
         Subscription
     }
-
 }

@@ -10,14 +10,6 @@
     public class ParserTests
     {
         [Test]
-        public void Parse_NullInput_EmptyDocument()
-        {
-            var document = new Parser(new Lexer()).Parse(new Source(null));
-
-            Assert.AreEqual(0, document.Definitions.Count());
-        }
-
-        [Test]
         public void Parse_FieldInput_HasCorrectEndLocationAttribute()
         {
             var document = ParseGraphQLFieldSource();
@@ -130,21 +122,23 @@
         }
 
         [Test]
-        public void Parse_VariableInlineValues_DoesNotThrowError()
-        {
-            new Parser(new Lexer()).Parse(new Source("{ field(complex: { a: { b: [ $var ] } }) }"));
-        }
-
-        [Test]
         public void Parse_KitchenSink_DoesNotThrowError()
         {
             new Parser(new Lexer()).Parse(new Source(LoadKitchenSink()));
         }
 
-        private static string LoadKitchenSink()
+        [Test]
+        public void Parse_NullInput_EmptyDocument()
         {
-            string dataFilePath = Directory.GetCurrentDirectory() + "/data/KitchenSink.graphql";
-            return File.ReadAllText(dataFilePath);
+            var document = new Parser(new Lexer()).Parse(new Source(null));
+
+            Assert.AreEqual(0, document.Definitions.Count());
+        }
+
+        [Test]
+        public void Parse_VariableInlineValues_DoesNotThrowError()
+        {
+            new Parser(new Lexer()).Parse(new Source("{ field(complex: { a: { b: [ $var ] } }) }"));
         }
 
         private static GraphQLOperationDefinition GetSingleOperationDefinition(GraphQLDocument document)
@@ -155,6 +149,12 @@
         private static ASTNode GetSingleSelection(GraphQLDocument document)
         {
             return GetSingleOperationDefinition(document).SelectionSet.Selections.Single();
+        }
+
+        private static string LoadKitchenSink()
+        {
+            string dataFilePath = Directory.GetCurrentDirectory() + "/data/KitchenSink.graphql";
+            return File.ReadAllText(dataFilePath);
         }
 
         private static GraphQLDocument ParseGraphQLFieldSource()

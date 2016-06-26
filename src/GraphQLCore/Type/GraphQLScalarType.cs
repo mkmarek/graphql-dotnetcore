@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace GraphQLCore.Type
+﻿namespace GraphQLCore.Type
 {
     public abstract class GraphQLScalarType
     {
-        public string Name { get; private set; }
-        public string Description { get; private set; }
-
         public GraphQLScalarType(string name, string description, GraphQLSchema schema)
         {
             this.Name = name;
@@ -18,6 +10,9 @@ namespace GraphQLCore.Type
             if (schema != null)
                 schema.RegisterType(this);
         }
+
+        public string Description { get; protected set; }
+        public string Name { get; protected set; }
 
         public override string ToString()
         {

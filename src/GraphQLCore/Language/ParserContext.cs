@@ -34,12 +34,6 @@
             this.CurrentToken = this.Lexer.Lex(this.Source, this.CurrentToken.End);
         }
 
-        private GraphQLValue ExpectColonAndParseValueLiteral()
-        {
-            this.Expect(TokenKind.COLON);
-            return this.ParseValueLiteral(false);
-        }
-
         private GraphQLType AdvanceThroughColonAndParseType()
         {
             this.Expect(TokenKind.COLON);
@@ -68,6 +62,40 @@
                     End = this.CurrentToken.End
                 },
                 Definitions = definitions
+            };
+        }
+
+        private GraphQLFieldSelection CreateFieldSelection(int start, GraphQLName name, GraphQLName alias)
+        {
+            return new GraphQLFieldSelection()
+            {
+                Alias = alias,
+                Name = name,
+                Arguments = this.ParseArguments(),
+                Directives = this.ParseDirectives(),
+                SelectionSet = this.Peek(TokenKind.BRACE_L) ? this.ParseSelectionSet() : null,
+                Location = this.GetLocation(start)
+            };
+        }
+
+        private ASTNode CreateGraphQLFragmentSpread(int start)
+        {
+            return new GraphQLFragmentSpread()
+            {
+                Name = this.ParseFragmentName(),
+                Directives = this.ParseDirectives(),
+                Location = this.GetLocation(start)
+            };
+        }
+
+        private ASTNode CreateInlineFragment(int start)
+        {
+            return new GraphQLInlineFragment()
+            {
+                TypeCondition = this.GetTypeCondition(),
+                Directives = this.ParseDirectives(),
+                SelectionSet = this.ParseSelectionSet(),
+                Location = this.GetLocation(start)
             };
         }
 
@@ -103,6 +131,12 @@
                 throw new GraphQLException($"Expected {kind} but found {this.CurrentToken.Kind}");
         }
 
+        private GraphQLValue ExpectColonAndParseValueLiteral()
+        {
+            this.Expect(TokenKind.COLON);
+            return this.ParseValueLiteral(false);
+        }
+
         private void ExpectKeyword(string keyword)
         {
             var token = this.CurrentToken;
@@ -121,6 +155,17 @@
             return this.ParseNamedType();
         }
 
+        private GraphQLValue GetDefaultConstantValue()
+        {
+            GraphQLValue defaultValue = null;
+            if (this.Skip(TokenKind.EQUALS))
+            {
+                defaultValue = this.ParseConstantValue();
+            }
+
+            return defaultValue;
+        }
+
         private GraphQLLocation GetLocation(int start)
         {
             return new GraphQLLocation()
@@ -133,6 +178,18 @@
         private GraphQLName GetName()
         {
             return this.Peek(TokenKind.NAME) ? this.ParseName() : null;
+        }
+
+        private GraphQLNamedType GetTypeCondition()
+        {
+            GraphQLNamedType typeCondition = null;
+            if (this.CurrentToken.Value != null && this.CurrentToken.Value.Equals("on"))
+            {
+                this.Advance();
+                typeCondition = this.ParseNamedType();
+            }
+
+            return typeCondition;
         }
 
         private IEnumerable<T> Many<T>(TokenKind open, Func<T> next, TokenKind close)
@@ -207,6 +264,17 @@
             throw new NotImplementedException();
         }
 
+        private IEnumerable<ASTNode> ParseDefinitionsIfNotEOF()
+        {
+            if (this.CurrentToken.Kind != TokenKind.EOF)
+            {
+                do
+                {
+                    yield return this.ParseDefinition();
+                } while (!this.Skip(TokenKind.EOF));
+            }
+        }
+
         private GraphQLDirective ParseDirective()
         {
             var start = this.CurrentToken.Start;
@@ -266,17 +334,6 @@
             var definitions = this.ParseDefinitionsIfNotEOF().ToList();
 
             return CreateDocument(start, definitions);
-        }
-
-        private IEnumerable<ASTNode> ParseDefinitionsIfNotEOF()
-        {
-            if (this.CurrentToken.Kind != TokenKind.EOF)
-            {
-                do
-                {
-                    yield return this.ParseDefinition();
-                } while (!this.Skip(TokenKind.EOF));
-            }
         }
 
         private GraphQLEnumTypeDefinition ParseEnumTypeDefinition()
@@ -352,19 +409,6 @@
             return this.CreateFieldSelection(start, name, alias);
         }
 
-        private GraphQLFieldSelection CreateFieldSelection(int start, GraphQLName name, GraphQLName alias)
-        {
-            return new GraphQLFieldSelection()
-            {
-                Alias = alias,
-                Name = name,
-                Arguments = this.ParseArguments(),
-                Directives = this.ParseDirectives(),
-                SelectionSet = this.Peek(TokenKind.BRACE_L) ? this.ParseSelectionSet() : null,
-                Location = this.GetLocation(start)
-            };
-        }
-
         private GraphQLValue ParseFloat(bool isConstant)
         {
             var token = this.CurrentToken;
@@ -387,39 +431,6 @@
             }
 
             return this.CreateInlineFragment(start);
-        }
-
-        private ASTNode CreateInlineFragment(int start)
-        {
-            return new GraphQLInlineFragment()
-            {
-                TypeCondition = this.GetTypeCondition(),
-                Directives = this.ParseDirectives(),
-                SelectionSet = this.ParseSelectionSet(),
-                Location = this.GetLocation(start)
-            };
-        }
-
-        private ASTNode CreateGraphQLFragmentSpread(int start)
-        {
-            return new GraphQLFragmentSpread()
-            {
-                Name = this.ParseFragmentName(),
-                Directives = this.ParseDirectives(),
-                Location = this.GetLocation(start)
-            };
-        }
-
-        private GraphQLNamedType GetTypeCondition()
-        {
-            GraphQLNamedType typeCondition = null;
-            if (this.CurrentToken.Value != null && this.CurrentToken.Value.Equals("on"))
-            {
-                this.Advance();
-                typeCondition = this.ParseNamedType();
-            }
-
-            return typeCondition;
         }
 
         private GraphQLFragmentDefinition ParseFragmentDefinition()
@@ -488,17 +499,6 @@
                 Directives = this.ParseDirectives(),
                 Location = this.GetLocation(start)
             };
-        }
-
-        private GraphQLValue GetDefaultConstantValue()
-        {
-            GraphQLValue defaultValue = null;
-            if (this.Skip(TokenKind.EQUALS))
-            {
-                defaultValue = this.ParseConstantValue();
-            }
-
-            return defaultValue;
         }
 
         private GraphQLValue ParseInt(bool isConstant)
@@ -597,7 +597,6 @@
 
             if (token.Value.Equals("true") || token.Value.Equals("false"))
                 return this.ParseBooleanValue(token);
-
             else if (token.Value != null)
                 return this.ParseEnumValue(token);
 
@@ -615,17 +614,6 @@
             };
         }
 
-        private List<GraphQLObjectField> ParseObjectFields(bool isConstant)
-        {
-            List<GraphQLObjectField> fields = new List<GraphQLObjectField>();
-
-            this.Expect(TokenKind.BRACE_L);
-            while (!this.Skip(TokenKind.BRACE_R))
-                fields.Add(this.ParseObjectField(isConstant));
-
-            return fields;
-        }
-
         private GraphQLObjectField ParseObjectField(bool isConstant)
         {
             var start = this.CurrentToken.Start;
@@ -635,6 +623,17 @@
                 Value = this.ExpectColonAndParseValueLiteral(),
                 Location = this.GetLocation(start)
             };
+        }
+
+        private List<GraphQLObjectField> ParseObjectFields(bool isConstant)
+        {
+            List<GraphQLObjectField> fields = new List<GraphQLObjectField>();
+
+            this.Expect(TokenKind.BRACE_L);
+            while (!this.Skip(TokenKind.BRACE_R))
+                fields.Add(this.ParseObjectField(isConstant));
+
+            return fields;
         }
 
         private GraphQLObjectTypeDefinition ParseObjectTypeDefinition()
@@ -895,7 +894,7 @@
         private IEnumerable<GraphQLVariableDefinition> ParseVariableDefinitions()
         {
             return this.Peek(TokenKind.PAREN_L) ?
-                this.Many(TokenKind.PAREN_L, () => this.ParseVariableDefinition(), TokenKind.PAREN_R) : 
+                this.Many(TokenKind.PAREN_L, () => this.ParseVariableDefinition(), TokenKind.PAREN_R) :
                 new GraphQLVariableDefinition[] { };
         }
 

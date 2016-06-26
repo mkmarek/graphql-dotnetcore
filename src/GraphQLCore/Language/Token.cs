@@ -24,9 +24,9 @@
 
     public class Token
     {
+        public int End { get; set; }
         public TokenKind Kind { get; set; }
         public int Start { get; set; }
-        public int End { get; set; }
         public object Value { get; set; }
     }
 }

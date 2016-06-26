@@ -1,17 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace GraphQLCore.Type.Introspection
+﻿namespace GraphQLCore.Type.Introspection
 {
     public enum TypeKind
     {
         OBJECT,
-        SCALAR
+        SCALAR,
+        ENUM,
+        INPUT_OBJECT,
+        INTERFACE,
+        LIST,
+        NON_NULL,
+        UNION
     }
 
-    public class __TypeKind
+    public class __TypeKind : GraphQLEnumType
     {
+        public __TypeKind() : base("__TypeKind", "An enum describing what kind of type a given `__Type` is.", typeof(TypeKind), null)
+        {
+        }
     }
 }

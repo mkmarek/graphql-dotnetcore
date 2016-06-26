@@ -1,7 +1,6 @@
 ﻿namespace GraphQLCore.Tests.Execution
 {
     using GraphQLCore.Type;
-    using Microsoft.CSharp.RuntimeBinder;
     using NUnit.Framework;
 
     [TestFixture]
@@ -9,13 +8,17 @@
     {
         private GraphQLSchema schema;
 
+        public interface ITestObject
+        {
+            string Name { get; set; }
+        }
+
         [Test]
         public void Execute_ScalarBasedTruthyIncludeDirective_PrintsTheField()
         {
-            dynamic result = this.schema.Execute("{ a, b @include(if: true) }");
+            dynamic result = this.schema.Execute("{ nested { name } }");
 
-            Assert.AreEqual("world", result.a);
-            Assert.AreEqual("test", result.b);
+            Assert.AreEqual("xzy", result.nested.name);
         }
 
         [SetUp]
@@ -23,21 +26,18 @@
         {
             this.schema = new GraphQLSchema();
 
-            var nestedInteface = new GraphQLInterface("TestInterface", "", this.schema);
-            nestedInteface.AddField<string>("a");
-
             var rootType = new GraphQLObjectType("RootQueryType", "", this.schema);
-            rootType.Field("a", () => "world");
-            rootType.Field("b", () => "test");
+            var nestedType = new GraphQLInterfaceType<ITestObject>("NestedQueryType", "", this.schema);
+            nestedType.Field("name", e => e.Name);
 
-            var nestedType = new GraphQLObjectType("NestedQueryType", "", this.schema);
-            nestedType.Field("a", () => "1");
-            nestedType.Field("b", () => "2");
-            nestedType.Implements(nestedInteface);
+            rootType.Field("nested", () => nestedType.WithValue(new TestObject() { Name = "xzy" }));
 
-            rootType.Field("nested", () => nestedType);
-            
             this.schema.SetRoot(rootType);
+        }
+
+        public class TestObject : ITestObject
+        {
+            public string Name { get; set; }
         }
     }
 }

@@ -11,7 +11,7 @@
             this.schema = schema;
 
             this.Field("types", () => schema.Introspect());
-            this.Field("queryType", () => new __Type(schema.RootType, null));
+            this.Field("queryType", () => new __Type(schema.RootType));
         }
     }
 }
