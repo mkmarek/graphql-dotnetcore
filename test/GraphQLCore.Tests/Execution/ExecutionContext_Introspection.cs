@@ -277,6 +277,20 @@
         }
 
         [Test]
+        public void Execute_RootQueryType2IField_ShouldBeInterfaceType()
+        {
+            var field = GetFieldForObject("RootQueryType", "type2i");
+            Assert.AreEqual("T2Interface", field.type.name);
+        }
+
+        [Test]
+        public void Execute_T1Typetype2Field_ShouldBeT2Type()
+        {
+            var field = GetFieldForObject("T1", "type2");
+            Assert.AreEqual("T2", field.type.name);
+        }
+
+        [Test]
         public void Execute_QueryType_GetsTheRootObjectName()
         {
             var schema = GetSchema();
@@ -290,7 +304,9 @@
             
             var type2 = new T2(this.schema);
             var type1 = new T1(type2, this.schema);
-            var rootType = new RootQueryType(type1, this.schema);
+            var t2interface = new T2Interface(this.schema);
+
+            var rootType = new RootQueryType(type1, t2interface, this.schema);
 
             this.schema.SetRoot(rootType);
         }
@@ -302,7 +318,7 @@
                 this.Field("a", () => "1");
                 this.Field("b", () => 2);
                 this.Field("c", () => new int[] { 1, 2, 3 });
-                this.Field("type1", () => type2);
+                this.Field("type2", () => new TestType());
             }
         }
 
@@ -316,11 +332,21 @@
             }
         }
 
+        private class T2Interface : GraphQLInterfaceType<ITestType>
+        {
+            public T2Interface(GraphQLSchema schema) : base("T2Interface", "", schema)
+            {
+                this.Field("a", e => e.A);
+                this.Field("b", e => e.B);
+            }
+        }
+
         private class RootQueryType : GraphQLObjectType
         {
-            public RootQueryType(T1 type1, GraphQLSchema schema) : base("RootQueryType", "", schema)
+            public RootQueryType(T1 type1, T2Interface type2Interface, GraphQLSchema schema) : base("RootQueryType", "", schema)
             {
                 this.Field("type1", () => type1);
+                this.Field("type2i", () => (ITestType)new TestType());
             }
         }
 
@@ -408,7 +434,13 @@
             ").__type;
         }
 
-        private class TestType
+        private interface ITestType
+        {
+            bool A { get; set; }
+            float B { get; set; }
+        }
+
+        private class TestType : ITestType
         {
             public bool A { get; set; }
             public float B { get; set; }

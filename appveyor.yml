@@ -15,5 +15,5 @@ build_script:
 test_script:
   - dotnet test .\test\GraphQLCore.Tests\
   - where dotnet
-  - .\OpenCover\OpenCover.4.6.519\tools\OpenCover.Console.exe -target:"C:\\Program Files\\dotnet\\dotnet.exe" -targetargs:"test .\test\GraphQLCore.Tests" -output:coverage.xml -register:user
+  - .\OpenCover\OpenCover.4.6.519\tools\OpenCover.Console.exe -oldstyle -target:"C:\\Program Files\\dotnet\\dotnet.exe" -targetargs:"test .\test\GraphQLCore.Tests" -output:coverage.xml -register:user
   - .\coveralls.net\coveralls.net.0.6.0\tools\csmacnz.coveralls.exe --opencover -i .\coverage.xml

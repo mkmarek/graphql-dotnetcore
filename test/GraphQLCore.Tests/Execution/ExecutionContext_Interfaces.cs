@@ -36,7 +36,7 @@
         {
             public RootQueryType(GraphQLSchema schema) : base("RootQueryType", "", schema)
             {
-                this.Field("nested", () => new TestObject() { Name = "xzy" });
+                this.Field("nested", () => (ITestObject)new TestObject() { Name = "xzy" });
             }
         }
 
