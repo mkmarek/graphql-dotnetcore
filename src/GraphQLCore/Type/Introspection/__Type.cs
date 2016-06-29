@@ -4,7 +4,7 @@ namespace GraphQLCore.Type.Introspection
 {
     public class __Type : GraphQLObjectType
     {
-        public __Type(GraphQLScalarType type) : this(type.Name, type.Description)
+        public __Type(GraphQLScalarType type, GraphQLSchema schema) : this(type.Name, type.Description, schema)
         {
             this.Field("kind", () => this.ResolveKind(type).ToString());
             this.Field("fields", () => this.IfObjectGetFields(type));
@@ -13,7 +13,7 @@ namespace GraphQLCore.Type.Introspection
             this.Field("interfaces", () => this.IfObjectResolveInterfaces(type));
         }
 
-        public __Type(string fieldName, string fieldDescription) : base("__Type", "The fundamental unit of any GraphQL Schema is the type.There are " +
+        public __Type(string fieldName, string fieldDescription, GraphQLSchema schema) : base("__Type", "The fundamental unit of any GraphQL Schema is the type.There are " +
             "many kinds of types in GraphQL as represented by the `__TypeKind` enum." +
             "\n\nDepending on the kind of a type, certain fields describe " +
             "information about that type. Scalar types provide no information " +
@@ -22,6 +22,7 @@ namespace GraphQLCore.Type.Introspection
             "types, Union and Interface, provide the Object types possible " +
             "at runtime. List and NonNull types compose other types.", null)
         {
+            this.schema = schema;
             this.Field("name", () => fieldName);
             this.Field("description", () => fieldDescription);
             //this.Field("interfaces", () => new GraphQLInterface[] { });

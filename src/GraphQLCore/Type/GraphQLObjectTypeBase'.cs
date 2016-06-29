@@ -2,6 +2,7 @@
 {
     using Exceptions;
     using Execution;
+    using Introspection;
     using Language.AST;
     using System;
     using System.Collections.Generic;
@@ -9,7 +10,7 @@
     using System.Linq.Expressions;
     using Utils;
 
-    public class GraphQLObjectTypeBase<T> : GraphQLObjectType
+    public abstract class GraphQLObjectTypeBase<T> : GraphQLObjectType
         where T : class
     {
         private Dictionary<string, LambdaExpression> Acessors;
@@ -42,11 +43,6 @@
                 .ToList();
         }
 
-        public ValueContext<GraphQLObjectTypeBase<T>, T> WithValue(T value)
-        {
-            return new ValueContext<GraphQLObjectTypeBase<T>, T>(this, value);
-        }
-
         internal override object ResolveField(
             GraphQLFieldSelection selection, IList<GraphQLArgument> arguments, object parent)
         {
@@ -64,6 +60,19 @@
                 throw new GraphQLException("Can't insert two fields with the same name.");
 
             this.Acessors.Add(fieldName, accessor);
+        }
+
+        internal override __Field[] IntrospectFields()
+        {
+            var fields = base.IntrospectFields().ToList();
+
+            fields.AddRange(this.Acessors
+                .Select(e => new __Field(
+                    e.Key,
+                    null,
+                    e.Value, this.schema, true)));
+
+           return fields.ToArray();
         }
     }
 }

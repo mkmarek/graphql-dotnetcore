@@ -10,13 +10,14 @@
 
     public class GraphQLSchema
     {
-        private List<GraphQLScalarType> schemaTypes;
+        public List<GraphQLScalarType> SchemaTypes { get; private set; }
 
         public GraphQLSchema()
         {
-            this.schemaTypes = new List<GraphQLScalarType>();
-            this.schemaTypes.Add(new __Type("", ""));
-            this.schemaTypes.Add(new __TypeKind());
+            this.SchemaTypes = new List<GraphQLScalarType>();
+            this.SchemaTypes.Add(new __Type("", "", this));
+            this.SchemaTypes.Add(new __TypeKind(this));
+            this.SchemaTypes.Add(new __InputValue(null, this));
             this.__Schema = new __Schema(this);
         }
 
@@ -35,9 +36,9 @@
         {
             var result = new List<__Type>();
 
-            foreach (var type in this.schemaTypes)
+            foreach (var type in this.SchemaTypes)
             {
-                result.Add(new __Type(type));
+                result.Add(new __Type(type, this));
                 if (type is GraphQLObjectType)
                     AppendObjectTypes(result, (GraphQLObjectType)type);
             }
@@ -59,12 +60,12 @@
 
         internal void RegisterType(GraphQLScalarType value)
         {
-            this.schemaTypes.Add(value);
+            this.SchemaTypes.Add(value);
         }
 
         private void AppendObjectTypes(List<__Type> result, GraphQLObjectType objectType)
         {
-            var types = TypeUtilities.IntrospectObjectFieldTypes(objectType);
+            var types = TypeUtilities.IntrospectObjectFieldTypes(objectType, this);
 
             foreach (var type in types)
             {

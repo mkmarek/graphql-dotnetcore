@@ -17,5 +17,10 @@
         {
             return Enum.GetNames(this.enumType).Select(e => new GraphQLEnumValue(e, "", null));
         }
+
+        public bool IsOfType(Type enumType)
+        {
+            return this.enumType == enumType;
+        }
     }
 }

@@ -26,13 +26,26 @@
         {
             this.schema = new GraphQLSchema();
 
-            var rootType = new GraphQLObjectType("RootQueryType", "", this.schema);
-            var nestedType = new GraphQLInterfaceType<ITestObject>("NestedQueryType", "", this.schema);
-            nestedType.Field("name", e => e.Name);
-
-            rootType.Field("nested", () => nestedType.WithValue(new TestObject() { Name = "xzy" }));
+            var rootType = new RootQueryType( this.schema);
+            var nestedType = new TestObjectType(this.schema);
 
             this.schema.SetRoot(rootType);
+        }
+
+        private class RootQueryType : GraphQLObjectType
+        {
+            public RootQueryType(GraphQLSchema schema) : base("RootQueryType", "", schema)
+            {
+                this.Field("nested", () => new TestObject() { Name = "xzy" });
+            }
+        }
+
+        private class TestObjectType : GraphQLInterfaceType<ITestObject>
+        {
+            public TestObjectType(GraphQLSchema schema) : base("NestedQueryType", "", schema)
+            {
+                this.Field("name", e => e.Name);
+            }
         }
 
         public class TestObject : ITestObject

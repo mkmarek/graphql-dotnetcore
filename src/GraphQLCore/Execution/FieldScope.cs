@@ -76,6 +76,12 @@
             if (ReflectionUtilities.IsCollection(input.GetType()))
                 return this.CompleteCollectionType((IEnumerable)input, selection, arguments);
 
+            var schemaValue = TypeUtilities.GetElementFromSchemaByModelType(input.GetType(), this.context.GraphQLSchema);
+            if (schemaValue is GraphQLObjectType)
+            {
+                return this.CompleteObjectType((GraphQLObjectType)schemaValue, selection, arguments, input);
+            }
+
             return input;
         }
 

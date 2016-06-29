@@ -3,6 +3,7 @@
     using Exceptions;
     using Language.AST;
     using System;
+    using System.Reflection;
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
@@ -28,10 +29,10 @@
                 .ToArray();
         }
 
-        public static GraphQLInputArgument[] FetchInputArguments(LambdaExpression expression)
+        public static __InputValue[] FetchInputArguments(LambdaExpression expression, GraphQLSchema schema)
         {
             return ReflectionUtilities.GetParameters(expression)
-                .Select(e => new GraphQLInputArgument(e))
+                .Select(e => new __InputValue(e, schema))
                 .ToArray();
         }
 
@@ -68,52 +69,107 @@
             return typeList.Select(e => GetTypeName(e)).ToArray();
         }
 
-        public static IEnumerable<__Type> IntrospectObjectFieldTypes(GraphQLObjectType value)
+        public static IEnumerable<__Type> IntrospectObjectFieldTypes(GraphQLObjectType value, GraphQLSchema schema)
         {
             var types = value.GetFieldTypes();
 
             return types
-                .Select(e => ResolveObjectFieldType(e))
+                .Select(e => ResolveObjectFieldType(e, schema))
                 .Where(e => e != null);
         }
 
         public static object InvokeWithArguments(IList<GraphQLArgument> arguments, LambdaExpression expression)
         {
-            var argumentValues = FetchArgumentValues(expression, arguments);
+            try
+            {
+                var argumentValues = FetchArgumentValues(expression, arguments);
 
-            return expression.Compile().DynamicInvoke(argumentValues);
+                return expression.Compile().DynamicInvoke(argumentValues);
+            }catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
-        public static __Type ResolveObjectFieldType(System.Type type)
+        public static __Type ResolveObjectFieldType(System.Type type, GraphQLSchema schema)
         {
             if (typeof(int) == type)
-                return new __Type(new GraphQLInt(null));
+                return new __Type(new GraphQLInt(null), schema);
 
             if (typeof(bool) == type)
-                return new __Type(new GraphQLBoolean(null));
+                return new __Type(new GraphQLBoolean(null), schema);
 
             if (typeof(float) == type || typeof(double) == type)
-                return new __Type(new GraphQLFloat(null));
+                return new __Type(new GraphQLFloat(null), schema);
 
             if (typeof(string) == type)
-                return new __Type(new GraphQLString(null));
+                return new __Type(new GraphQLString(null), schema);
 
             if (ReflectionUtilities.IsCollection(type))
-                return new __Type(new GraphQLList(type));
+                return new __Type(new GraphQLList(type, schema), schema);
+
+            if (type.GetTypeInfo().IsEnum)
+                return new __Type(GetEnumElementFromSchema(type, schema), schema);
+
+            var schemaType = GetElementFromSchema(type, schema);
+
+            if (schemaType != null)
+                return new __Type(schemaType, schema);
+
+            schemaType = GetElementFromSchemaByModelType(type, schema);
+
+            if (schemaType != null)
+                return new __Type(schemaType, schema);
 
             return null;
+        }
+
+        public static GraphQLScalarType GetElementFromSchema(Type type, GraphQLSchema schema)
+        {
+            return schema.SchemaTypes.FirstOrDefault(e => e.GetType() == type);
+        }
+
+        public static GraphQLScalarType GetEnumElementFromSchema(Type type, GraphQLSchema schema)
+        {
+            return schema.SchemaTypes
+                .Where(e => e is GraphQLEnumType)
+                .Select(e => (GraphQLEnumType)e)
+                .FirstOrDefault(e => e.IsOfType(type));
+        }
+
+        public static GraphQLScalarType GetElementFromSchemaByModelType(Type type, GraphQLSchema schema)
+        {
+            var modelType = schema.SchemaTypes.FirstOrDefault(e => 
+                ReflectionUtilities.GetGenericArgumentsFromAllParents(e.GetType()).Contains(type));
+
+            if (modelType != null)
+                return modelType;
+
+            var typeParents = ReflectionUtilities.GetAllParentsAndCurrentTypeFrom(type);
+            typeParents.AddRange(ReflectionUtilities.GetAllImplementingInterfaces(type));
+
+            return schema.SchemaTypes.FirstOrDefault(e => typeParents.Any(t => 
+            ReflectionUtilities.GetGenericArgumentsFromAllParents(e.GetType()).Contains(t)));
         }
 
         public static object TryConvertToParameterType(object input, ParameterExpression parameter)
         {
             try
             {
+                if (parameter.Type.GetTypeInfo().IsEnum)
+                    return TryConvertToEnumParameterType(input, parameter.Type);
+
                 return Convert.ChangeType(input, parameter.Type);
             }
             catch (Exception ex)
             {
                 throw new GraphQLException($"Can't convert input of type {input.GetType().Name} to {parameter.Type.Name}.", ex);
             }
+        }
+
+        private static object TryConvertToEnumParameterType(object input, Type type)
+        {
+            return Enum.Parse(type, input as string);
         }
 
         private static object GetValue(GraphQLValue value)
@@ -124,6 +180,7 @@
                 case ASTNodeKind.IntValue: return ((GraphQLValue<int>)value).Value;
                 case ASTNodeKind.FloatValue: return ((GraphQLValue<float>)value).Value;
                 case ASTNodeKind.StringValue: return ((GraphQLValue<string>)value).Value;
+                case ASTNodeKind.EnumValue: return ((GraphQLValue<string>)value).Value;
                 case ASTNodeKind.ListValue: return GetListValue(value);
             }
 

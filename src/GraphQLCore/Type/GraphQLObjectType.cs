@@ -9,7 +9,7 @@
     using System.Linq.Expressions;
     using Utils;
 
-    public class GraphQLObjectType : GraphQLScalarType
+    public abstract class GraphQLObjectType : GraphQLScalarType
     {
         private Dictionary<string, LambdaExpression> Resolvers;
 
@@ -36,13 +36,13 @@
             this.AddResolver(fieldName, resolver);
         }
 
-        internal __Field[] IntrospectFields()
+        internal virtual __Field[] IntrospectFields()
         {
             return this.Resolvers
                 .Select(e => new __Field(
                     e.Key,
                     null,
-                    e.Value))
+                    e.Value, this.schema, false))
                 .ToArray();
         }
 

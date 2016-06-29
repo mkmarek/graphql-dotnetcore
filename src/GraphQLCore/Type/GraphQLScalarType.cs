@@ -2,10 +2,13 @@
 {
     public abstract class GraphQLScalarType
     {
+        protected GraphQLSchema schema;
+
         public GraphQLScalarType(string name, string description, GraphQLSchema schema)
         {
             this.Name = name;
             this.Description = description;
+            this.schema = schema;
 
             if (schema != null)
                 schema.RegisterType(this);

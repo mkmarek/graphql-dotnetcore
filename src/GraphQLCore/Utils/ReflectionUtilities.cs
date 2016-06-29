@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-
-namespace GraphQLCore.Utils
+﻿namespace GraphQLCore.Utils
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Linq.Expressions;
+    using System.Reflection;
+
     public class ReflectionUtilities
     {
         public static object Cast(System.Type type, object input)
@@ -21,6 +22,17 @@ namespace GraphQLCore.Utils
             var elementType = parameter.Type.GetElementType();
 
             return ToArray(elementType, Cast(elementType, input));
+        }
+
+        public static List<Type> GetGenericArgumentsFromAllParents(Type type)
+        {
+            var arguments = type.GenericTypeArguments.ToList();
+
+            var baseType = type.GetTypeInfo().BaseType;
+            if (baseType != null)
+                arguments.AddRange(GetGenericArgumentsFromAllParents(baseType));
+
+            return arguments;
         }
 
         public static object ChangeToCollection(object input, ParameterExpression parameter)
@@ -96,6 +108,30 @@ namespace GraphQLCore.Utils
         internal static bool IsCollection(System.Type type)
         {
             return (type.IsArray || typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo())) && type != typeof(string);
+        }
+
+        internal static List<Type> GetAllParentsAndCurrentTypeFrom(Type type)
+        {
+            var types = new List<Type>();
+            while (type != null)
+            {
+                types.Add(type);
+                type = type.GetTypeInfo().BaseType;
+            }
+
+            return types;
+        }
+
+        internal static List<Type> GetAllImplementingInterfaces(Type type)
+        {
+            var types = new List<Type>();
+            while (type != null)
+            {
+                types.AddRange(type.GetTypeInfo().GetInterfaces());
+                type = type.GetTypeInfo().BaseType;
+            }
+
+            return types;
         }
     }
 }

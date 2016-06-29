@@ -11,6 +11,20 @@
         private GraphQLSchema schema;
 
         [Test]
+        public void Execute_Introspecting__InputValue_HasDescription()
+        {
+            var result = GetSchemaTypes().SingleOrDefault(e => e.name == "__InputValue");
+            Assert.IsNotNull(result.description);
+        }
+
+        [Test]
+        public void Execute_Introspecting__InputValue_IsTypeKindObject()
+        {
+            var result = GetSchemaTypes().SingleOrDefault(e => e.name == "__InputValue");
+            Assert.AreEqual("OBJECT", result.kind);
+        }
+
+        [Test]
         public void Execute_Introspecting__Schema_HasDescription()
         {
             var result = GetSchemaTypes().SingleOrDefault(e => e.name == "__Schema");
@@ -273,22 +287,41 @@
         public void SetUp()
         {
             this.schema = new GraphQLSchema();
-            var rootType = new GraphQLObjectType("RootQueryType", "", this.schema);
-
-            var type1 = new GraphQLObjectType("T1", "", this.schema);
-            type1.Field("a", () => "1");
-            type1.Field("b", () => 2);
-            type1.Field("c", () => new int[] { 1, 2, 3 });
-
-            var type2 = new GraphQLObjectType<TestType>("T2", "", this.schema);
-            type2.Field("a", e => e.A);
-            type2.Field("b", e => e.B);
-            type2.Field("sum", (int[] numbers) => numbers.Sum());
-
-            rootType.Field("type1", () => type1);
-            type1.Field("type1", () => type2);
+            
+            var type2 = new T2(this.schema);
+            var type1 = new T1(type2, this.schema);
+            var rootType = new RootQueryType(type1, this.schema);
 
             this.schema.SetRoot(rootType);
+        }
+
+        private class T1 : GraphQLObjectType
+        {
+            public T1(T2 type2, GraphQLSchema schema) : base("T1", "", schema)
+            {
+                this.Field("a", () => "1");
+                this.Field("b", () => 2);
+                this.Field("c", () => new int[] { 1, 2, 3 });
+                this.Field("type1", () => type2);
+            }
+        }
+
+        private class T2 : GraphQLObjectType<TestType>
+        {
+            public T2(GraphQLSchema schema) : base("T2", "", schema)
+            {
+                this.Field("a", e => e.A);
+                this.Field("b", e => e.B);
+                this.Field("sum", (int[] numbers) => numbers.Sum());
+            }
+        }
+
+        private class RootQueryType : GraphQLObjectType
+        {
+            public RootQueryType(T1 type1, GraphQLSchema schema) : base("RootQueryType", "", schema)
+            {
+                this.Field("type1", () => type1);
+            }
         }
 
         private dynamic GetField(string fieldName)

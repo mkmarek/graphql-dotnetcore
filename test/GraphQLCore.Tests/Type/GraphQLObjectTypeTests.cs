@@ -59,13 +59,20 @@
         [SetUp]
         public void SetUp()
         {
-            this.type = new GraphQLObjectType<TestModel>("Test", "Test description", new GraphQLSchema());
+            this.type = new GraphQLTestModelType(new GraphQLSchema());
         }
 
         [Test]
         public void ToString_ReturnsName()
         {
             Assert.AreEqual("Test", type.ToString());
+        }
+
+        public class GraphQLTestModelType : GraphQLObjectType<TestModel>
+        {
+            public GraphQLTestModelType(GraphQLSchema schema) : base("Test", "Test description", schema)
+            {
+            }
         }
 
         public class TestModel

@@ -6,18 +6,18 @@
 
     public class GraphQLList : GraphQLObjectType
     {
-        private Type memberType;
+        private __Type memberType;
 
-        public GraphQLList(Type collectionType) : base("", "", null)
+        public GraphQLList(Type collectionType, GraphQLSchema schema) : base("", "", null)
         {
-            this.memberType = ReflectionUtilities.GetCollectionMemberType(collectionType);
-
-            this.Name = "ListOf" + memberType.Name;
+            this.schema = schema;
+            this.memberType = TypeUtilities.ResolveObjectFieldType(
+                ReflectionUtilities.GetCollectionMemberType(collectionType), schema);
         }
 
         internal __Type GetMemberType()
         {
-            return TypeUtilities.ResolveObjectFieldType(this.memberType);
+            return this.memberType;
         }
     }
 }

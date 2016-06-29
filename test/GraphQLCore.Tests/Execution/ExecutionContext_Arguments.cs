@@ -100,23 +100,40 @@
         public void SetUp()
         {
             this.schema = new GraphQLSchema();
-            var rootType = new GraphQLObjectType("RootQueryType", "", this.schema);
-
-            var nestedType = new GraphQLObjectType<TestObject>("NestedQueryType", "", this.schema);
-            nestedType.Field(instance => instance.Id);
-            nestedType.Field(instance => instance.StringField);
-
-            var nestedTypeNonGeneric = new GraphQLObjectType("NestedNonGenericQueryType", "", this.schema);
-            nestedTypeNonGeneric.Field("text", (int id, string str) => $"{id} is from the parent and {str} is the current type");
-
-            nestedType.Field("nested", () => nestedTypeNonGeneric);
-            rootType.Field("nested", (int id) => nestedType.WithValue(new TestObject() { Id = id, StringField = "Test with id " + id }));
-
-            rootType.Field("withArray", (int[] ids) => ids.Count());
-            rootType.Field("withList", (List<int> ids) => ids.Count());
-            rootType.Field("withIEnumerable", (IEnumerable<int> ids) => ids.Count());
+            var rootType = new RootQueryType(this.schema);
+            var nestedTypeNonGeneric = new NestedNonGenericQueryType(this.schema);
+            var nestedType = new NestedQueryType(nestedTypeNonGeneric, this.schema);
 
             this.schema.SetRoot(rootType);
+        }
+
+        private class NestedNonGenericQueryType : GraphQLObjectType
+        {
+            public NestedNonGenericQueryType(GraphQLSchema schema) : base("NestedNonGenericQueryType", "", schema)
+            {
+                this.Field("text", (int id, string str) => $"{id} is from the parent and {str} is the current type");
+            }
+        }
+
+        private class NestedQueryType : GraphQLObjectType<TestObject>
+        {
+            public NestedQueryType(NestedNonGenericQueryType nestedTypeNonGeneric, GraphQLSchema schema) : base("NestedQueryType", "", schema)
+            {
+                this.Field(instance => instance.Id);
+                this.Field(instance => instance.StringField);
+                this.Field("nested", () => nestedTypeNonGeneric);
+            }
+        }
+
+        private class RootQueryType : GraphQLObjectType
+        {
+            public RootQueryType(GraphQLSchema schema) : base("RootQueryType", "", schema)
+            {
+                this.Field("nested", (int id) => new TestObject() { Id = id, StringField = "Test with id " + id });
+                this.Field("withArray", (int[] ids) => ids.Count());
+                this.Field("withList", (List<int> ids) => ids.Count());
+                this.Field("withIEnumerable", (IEnumerable<int> ids) => ids.Count());
+            }
         }
 
         private class TestObject
