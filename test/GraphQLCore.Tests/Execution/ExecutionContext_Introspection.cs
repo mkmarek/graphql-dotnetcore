@@ -2,6 +2,7 @@
 {
     using GraphQLCore.Type;
     using NUnit.Framework;
+    using System;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -186,10 +187,12 @@
         }
 
         [Test]
-        public void Execute_IntrospectingSingleTypeSumArgument_HasOfTypeInt()
+        public void Execute_IntrospectingSingleTypeSumArgument_HasOfTypeNonNullListOfInt()
         {
             var result = (IEnumerable<dynamic>)GetField("sum").args;
-            Assert.AreEqual("Int", result.SingleOrDefault().type.ofType.name);
+
+            Assert.AreEqual("NON_NULL", result.SingleOrDefault().type.ofType.kind);
+            Assert.AreEqual("Int", result.SingleOrDefault().type.ofType.ofType.name);
         }
 
         [Test]
@@ -270,24 +273,30 @@
         }
 
         [Test]
-        public void Execute_ObjectT1WithThreeFields_FieldAHasStringType()
+        public void Execute_ObjectT1WithThreeFields_FieldAHasNonNullStringType()
         {
             var field = GetFieldForObject("T1", "a");
-            Assert.AreEqual("String", field.type.name);
+
+            Assert.AreEqual("NON_NULL", field.type.kind);
+            Assert.AreEqual("String", field.type.ofType.name);
         }
 
         [Test]
-        public void Execute_RootQueryType2IField_ShouldBeInterfaceType()
+        public void Execute_RootQueryType2IField_ShouldBeNonNullInterfaceType()
         {
             var field = GetFieldForObject("RootQueryType", "type2i");
-            Assert.AreEqual("T2Interface", field.type.name);
+
+            Assert.AreEqual("NON_NULL", field.type.kind);
+            Assert.AreEqual("T2Interface", field.type.ofType.name);
         }
 
         [Test]
-        public void Execute_T1Typetype2Field_ShouldBeT2Type()
+        public void Execute_T1Typetype2Field_ShouldBeNonNullT2Type()
         {
             var field = GetFieldForObject("T1", "type2");
-            Assert.AreEqual("T2", field.type.name);
+
+            Assert.AreEqual("NON_NULL", field.type.kind);
+            Assert.AreEqual("T2", field.type.ofType.name);
         }
 
         [Test]
@@ -381,6 +390,14 @@
                     type {
                       name
                       kind
+                      ofType {
+                        name
+                        kind
+                        ofType {
+                          name
+                          kind
+                        }
+                      }
                     }
                   }
                 }
@@ -403,12 +420,29 @@
                 description,
                 fields {
                   name
+                  type {
+                    name
+                    kind
+                    ofType {
+                        name
+                        kind
+                        ofType {
+                            name
+                            kind
+                        }
+                    }  
+                  }
                   args {
                     name
                     type {
                       kind
                       ofType {
                         name
+                        kind
+                        ofType {
+                          name
+                          kind
+                        }
                       }
                     }
                   }

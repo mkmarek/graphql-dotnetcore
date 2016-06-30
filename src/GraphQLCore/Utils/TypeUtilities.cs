@@ -74,36 +74,41 @@
             var types = value.GetFieldTypes();
 
             return types
-                .Select(e => ResolveObjectFieldType(e, schema))
+                .Select(e =>
+                ResolveScalarTypes(e, schema) ??
+                ResolveObjectArgumentType(e, schema))
                 .Where(e => e != null);
         }
 
         public static object InvokeWithArguments(IList<GraphQLArgument> arguments, LambdaExpression expression)
         {
-            try
-            {
-                var argumentValues = FetchArgumentValues(expression, arguments);
+            var argumentValues = FetchArgumentValues(expression, arguments);
 
-                return expression.Compile().DynamicInvoke(argumentValues);
-            }catch (Exception ex)
-            {
-                throw ex;
-            }
+            return expression.Compile().DynamicInvoke(argumentValues);
         }
 
-        public static __Type ResolveObjectFieldType(System.Type type, GraphQLSchema schema)
+        public static __Type ResolveObjectArgumentType(System.Type type, GraphQLSchema schema)
         {
-            if (typeof(int) == type)
-                return new __Type(new GraphQLInt(null), schema);
+            if (ReflectionUtilities.IsCollection(type))
+                return ResolveGraphType(type, schema);
 
-            if (typeof(bool) == type)
-                return new __Type(new GraphQLBoolean(null), schema);
+            var schemaType = GetElementFromSchema(type, schema);
 
-            if (typeof(float) == type || typeof(double) == type)
-                return new __Type(new GraphQLFloat(null), schema);
+            if (schemaType != null)
+                return new __Type(schemaType, schema);
 
-            if (typeof(string) == type)
-                return new __Type(new GraphQLString(null), schema);
+            var underlyingNullableType = Nullable.GetUnderlyingType(type);
+            if (underlyingNullableType == null)
+                return new __Type(ResolveGraphType(type, schema), schema);
+
+            return ResolveObjectArgumentType(underlyingNullableType, schema);
+        }
+
+        public static __Type ResolveGraphType(Type type, GraphQLSchema schema)
+        {
+            var scalarType = ResolveScalarTypes(type, schema);
+            if (scalarType != null)
+                return scalarType;
 
             if (ReflectionUtilities.IsCollection(type))
                 return new __Type(new GraphQLList(type, schema), schema);
@@ -120,6 +125,23 @@
 
             if (schemaType != null)
                 return new __Type(schemaType, schema);
+
+            return null;
+        }
+
+        private static __Type ResolveScalarTypes(Type type, GraphQLSchema schema)
+        {
+            if (typeof(int) == type)
+                return new __Type(new GraphQLInt(null), schema);
+
+            if (typeof(bool) == type)
+                return new __Type(new GraphQLBoolean(null), schema);
+
+            if (typeof(float) == type || typeof(double) == type)
+                return new __Type(new GraphQLFloat(null), schema);
+
+            if (typeof(string) == type)
+                return new __Type(new GraphQLString(null), schema);
 
             return null;
         }

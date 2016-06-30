@@ -8,10 +8,10 @@
     {
         private __Type memberType;
 
-        public GraphQLList(Type collectionType, GraphQLSchema schema) : base("", "", null)
+        public GraphQLList(Type collectionType, GraphQLSchema schema) : base(null, null, null)
         {
             this.schema = schema;
-            this.memberType = TypeUtilities.ResolveObjectFieldType(
+            this.memberType = TypeUtilities.ResolveObjectArgumentType(
                 ReflectionUtilities.GetCollectionMemberType(collectionType), schema);
         }
 

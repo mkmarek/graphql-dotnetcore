@@ -15,7 +15,7 @@
         public GraphQLSchema()
         {
             this.SchemaTypes = new List<GraphQLScalarType>();
-            this.SchemaTypes.Add(new __Type("", "", this));
+            this.SchemaTypes.Add(new __Type(this));
             this.SchemaTypes.Add(new __TypeKind(this));
             this.SchemaTypes.Add(new __InputValue(null, this));
             this.__Schema = new __Schema(this);
@@ -43,7 +43,7 @@
                     AppendObjectTypes(result, (GraphQLObjectType)type);
             }
 
-            return result.Where(e => TypeUtilities.GetTypeKind(e) != TypeKind.LIST.ToString())
+            return result.Where(e => TypeUtilities.GetTypeName(e) != null)
                 .ToList();
         }
 

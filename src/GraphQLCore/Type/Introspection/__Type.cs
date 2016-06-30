@@ -13,7 +13,25 @@ namespace GraphQLCore.Type.Introspection
             this.Field("interfaces", () => this.IfObjectResolveInterfaces(type));
         }
 
-        public __Type(string fieldName, string fieldDescription, GraphQLSchema schema) : base("__Type", "The fundamental unit of any GraphQL Schema is the type.There are " +
+        public __Type(__Type ofType, GraphQLSchema schema) : this(null, null, schema)
+        {
+            this.Field("ofType", () => ofType);
+            this.Field("kind", () => TypeKind.NON_NULL.ToString());
+            this.FieldIfNotExists("fields", () => null as __Field[]);
+            this.FieldIfNotExists("enumValues", () => null as GraphQLEnumValue[]);
+            this.FieldIfNotExists("interfaces", () => null as __Type[]);
+        }
+
+        public __Type(GraphQLSchema schema) : this(null, null, schema)
+        {
+            this.FieldIfNotExists("kind", () => null as string);
+            this.FieldIfNotExists("fields", () => null as __Field[]);
+            this.FieldIfNotExists("enumValues", () => null as GraphQLEnumValue[]);
+            this.FieldIfNotExists("ofType", () => null as __Type);
+            this.FieldIfNotExists("interfaces", () => null as __Type[]);
+        }
+
+        private __Type(string fieldName, string fieldDescription, GraphQLSchema schema) : base("__Type", "The fundamental unit of any GraphQL Schema is the type.There are " +
             "many kinds of types in GraphQL as represented by the `__TypeKind` enum." +
             "\n\nDepending on the kind of a type, certain fields describe " +
             "information about that type. Scalar types provide no information " +
@@ -25,7 +43,7 @@ namespace GraphQLCore.Type.Introspection
             this.schema = schema;
             this.Field("name", () => fieldName);
             this.Field("description", () => fieldDescription);
-            //this.Field("interfaces", () => new GraphQLInterface[] { });
+            
         }
 
         private __Field[] GetFieldsFromObject(GraphQLObjectType type)

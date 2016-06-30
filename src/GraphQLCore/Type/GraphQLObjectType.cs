@@ -36,6 +36,13 @@
             this.AddResolver(fieldName, resolver);
         }
 
+        internal void FieldIfNotExists<TFieldType>(
+                            string fieldName, LambdaExpression resolver)
+        {
+            if (!this.ContainsField(fieldName))
+                this.AddResolver(fieldName, resolver);
+        }
+
         internal virtual __Field[] IntrospectFields()
         {
             return this.Resolvers

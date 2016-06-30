@@ -25,7 +25,7 @@
             var fieldType = ReflectionUtilities.GetReturnValueFromLambdaExpression(expression);
 
             this.Field("args", () => isAccessor ? TypeUtilities.FetchInputArguments(expression, this.schema).Skip(1).ToArray() : TypeUtilities.FetchInputArguments(expression, this.schema));
-            this.Field("type", () => TypeUtilities.ResolveObjectFieldType(fieldType, this.schema));
+            this.Field("type", () => TypeUtilities.ResolveObjectArgumentType(fieldType, this.schema));
         }
     }
 }

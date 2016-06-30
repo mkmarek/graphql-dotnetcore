@@ -12,7 +12,7 @@
             this.Field("name", () => parameter.Name);
             this.Field("description", () => null as string);
             this.Field("defaultValue", () => null as string);
-            this.Field("type", () => TypeUtilities.ResolveObjectFieldType(parameter.Type, this.schema));
+            this.Field("type", () => TypeUtilities.ResolveObjectArgumentType(parameter.Type, this.schema));
         }
     }
 }
