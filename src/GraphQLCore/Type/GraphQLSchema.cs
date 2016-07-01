@@ -38,16 +38,19 @@
 
             foreach (var type in this.SchemaTypes)
             {
-                result.Add(new __Type(type, this));
-                if (type is GraphQLObjectType)
-                    AppendObjectTypes(result, (GraphQLObjectType)type);
+                if (!TypeUtilities.GetTypeNames(result).Contains(type.Name))
+                {
+                    result.Add(new __Type(type, this));
+                    if (type is GraphQLObjectType)
+                        AppendObjectTypes(result, (GraphQLObjectType)type);
+                }
             }
 
             return result.Where(e => TypeUtilities.GetTypeName(e) != null)
                 .ToList();
         }
 
-        public void SetRoot(GraphQLObjectType root)
+        public void Query(GraphQLObjectType root)
         {
             this.RootType = root;
             ;
@@ -65,7 +68,7 @@
 
         private void AppendObjectTypes(List<__Type> result, GraphQLObjectType objectType)
         {
-            var types = TypeUtilities.IntrospectObjectFieldTypes(objectType, this);
+            var types = TypeResolver.IntrospectObjectFieldTypes(objectType, this);
 
             foreach (var type in types)
             {

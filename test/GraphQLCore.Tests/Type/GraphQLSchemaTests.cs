@@ -25,7 +25,7 @@
             this.schema = new GraphQLSchema();
             var rootType = new RootQueryType(this.schema);
 
-            schema.SetRoot(rootType);
+            schema.Query(rootType);
         }
 
         private class RootQueryType : GraphQLObjectType

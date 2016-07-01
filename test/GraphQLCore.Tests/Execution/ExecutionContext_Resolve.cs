@@ -104,7 +104,7 @@
 
             rootType.Field("acessorBasedProp", () => new TestType() { Hello = "world", Test = "stuff" });
 
-            this.schema.SetRoot(rootType);
+            this.schema.Query(rootType);
         }
 
         public class RootQueryType : GraphQLObjectType

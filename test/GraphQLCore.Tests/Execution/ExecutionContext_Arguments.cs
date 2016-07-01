@@ -104,7 +104,7 @@
             var nestedTypeNonGeneric = new NestedNonGenericQueryType(this.schema);
             var nestedType = new NestedQueryType(nestedTypeNonGeneric, this.schema);
 
-            this.schema.SetRoot(rootType);
+            this.schema.Query(rootType);
         }
 
         private class NestedNonGenericQueryType : GraphQLObjectType

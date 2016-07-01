@@ -96,6 +96,22 @@
             return toArray.Invoke(null, new object[] { input });
         }
 
+        internal static bool IsClass(Type type)
+        {
+            return !type.GetTypeInfo().IsValueType &&
+                !type.GetTypeInfo().IsPrimitive &&
+                !type.Namespace.StartsWith("System") &&
+                !type.GetTypeInfo().IsEnum;
+        }
+
+        public static bool IsStruct(Type type)
+        {
+            return type.GetTypeInfo().IsValueType && 
+                !type.GetTypeInfo().IsPrimitive && 
+                !type.Namespace.StartsWith("System") && 
+                !type.GetTypeInfo().IsEnum;
+        }
+
         public static object ToList(System.Type type, object input)
         {
             var toList = typeof(Enumerable).GetRuntimeMethods()

@@ -1,5 +1,6 @@
 ﻿namespace GraphQLCore.Type
 {
+    using Execution;
     using Introspection;
     using System;
     using Utils;
@@ -11,7 +12,7 @@
         public GraphQLList(Type collectionType, GraphQLSchema schema) : base(null, null, null)
         {
             this.schema = schema;
-            this.memberType = TypeUtilities.ResolveObjectArgumentType(
+            this.memberType = TypeResolver.ResolveObjectArgumentType(
                 ReflectionUtilities.GetCollectionMemberType(collectionType), schema);
         }
 

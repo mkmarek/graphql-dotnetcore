@@ -1,7 +1,7 @@
 ﻿namespace GraphQLCore.Type
 {
+    using Execution;
     using System.Linq.Expressions;
-    using Utils;
 
     public class __InputValue : GraphQLObjectType
     {
@@ -12,7 +12,7 @@
             this.Field("name", () => parameter.Name);
             this.Field("description", () => null as string);
             this.Field("defaultValue", () => null as string);
-            this.Field("type", () => TypeUtilities.ResolveObjectArgumentType(parameter.Type, this.schema));
+            this.Field("type", () => TypeResolver.ResolveObjectArgumentType(parameter.Type, this.schema));
         }
     }
 }

@@ -27,7 +27,7 @@
         {
             var schema = new GraphQLSchema();
             var root = new Query(schema);
-            schema.SetRoot(root);
+            schema.Query(root);
             return schema;
         }
     }

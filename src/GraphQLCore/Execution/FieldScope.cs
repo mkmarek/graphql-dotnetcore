@@ -70,24 +70,16 @@
             if (input is GraphQLObjectType)
                 return this.CompleteObjectType((GraphQLObjectType)input, selection, arguments, this.parent);
 
-            if (input is IValueContext)
-                return this.CompleteValueContext((IValueContext)input, selection, arguments);
-
             if (ReflectionUtilities.IsCollection(input.GetType()))
                 return this.CompleteCollectionType((IEnumerable)input, selection, arguments);
 
-            var schemaValue = TypeUtilities.GetElementFromSchemaByModelType(input.GetType(), this.context.GraphQLSchema);
+            var schemaValue = TypeResolver.GetElementFromSchemaByModelType(input.GetType(), this.context.GraphQLSchema);
             if (schemaValue is GraphQLObjectType)
             {
                 return this.CompleteObjectType((GraphQLObjectType)schemaValue, selection, arguments, input);
             }
 
             return input;
-        }
-
-        private object CompleteValueContext(IValueContext input, GraphQLFieldSelection selection, IList<GraphQLArgument> arguments)
-        {
-            return this.CompleteObjectType(input.GetObjectType(), selection, arguments, input.GetValue());
         }
 
         private object ExecuteField(Func<IList<GraphQLArgument>, object> fieldResolver, GraphQLFieldSelection selection)

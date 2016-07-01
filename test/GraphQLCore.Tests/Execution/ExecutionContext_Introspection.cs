@@ -273,30 +273,27 @@
         }
 
         [Test]
-        public void Execute_ObjectT1WithThreeFields_FieldAHasNonNullStringType()
+        public void Execute_ObjectT1WithThreeFields_FieldAHasStringType()
         {
             var field = GetFieldForObject("T1", "a");
 
-            Assert.AreEqual("NON_NULL", field.type.kind);
-            Assert.AreEqual("String", field.type.ofType.name);
+            Assert.AreEqual("String", field.type.name);
         }
 
         [Test]
-        public void Execute_RootQueryType2IField_ShouldBeNonNullInterfaceType()
+        public void Execute_RootQueryType2IField_ShouldBeInterfaceType()
         {
             var field = GetFieldForObject("RootQueryType", "type2i");
 
-            Assert.AreEqual("NON_NULL", field.type.kind);
-            Assert.AreEqual("T2Interface", field.type.ofType.name);
+            Assert.AreEqual("T2Interface", field.type.name);
         }
 
         [Test]
-        public void Execute_T1Typetype2Field_ShouldBeNonNullT2Type()
+        public void Execute_T1Typetype2Field_ShouldBeT2Type()
         {
             var field = GetFieldForObject("T1", "type2");
 
-            Assert.AreEqual("NON_NULL", field.type.kind);
-            Assert.AreEqual("T2", field.type.ofType.name);
+            Assert.AreEqual("T2", field.type.name);
         }
 
         [Test]
@@ -317,7 +314,7 @@
 
             var rootType = new RootQueryType(type1, t2interface, this.schema);
 
-            this.schema.SetRoot(rootType);
+            this.schema.Query(rootType);
         }
 
         private class T1 : GraphQLObjectType

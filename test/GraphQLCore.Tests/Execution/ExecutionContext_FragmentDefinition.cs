@@ -132,7 +132,7 @@
             var nestedType = new NestedQueryType(this.schema);
             var rootType = new RootQueryType(nestedType, this.schema);
 
-            this.schema.SetRoot(rootType);
+            this.schema.Query(rootType);
         }
 
         private class NestedQueryType : GraphQLObjectType

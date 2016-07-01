@@ -1,5 +1,6 @@
 ﻿namespace GraphQLCore.Type.Introspection
 {
+    using Execution;
     using System.Linq;
     using System.Linq.Expressions;
     using Utils;
@@ -24,8 +25,15 @@
         {
             var fieldType = ReflectionUtilities.GetReturnValueFromLambdaExpression(expression);
 
-            this.Field("args", () => isAccessor ? TypeUtilities.FetchInputArguments(expression, this.schema).Skip(1).ToArray() : TypeUtilities.FetchInputArguments(expression, this.schema));
-            this.Field("type", () => TypeUtilities.ResolveObjectArgumentType(fieldType, this.schema));
+            this.Field("args", () => GetInputArgumentsByFieldDefinitionType(expression, isAccessor));
+            this.Field("type", () => TypeResolver.ResolveObjectArgumentType(fieldType, this.schema));
+        }
+
+        private __InputValue[] GetInputArgumentsByFieldDefinitionType(LambdaExpression expression, bool isAccessor)
+        {
+            return isAccessor 
+                ? TypeUtilities.FetchInputArguments(expression, this.schema).Skip(1).ToArray() 
+                : TypeUtilities.FetchInputArguments(expression, this.schema);
         }
     }
 }

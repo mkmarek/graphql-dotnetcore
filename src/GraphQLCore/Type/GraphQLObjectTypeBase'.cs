@@ -11,7 +11,6 @@
     using Utils;
 
     public abstract class GraphQLObjectTypeBase<T> : GraphQLObjectType
-        where T : class
     {
         private Dictionary<string, LambdaExpression> Acessors;
 
