@@ -31,12 +31,27 @@
             ReflectionUtilities.GetGenericArgumentsFromAllParents(e.GetType()).Contains(t)));
         }
 
+        public static GraphQLScalarType GetInterfaceFromSchemaByInterfaceType(Type type, GraphQLSchema schema)
+        {
+            return schema.SchemaTypes.FirstOrDefault(e => 
+                ReflectionUtilities.GetGenericArguments(e.GetType()).Contains(type));
+        }
+
         public static GraphQLScalarType GetEnumElementFromSchema(Type type, GraphQLSchema schema)
         {
             return schema.SchemaTypes
                 .Where(e => e is GraphQLEnumType)
                 .Select(e => (GraphQLEnumType)e)
                 .FirstOrDefault(e => e.IsOfType(type));
+        }
+
+        public static __Type ResolveInterfaceGraphType(Type type, GraphQLSchema schema)
+        {
+            var schemaType = GetInterfaceFromSchemaByInterfaceType(type, schema);
+            if (schemaType != null)
+                return new __Type(schemaType, schema);
+
+            return null;
         }
 
         public static __Type ResolveGraphType(Type type, GraphQLSchema schema)

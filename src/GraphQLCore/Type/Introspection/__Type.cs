@@ -1,4 +1,7 @@
-﻿using System.Linq;
+﻿using GraphQLCore.Execution;
+using GraphQLCore.Utils;
+using System.Linq;
+using System;
 
 namespace GraphQLCore.Type.Introspection
 {
@@ -73,14 +76,29 @@ namespace GraphQLCore.Type.Introspection
                 return this.GetFieldsFromObject((GraphQLObjectType)type);
             }
 
+            if (type is GraphQLInterfaceType)
+            {
+                return this.GetFieldFromInterface((GraphQLInterfaceType)type);
+            }
+
             return null;
+        }
+
+        private __Field[] GetFieldFromInterface(GraphQLInterfaceType type)
+        {
+            return type.IntrospectFields();
         }
 
         private object IfObjectResolveInterfaces(GraphQLScalarType type)
         {
             if (type is GraphQLObjectType)
             {
-                return new string[] { };
+                return ReflectionUtilities.GetGenericArguments(type.GetType())
+                    .SelectMany(e => ReflectionUtilities.GetAllImplementingInterfaces(e))
+                    .Distinct()
+                    .Select(e => TypeResolver.ResolveInterfaceGraphType(e, this.schema))
+                    .Where(e => e != null)
+                    .ToList();
             }
 
             return null;
@@ -96,6 +114,9 @@ namespace GraphQLCore.Type.Introspection
 
             if (type is GraphQLObjectType)
                 return TypeKind.OBJECT;
+
+            if (type is GraphQLInterfaceType)
+                return TypeKind.INTERFACE;
 
             return TypeKind.SCALAR;
         }

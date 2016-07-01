@@ -96,6 +96,13 @@
             return toArray.Invoke(null, new object[] { input });
         }
 
+        public static List<Type> GetGenericArguments(Type type)
+        {
+            var types = GetAllParentsAndCurrentTypeFrom(type);
+
+            return types.SelectMany(e => e.GenericTypeArguments).ToList();
+        }
+
         internal static bool IsClass(Type type)
         {
             return !type.GetTypeInfo().IsValueType &&

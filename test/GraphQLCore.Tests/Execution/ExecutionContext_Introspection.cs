@@ -303,6 +303,22 @@
             Assert.AreEqual("RootQueryType", schema.queryType.name);
         }
 
+        [Test]
+        public void T2_HasOneInterface()
+        {
+            dynamic type = GetType("T2");
+
+            Assert.AreEqual(1, type.interfaces.Count);
+        }
+
+        [Test]
+        public void T2_HasOneInterfaceWithInterfaceKind()
+        {
+            dynamic type = GetType("T2");
+
+            Assert.AreEqual("INTERFACE", ((IEnumerable<dynamic>)type.interfaces).First().kind);
+        }
+
         [SetUp]
         public void SetUp()
         {
@@ -415,6 +431,9 @@
 	          __type(name: " + "\"" + typeName + "\"" + @") {
                 name,
                 description,
+                interfaces {
+                    name kind description
+                },
                 fields {
                   name
                   type {
