@@ -2,6 +2,7 @@
 using GraphQLCore.Utils;
 using System.Linq;
 using System;
+using System.Collections.Generic;
 
 namespace GraphQLCore.Type.Introspection
 {
@@ -14,24 +15,30 @@ namespace GraphQLCore.Type.Introspection
             this.Field("enumValues", () => this.IfEnumGetValues(type));
             this.Field("ofType", () => this.ResolveOfType(type));
             this.Field("interfaces", () => this.IfObjectResolveInterfaces(type));
+            this.Field("possibleTypes", () => this.IfInterfaceResolvePossibleTypes(type));
         }
 
         public __Type(__Type ofType, GraphQLSchema schema) : this(null, null, schema)
         {
             this.Field("ofType", () => ofType);
             this.Field("kind", () => TypeKind.NON_NULL.ToString());
-            this.FieldIfNotExists("fields", () => null as __Field[]);
-            this.FieldIfNotExists("enumValues", () => null as GraphQLEnumValue[]);
-            this.FieldIfNotExists("interfaces", () => null as __Type[]);
+
+            AddNullFieldsIfNotExisting();
         }
 
         public __Type(GraphQLSchema schema) : this(null, null, schema)
+        {
+            AddNullFieldsIfNotExisting();
+        }
+
+        private void AddNullFieldsIfNotExisting()
         {
             this.FieldIfNotExists("kind", () => null as string);
             this.FieldIfNotExists("fields", () => null as __Field[]);
             this.FieldIfNotExists("enumValues", () => null as GraphQLEnumValue[]);
             this.FieldIfNotExists("ofType", () => null as __Type);
             this.FieldIfNotExists("interfaces", () => null as __Type[]);
+            this.FieldIfNotExists("possibleTypes", () => null as __Type[]);
         }
 
         private __Type(string fieldName, string fieldDescription, GraphQLSchema schema) : base("__Type", "The fundamental unit of any GraphQL Schema is the type.There are " +
@@ -89,7 +96,7 @@ namespace GraphQLCore.Type.Introspection
             return type.IntrospectFields();
         }
 
-        private object IfObjectResolveInterfaces(GraphQLScalarType type)
+        private __Type[] IfObjectResolveInterfaces(GraphQLScalarType type)
         {
             if (type is GraphQLObjectType)
             {
@@ -98,7 +105,28 @@ namespace GraphQLCore.Type.Introspection
                     .Distinct()
                     .Select(e => TypeResolver.ResolveInterfaceGraphType(e, this.schema))
                     .Where(e => e != null)
-                    .ToList();
+                    .ToArray();
+            }
+
+            return null;
+        }
+
+        private __Type[] IfInterfaceResolvePossibleTypes(GraphQLScalarType type)
+        {
+            if (type is GraphQLInterfaceType)
+            {
+                var interfaceType = (GraphQLInterfaceType)type;
+
+                var modelTypes = this.schema.SchemaTypes
+                    .SelectMany(e => ReflectionUtilities.GetGenericArguments(e.GetType()))
+                    .Where(e => e != null);
+
+                return modelTypes
+                    .Where(e => ReflectionUtilities.GetAllImplementingInterfaces(e).Contains(interfaceType.GetInterfaceType()))
+                    .Distinct()
+                    .Select(e => TypeResolver.ResolveInterfaceGraphType(e, this.schema))
+                    .Where(e => e != null)
+                    .ToArray();
             }
 
             return null;

@@ -319,6 +319,22 @@
             Assert.AreEqual("INTERFACE", ((IEnumerable<dynamic>)type.interfaces).First().kind);
         }
 
+        [Test]
+        public void T2Inteface_HasOnePossibleType()
+        {
+            dynamic type = GetType("T2Interface");
+
+            Assert.AreEqual(1, ((IEnumerable<dynamic>)type.possibleTypes).Count());
+        }
+
+        [Test]
+        public void T2Inteface_SinglePossibleTypeIsT2Object()
+        {
+            dynamic type = GetType("T2Interface");
+
+            Assert.AreEqual("T2", ((IEnumerable<dynamic>)type.possibleTypes).SingleOrDefault().name);
+        }
+
         [SetUp]
         public void SetUp()
         {
@@ -431,6 +447,18 @@
 	          __type(name: " + "\"" + typeName + "\"" + @") {
                 name,
                 description,
+                possibleTypes {
+                      name
+                      kind
+                      description
+                      fields {
+                        name
+                        description
+                      }
+                      interfaces {
+                        name
+                      }      
+                    }
                 interfaces {
                     name kind description
                 },
