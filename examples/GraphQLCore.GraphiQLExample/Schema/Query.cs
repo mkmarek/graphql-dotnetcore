@@ -9,7 +9,6 @@
         public GraphQLCharacterInterface Character { get; private set; }
         public GraphQLHumanObject Human { get; private set; }
         public GraphQLDroidObject Droid { get; private set; }
-
         public GraphQLEpisodeEnum Episode { get; private set; }
 
         public Query(GraphQLSchema schema) : base("Query", "", schema)

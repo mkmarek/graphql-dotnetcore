@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{20410A75-C8E6-45E4-B70A-9E88F8267359}"
 EndProject
@@ -22,6 +22,16 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "GraphQLCore.Tests", "test\GraphQLCore.Tests\GraphQLCore.Tests.xproj", "{6B63BCC0-2884-4515-9A92-E408ACF4C98E}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "GraphQLCore.GraphiQLExample", "examples\GraphQLCore.GraphiQLExample\GraphQLCore.GraphiQLExample.xproj", "{7461D627-8C7A-4DDB-98A1-22C396AF749F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{F484E37E-9227-4DDC-BA9F-DE3239BFB4D8}"
+	ProjectSection(SolutionItems) = preProject
+		docs\overview.md = docs\overview.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "untyped-object-definition", "untyped-object-definition", "{A02D0A24-8979-46DC-B645-7EC4D3668128}"
+	ProjectSection(SolutionItems) = preProject
+		docs\untyped-object-definition\overview.md = docs\untyped-object-definition\overview.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,5 +59,6 @@ Global
 		{174E41CB-364C-47F1-90D4-838EAE75E755} = {20410A75-C8E6-45E4-B70A-9E88F8267359}
 		{6B63BCC0-2884-4515-9A92-E408ACF4C98E} = {650371FA-695E-4487-B31C-A8049D9643E6}
 		{7461D627-8C7A-4DDB-98A1-22C396AF749F} = {4457F826-BED6-498A-BD55-74CD33809CB7}
+		{A02D0A24-8979-46DC-B645-7EC4D3668128} = {F484E37E-9227-4DDC-BA9F-DE3239BFB4D8}
 	EndGlobalSection
 EndGlobal

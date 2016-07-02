@@ -8,7 +8,7 @@
     using System.Linq;
     using Utils;
 
-    public class GraphQLSchema
+    public class GraphQLSchema : IGraphQLSchema
     {
         public List<GraphQLScalarType> SchemaTypes { get; private set; }
 

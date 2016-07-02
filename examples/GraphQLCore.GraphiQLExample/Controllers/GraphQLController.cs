@@ -9,26 +9,23 @@
     [Route("api/[controller]")]
     public class GraphQLController : Controller
     {
+        private IGraphQLSchema schema;
+
+        public GraphQLController(IGraphQLSchema schema)
+        {
+            this.schema = schema;
+        }
+
         [HttpPost]
         public JsonResult Post([FromBody] GraphiQLInput input)
         {
-            GraphQLSchema schema = GetSchema();
-
             try
             {
-                return this.Json(new { data = schema.Execute(input.Query) });
+                return this.Json( new { data = schema.Execute(input.Query) });
             } catch(Exception ex)
             {
                 return this.Json(new { error = ex });
             }
-        }
-
-        private static GraphQLSchema GetSchema()
-        {
-            var schema = new GraphQLSchema();
-            var root = new Query(schema);
-            schema.Query(root);
-            return schema;
         }
     }
 }

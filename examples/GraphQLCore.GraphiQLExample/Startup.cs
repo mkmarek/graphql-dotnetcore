@@ -1,14 +1,17 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Logging;
-using System.IO;
-
-namespace GraphQLCore.GraphiQLExample
+﻿namespace GraphQLCore.GraphiQLExample
 {
+    using GraphQLCore.GraphiQLExample.Schema;
+    using GraphQLCore.Type;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.FileProviders;
+    using Microsoft.Extensions.Logging;
+    using System.IO;
+
+
     public class Startup
     {
         public Startup(IHostingEnvironment env)
@@ -42,6 +45,9 @@ namespace GraphQLCore.GraphiQLExample
         {
             // Add framework services.
             services.AddMvc();
+
+            //Add GraphQLScheme
+            services.AddSingleton<IGraphQLSchema, StarWarsSchema>();
         }
     }
 }
