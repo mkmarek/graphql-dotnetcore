@@ -3,6 +3,7 @@
     using Exceptions;
     using GraphQLCore.Language;
     using NUnit.Framework;
+    using System;
 
     [TestFixture]
     public class ParserValidationTests
@@ -16,7 +17,7 @@
             Assert.AreEqual(@"Syntax Error GraphQL (1:2) Expected Name, found EOF
 1: {
     ^
-", exception.Message);
+".Replace(Environment.NewLine, "\n"), exception.Message);
         }
 
         [Test]
@@ -30,7 +31,7 @@ fragment MissingOn Type"))));
 1: { ...MissingOn }
 2: fragment MissingOn Type
                       ^
-", exception.Message);
+".Replace(Environment.NewLine, "\n"), exception.Message);
         }
 
         [Test]
@@ -42,7 +43,7 @@ fragment MissingOn Type"))));
             Assert.AreEqual(@"Syntax Error GraphQL (1:10) Expected Name, found {
 1: { field: {} }
             ^
-", exception.Message);
+".Replace(Environment.NewLine, "\n"), exception.Message);
         }
 
         [Test]
@@ -54,7 +55,7 @@ fragment MissingOn Type"))));
             Assert.AreEqual(@"Syntax Error GraphQL (1:1) Unexpected Name "+"\"notanoperation\"" + @"
 1: notanoperation Foo { field }
    ^
-", exception.Message);
+".Replace(Environment.NewLine, "\n"), exception.Message);
         }
 
         [Test]
@@ -66,7 +67,7 @@ fragment MissingOn Type"))));
             Assert.AreEqual(@"Syntax Error GraphQL (1:1) Unexpected ...
 1: ...
    ^
-", exception.Message);
+".Replace(Environment.NewLine, "\n"), exception.Message);
         }
 
         [Test]
@@ -78,7 +79,7 @@ fragment MissingOn Type"))));
             Assert.AreEqual(@"Syntax Error GraphQL (1:10) Unexpected Name "+ "\"on\"" + @"
 1: fragment on on on { on }
             ^
-", exception.Message);
+".Replace(Environment.NewLine, "\n"), exception.Message);
         }
 
         [Test]
@@ -90,7 +91,7 @@ fragment MissingOn Type"))));
             Assert.AreEqual(@"Syntax Error GraphQL (1:37) Unexpected $
 1: query Foo($x: Complex = { a: { b: [ $var ] } }) { field }
                                        ^
-", exception.Message);
+".Replace(Environment.NewLine, "\n"), exception.Message);
         }
 
         [Test]
@@ -102,7 +103,7 @@ fragment MissingOn Type"))));
             Assert.AreEqual(@"Syntax Error GraphQL (1:9) Expected Name, found }
 1: { ...on }
            ^
-", exception.Message);
+".Replace(Environment.NewLine, "\n"), exception.Message);
         }
 
         [Test]
@@ -114,7 +115,7 @@ fragment MissingOn Type"))));
             Assert.AreEqual(@"Syntax Error GraphQL (1:39) Unexpected Name " + "\"null\"" + @"
 1: { fieldWithNullableStringInput(input: null) }
                                          ^
-", exception.Message);
+".Replace(Environment.NewLine, "\n"), exception.Message);
         }
     }
 }

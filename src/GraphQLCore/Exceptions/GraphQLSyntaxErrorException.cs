@@ -16,7 +16,7 @@ namespace GraphQLCore.Exceptions
             var location = new Location(source, loc);
 
             return $"Syntax Error GraphQL ({location.Line}:{location.Column}) {description}" +
-                Environment.NewLine + HighlihtSourceAtLocation(source, location);
+                "\n" + HighlihtSourceAtLocation(source, location);
         }
 
         private static string ReplaceWithUnicodeRepresentation(string str)
@@ -38,15 +38,15 @@ namespace GraphQLCore.Exceptions
             var nextLineNum = (line + 1).ToString();
             var padLen = nextLineNum.Length;
             var lines = source.Body
-                .Split(new string[] { Environment.NewLine, "\r", "\n" }, StringSplitOptions.None)
+                .Split(new string[] { "\n" }, StringSplitOptions.None)
                 .Select(e => ReplaceWithUnicodeRepresentation(e))
                 .ToArray();
 
             return
-                (line >= 2 ? LeftPad(padLen, prevLineNum) + ": " + lines[line - 2] + Environment.NewLine : "") +
-                LeftPad(padLen, lineNum) + ": " + lines[line - 1] + Environment.NewLine +
-                LeftPad(1 + padLen + location.Column, "") + "^" + Environment.NewLine +
-                (line < lines.Length ? LeftPad(padLen, nextLineNum) + ": " + lines[line] + Environment.NewLine : "");
+                (line >= 2 ? LeftPad(padLen, prevLineNum) + ": " + lines[line - 2] + "\n" : "") +
+                LeftPad(padLen, lineNum) + ": " + lines[line - 1] + "\n" +
+                LeftPad(1 + padLen + location.Column, "") + "^" + "\n" +
+                (line < lines.Length ? LeftPad(padLen, nextLineNum) + ": " + lines[line] + "\n" : "");
         }
 
         private static string LeftPad(int length, string str)
