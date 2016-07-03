@@ -207,5 +207,57 @@
 
             Assert.AreEqual("Syntax Error GraphQL (1:5) Invalid number, expected digit but got: \"A\"", exception.Message);
         }
+
+        [Test]
+        public void Lex_IncompleteSpread_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source(".."))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:1) Unexpected character \".\"", exception.Message);
+        }
+
+        [Test]
+        public void Lex_LonelyQuestionMark_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("?"))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:1) Unexpected character \"?\"", exception.Message);
+        }
+
+        [Test]
+        public void Lex_NotAllowedUnicode_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("\\u203B"))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:1) Unexpected character \"\\u203B\"", exception.Message);
+        }
+
+        [Test]
+        public void Lex_NotAllowedUnicode1_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("\\u200b"))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:1) Unexpected character \"\\u200b\"", exception.Message);
+        }
+
+        [Test]
+        public void Lex_DashesInName_ThrowsExceptionWithCorrectMessage()
+        {
+            var token = new Lexer().Lex(new Source("a-b"));
+
+            Assert.AreEqual(TokenKind.NAME, token.Kind);
+            Assert.AreEqual(0, token.Start);
+            Assert.AreEqual(1, token.End);
+            Assert.AreEqual("a", token.Value);
+
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("a-b"), token.End)));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:3) Invalid number, expected digit but got: \"b\"", exception.Message);
+        }
     }
 }

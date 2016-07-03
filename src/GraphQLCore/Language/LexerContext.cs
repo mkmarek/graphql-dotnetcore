@@ -29,6 +29,8 @@ namespace GraphQLCore.Language
             if (this.currentIndex >= this.source.Body.Length)
                 return CreateEOFToken();
 
+            var unicode = IfUnicodeGetString();
+
             var code = this.source.Body[this.currentIndex];
 
             this.ValidateCharacterCode(code);
@@ -47,7 +49,16 @@ namespace GraphQLCore.Language
                 return ReadString();
 
             var location = new Location(this.source, this.currentIndex);
-            throw new GraphQLException($"Syntax Error GraphQL ({location.Line}:{location.Column}) Unexpected character \"{code}\"");
+            throw new GraphQLException(
+                $"Syntax Error GraphQL ({location.Line}:{location.Column}) Unexpected character {this.ResolveCharName(code, unicode)}");
+        }
+
+        private string IfUnicodeGetString()
+        {
+            return this.source.Body.Length > this.currentIndex + 5 &&
+                this.OnlyHexInString(this.source.Body.Substring(this.currentIndex + 2, 4))
+                ? this.source.Body.Substring(this.currentIndex, 6)
+                : null;
         }
 
         public Token ReadNumber()
@@ -172,7 +183,10 @@ namespace GraphQLCore.Language
 
         private Token CheckForSpreadOperator()
         {
-            if (this.source.Body[this.currentIndex + 1] == '.' && this.source.Body[this.currentIndex + 2] == '.')
+            var char1 = this.source.Body.Length > this.currentIndex + 1 ? this.source.Body[this.currentIndex + 1] : 0;
+            var char2 = this.source.Body.Length > this.currentIndex + 2 ? this.source.Body[this.currentIndex + 2] : 0;
+
+            if (char1 == '.' && char2 == '.')
             {
                 return this.CreatePunctuationToken(TokenKind.SPREAD, 3);
             }
@@ -343,9 +357,10 @@ namespace GraphQLCore.Language
             }
         }
 
-        private string ResolveCharName(char code)
+        private string ResolveCharName(char code, string unicodeString = null)
         {
             if (code == '\0') return "<EOF>";
+            if (!string.IsNullOrWhiteSpace(unicodeString)) return $"\"{unicodeString}\""; ;
 
             return $"\"{code}\"";
         }
