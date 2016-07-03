@@ -28,5 +28,39 @@
         public TokenKind Kind { get; set; }
         public int Start { get; set; }
         public object Value { get; set; }
+
+        public override string ToString()
+        {
+            return this.Value != null
+                ? $"{GetTokenKindDescription(Kind)} \"{this.Value}\""
+                : GetTokenKindDescription(Kind);
+        }
+
+        public static string GetTokenKindDescription(TokenKind kind)
+        {
+            switch (kind)
+            {
+                case TokenKind.EOF: return "EOF";
+                case TokenKind.BANG: return "!";
+                case TokenKind.DOLLAR: return "$";
+                case TokenKind.PAREN_L: return "(";
+                case TokenKind.PAREN_R: return ")";
+                case TokenKind.SPREAD: return "...";
+                case TokenKind.COLON: return ":";
+                case TokenKind.EQUALS: return "=";
+                case TokenKind.AT: return "@";
+                case TokenKind.BRACKET_L: return "[";
+                case TokenKind.BRACKET_R: return "]";
+                case TokenKind.BRACE_L: return "{";
+                case TokenKind.PIPE: return "|";
+                case TokenKind.BRACE_R: return "}";
+                case TokenKind.NAME: return "Name";
+                case TokenKind.INT: return "Int";
+                case TokenKind.FLOAT: return "Float";
+                case TokenKind.STRING: return "String";
+            }
+
+            return "";
+        }
     }
 }

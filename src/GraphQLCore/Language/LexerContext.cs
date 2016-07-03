@@ -48,9 +48,8 @@ namespace GraphQLCore.Language
             if (code == '"')
                 return ReadString();
 
-            var location = new Location(this.source, this.currentIndex);
-            throw new GraphQLException(
-                $"Syntax Error GraphQL ({location.Line}:{location.Column}) Unexpected character {this.ResolveCharName(code, unicode)}");
+            throw new GraphQLSyntaxErrorException(
+                $"Unexpected character {this.ResolveCharName(code, unicode)}", this.source, this.currentIndex);
         }
 
         private string IfUnicodeGetString()
@@ -76,9 +75,8 @@ namespace GraphQLCore.Language
 
             if (nextCode >= 48 && nextCode <= 57)
             {
-                var location = new Location(this.source, this.currentIndex);
-                throw new GraphQLException(
-                    $"Syntax Error GraphQL ({location.Line}:{location.Column}) Invalid number, unexpected digit after {code}: \"{nextCode}\"");
+                throw new GraphQLSyntaxErrorException(
+                    $"Invalid number, unexpected digit after {code}: \"{nextCode}\"", this.source, this.currentIndex);
             }
 
             code = nextCode;
@@ -120,8 +118,7 @@ namespace GraphQLCore.Language
         {
             if (code != '"')
             {
-                var location = new Location(this.source, this.currentIndex);
-                throw new GraphQLException($"Syntax Error GraphQL ({location.Line}:{location.Column}) Unterminated string.");
+                throw new GraphQLSyntaxErrorException("Unterminated string.", this.source, this.currentIndex);
             }
         }
 
@@ -149,8 +146,7 @@ namespace GraphQLCore.Language
                 case 't': value += '\t'; break;
                 case 'u': value += this.GetUnicodeChar(); break;
                 default:
-                    var location = new Location(this.source, this.currentIndex);
-                    throw new GraphQLException($"Syntax Error GraphQL ({location.Line}:{location.Column}) Invalid character escape sequence: \\{code}.");
+                    throw new GraphQLSyntaxErrorException($"Invalid character escape sequence: \\{code}.", this.source, this.currentIndex);
             }
             return value;
         }
@@ -295,8 +291,7 @@ namespace GraphQLCore.Language
 
             if (!this.OnlyHexInString(expression.Substring(1)))
             {
-                var location = new Location(this.source, this.currentIndex);
-                throw new GraphQLException($"Syntax Error GraphQL ({location.Line}:{location.Column}) Invalid character escape sequence: \\{expression}.");
+                throw new GraphQLSyntaxErrorException($"Invalid character escape sequence: \\{expression}.", this.source, this.currentIndex);
             }
 
             var character = (char)(
@@ -352,8 +347,8 @@ namespace GraphQLCore.Language
         {
             if (code < 0x0020 && code != 0x0009)
             {
-                var location = new Location(this.source, this.currentIndex);
-                throw new GraphQLException($"Syntax Error GraphQL ({location.Line}:{location.Column}) Invalid character within String: \\u{((int)code).ToString("D4")}.");
+                throw new GraphQLSyntaxErrorException(
+                    $"Invalid character within String: \\u{((int)code).ToString("D4")}.", this.source, this.currentIndex);
             }
         }
 
@@ -373,9 +368,8 @@ namespace GraphQLCore.Language
 
             if (!char.IsNumber(code))
             {
-                var location = new Location(this.source, this.currentIndex);
-                throw new GraphQLException(
-                    $"Syntax Error GraphQL ({location.Line}:{location.Column}) Invalid number, expected digit but got: {this.ResolveCharName(code)}");
+                throw new GraphQLSyntaxErrorException(
+                    $"Invalid number, expected digit but got: {this.ResolveCharName(code)}", this.source, this.currentIndex);
             }
             do
             {
@@ -407,8 +401,8 @@ namespace GraphQLCore.Language
         {
             if (code < 0x0020 && code != 0x0009 && code != 0x000A && code != 0x000D)
             {
-                var location = new Location(this.source, this.currentIndex);
-                throw new GraphQLException($"Syntax Error GraphQL ({location.Line}:{location.Column}) Invalid character \\u{code.ToString("D4")}.");
+                throw new GraphQLSyntaxErrorException($"Invalid character \"\\u{code.ToString("D4")}\".", 
+                    this.source, this.currentIndex);
             };
         }
 
