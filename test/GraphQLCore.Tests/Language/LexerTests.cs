@@ -298,14 +298,14 @@
         public void Lex_NameTokenWithComments_HasCorrectEnd()
         {
             var token = GetSingleNameTokenLexerWithComments();
-            Assert.AreEqual(15, token.End);
+            Assert.AreEqual(13, token.End);
         }
 
         [Test]
         public void Lex_NameTokenWithComments_HasCorrectStart()
         {
             var token = GetSingleNameTokenLexerWithComments();
-            Assert.AreEqual(12, token.Start);
+            Assert.AreEqual(10, token.Start);
         }
 
         [Test]
@@ -326,14 +326,14 @@
         public void Lex_NameTokenWithWhitespaces_HasCorrectEnd()
         {
             var token = GetSingleNameTokenLexerSurroundedWithWhitespaces();
-            Assert.AreEqual(13, token.End);
+            Assert.AreEqual(12, token.End);
         }
 
         [Test]
         public void Lex_NameTokenWithWhitespaces_HasCorrectStart()
         {
             var token = GetSingleNameTokenLexerSurroundedWithWhitespaces();
-            Assert.AreEqual(10, token.Start);
+            Assert.AreEqual(9, token.Start);
         }
 
         [Test]

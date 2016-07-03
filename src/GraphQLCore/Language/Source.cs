@@ -21,8 +21,7 @@ namespace GraphQLCore.Language
         {
             return (input ?? "")
                 .Replace("\r\n", "\n")
-                .Replace("\r", "\n")
-                .Replace("\n", Environment.NewLine);
+                .Replace("\r", "\n");
         }
     }
 }
