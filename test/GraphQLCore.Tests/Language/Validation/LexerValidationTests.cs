@@ -134,5 +134,78 @@
 
             Assert.AreEqual("Syntax Error GraphQL (1:7) Invalid character escape sequence: \\uXXXF.", exception.Message);
         }
+
+
+        [Test]
+        public void Lex_NumberDoubleZeros_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("00"))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:2) Invalid number, unexpected digit after 0: \"0\"", exception.Message);
+        }
+
+        [Test]
+        public void Lex_NumberPlusOne_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("+1"))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:1) Unexpected character \"+\"", exception.Message);
+        }
+
+        [Test]
+        public void Lex_NumberNoDecimalPartEOFInstead_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("1."))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:3) Invalid number, expected digit but got: <EOF>", exception.Message);
+        }
+
+        [Test]
+        public void Lex_NumberStartingWithDot_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source(".123"))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:1) Unexpected character \".\"", exception.Message);
+        }
+
+        [Test]
+        public void Lex_NonNumericCharInNumber_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("1.A"))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:3) Invalid number, expected digit but got: \"A\"", exception.Message);
+        }
+
+        [Test]
+        public void Lex_NonNumericCharInNumber2_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("-A"))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:2) Invalid number, expected digit but got: \"A\"", exception.Message);
+        }
+
+        [Test]
+        public void Lex_MissingExponentInNumber_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("1.0e"))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:5) Invalid number, expected digit but got: <EOF>", exception.Message);
+        }
+
+        [Test]
+        public void Lex_NonNumericCharacterInNumberExponent_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("1.0eA"))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:5) Invalid number, expected digit but got: \"A\"", exception.Message);
+        }
     }
 }

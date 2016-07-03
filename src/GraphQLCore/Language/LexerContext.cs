@@ -46,7 +46,8 @@ namespace GraphQLCore.Language
             if (code == '"')
                 return ReadString();
 
-            throw new NotImplementedException();
+            var location = new Location(this.source, this.currentIndex);
+            throw new GraphQLException($"Syntax Error GraphQL ({location.Line}:{location.Column}) Unexpected character \"{code}\"");
         }
 
         public Token ReadNumber()
@@ -58,10 +59,18 @@ namespace GraphQLCore.Language
             if (code == '-')
                 code = NextCode();
 
-            code = code == '0'
+            var nextCode = code == '0'
                 ? NextCode()
                 : ReadDigitsFromOwnSource(code);
 
+            if (nextCode >= 48 && nextCode <= 57)
+            {
+                var location = new Location(this.source, this.currentIndex);
+                throw new GraphQLException(
+                    $"Syntax Error GraphQL ({location.Line}:{location.Column}) Invalid number, unexpected digit after {code}: \"{nextCode}\"");
+            }
+
+            code = nextCode;
             if (code == '.')
             {
                 isFloat = true;
@@ -334,13 +343,25 @@ namespace GraphQLCore.Language
             }
         }
 
+        private string ResolveCharName(char code)
+        {
+            if (code == '\0') return "<EOF>";
+
+            return $"\"{code}\"";
+        }
+
         private int ReadDigits(ISource source, int start, char firstCode)
         {
             var body = source.Body;
             var position = start;
             var code = firstCode;
 
-            if (!char.IsNumber(code)) throw new NotImplementedException();
+            if (!char.IsNumber(code))
+            {
+                var location = new Location(this.source, this.currentIndex);
+                throw new GraphQLException(
+                    $"Syntax Error GraphQL ({location.Line}:{location.Column}) Invalid number, expected digit but got: {this.ResolveCharName(code)}");
+            }
             do
             {
                 code = ++position < body.Length
