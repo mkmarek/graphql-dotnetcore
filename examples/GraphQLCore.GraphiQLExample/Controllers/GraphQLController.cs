@@ -24,7 +24,12 @@
                 return this.Json( new { data = schema.Execute(input.Query) });
             } catch(Exception ex)
             {
-                return this.Json(new { error = ex });
+                return this.Json(
+                    new
+                    {
+                        errors = new dynamic[] { new { message = ex.Message } }
+                    }
+                );
             }
         }
     }

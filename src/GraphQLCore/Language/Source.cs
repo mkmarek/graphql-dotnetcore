@@ -1,4 +1,6 @@
-﻿namespace GraphQLCore.Language
+﻿using System;
+
+namespace GraphQLCore.Language
 {
     public class Source : ISource
     {
@@ -9,10 +11,18 @@
         public Source(string body, string name)
         {
             this.Name = name;
-            this.Body = body;
+            this.Body = MonetizeLineBreaks(body);
         }
 
         public string Body { get; set; }
         public string Name { get; set; }
+
+        private static string MonetizeLineBreaks(string input)
+        {
+            return (input ?? "")
+                .Replace("\r\n", "\n")
+                .Replace("\r", "\n")
+                .Replace("\n", Environment.NewLine);
+        }
     }
 }
