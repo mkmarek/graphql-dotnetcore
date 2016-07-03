@@ -183,15 +183,6 @@
         }
 
         [Test]
-        public void Lex_InvalidCharacter_ThrowsExceptionWithCorrectMessage()
-        {
-            var exception = Assert.Throws<InvalidCharacterException>(
-                new TestDelegate(() => GetInvalidCharacterSourceLexer()));
-
-            Assert.AreEqual("Invalid character \"\\u0007\"", exception.Message);
-        }
-
-        [Test]
         public void Lex_LeftBracePunctuation_HasCorrectEnd()
         {
             var token = GetLeftBracePunctuationTokenLexer();
@@ -983,11 +974,6 @@
         private static Token GetEscapedStringTokenLexer()
         {
             return new Lexer().Lex(new Source("\"escaped \\n\\r\\b\\t\\f\""));
-        }
-
-        private static Token GetInvalidCharacterSourceLexer()
-        {
-            return new Lexer().Lex(new Source("\u0007"));
         }
 
         private static Token GetLeftBracePunctuationTokenLexer()

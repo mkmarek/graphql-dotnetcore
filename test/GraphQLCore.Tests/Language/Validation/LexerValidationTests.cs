@@ -1,0 +1,138 @@
+﻿namespace GraphQLCore.Tests.Language.Validation
+{
+    using Exceptions;
+    using GraphQLCore.Language;
+    using NUnit.Framework;
+
+    [TestFixture]
+    public class LexerValidationTests
+    {
+        [Test]
+        public void Lex_InvalidCharacter_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("\u0007"))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:1) Invalid character \\u0007.", exception.Message);
+        }
+
+        [Test]
+        public void Lex_UnterminatedString_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("\""))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:2) Unterminated string.", exception.Message);
+        }
+
+        [Test]
+        public void Lex_UnterminatedStringWithText_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("\"no end quote"))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:14) Unterminated string.", exception.Message);
+        }
+
+        [Test]
+        public void Lex_UnescapedControlChar_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("\"contains unescaped \u0007 control char"))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:21) Invalid character within String: \\u0007.", exception.Message);
+        }
+
+        [Test]
+        public void Lex_NullByteInString_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("\"null-byte is not \u0000 end of file"))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:19) Invalid character within String: \\u0000.", exception.Message);
+        }
+
+        [Test]
+        public void Lex_LineBreakInMiddleOfString_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("\"multi\nline\""))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:7) Unterminated string.", exception.Message);
+        }
+
+        [Test]
+        public void Lex_CarriageReturnInMiddleOfString_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("\"multi\rline\""))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:7) Unterminated string.", exception.Message);
+        }
+
+        ////
+
+        [Test]
+        public void Lex_InvalidEscapeSequenceZetCharacter_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("\"bad \\z esc\""))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:7) Invalid character escape sequence: \\z.", exception.Message);
+        }
+
+        [Test]
+        public void Lex_InvalidEscapeSequenceXCharacter_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("\"bad \\x esc\""))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:7) Invalid character escape sequence: \\x.", exception.Message);
+        }
+
+        [Test]
+        public void Lex_InvalidUnicode_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("\"bad \\u1 esc\""))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:7) Invalid character escape sequence: \\u1 es.", exception.Message);
+        }
+
+        [Test]
+        public void Lex_InvalidUnicode2_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("\"bad \\u0XX1 esc\""))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:7) Invalid character escape sequence: \\u0XX1.", exception.Message);
+        }
+
+        [Test]
+        public void Lex_InvalidUnicode3_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("\"bad \\uFXXX esc\""))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:7) Invalid character escape sequence: \\uFXXX.", exception.Message);
+        }
+
+        [Test]
+        public void Lex_InvalidUnicode4_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("\"bad \\uXXXX esc\""))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:7) Invalid character escape sequence: \\uXXXX.", exception.Message);
+        }
+
+        [Test]
+        public void Lex_InvalidUnicode5_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("\"bad \\uXXXF esc\""))));
+
+            Assert.AreEqual("Syntax Error GraphQL (1:7) Invalid character escape sequence: \\uXXXF.", exception.Message);
+        }
+    }
+}
