@@ -6,7 +6,7 @@ namespace GraphQLCore.Exceptions
 {
     public class GraphQLSyntaxErrorException : GraphQLException
     {
-        public GraphQLSyntaxErrorException(string description, ISource source, int location) 
+        public GraphQLSyntaxErrorException(string description, ISource source, int location)
             : base(ComposeMessage(description, source, location))
         {
         }
@@ -17,17 +17,6 @@ namespace GraphQLCore.Exceptions
 
             return $"Syntax Error GraphQL ({location.Line}:{location.Column}) {description}" +
                 "\n" + HighlihtSourceAtLocation(source, location);
-        }
-
-        private static string ReplaceWithUnicodeRepresentation(string str)
-        {
-            foreach (var code in str.ToList())
-            {
-                if (code < 0x0020 && code != 0x0009 && code != 0x000A && code != 0x000D)
-                    str = str.Replace("" + code, "\\u" + ((int)code).ToString("D4"));
-            }
-
-            return str;
         }
 
         private static string HighlihtSourceAtLocation(ISource source, Location location)
@@ -54,6 +43,17 @@ namespace GraphQLCore.Exceptions
             string pad = "";
             for (var i = 0; i < length - str.Length; i++) pad += " ";
             return pad + str;
+        }
+
+        private static string ReplaceWithUnicodeRepresentation(string str)
+        {
+            foreach (var code in str.ToList())
+            {
+                if (code < 0x0020 && code != 0x0009 && code != 0x000A && code != 0x000D)
+                    str = str.Replace("" + code, "\\u" + ((int)code).ToString("D4"));
+            }
+
+            return str;
         }
     }
 }

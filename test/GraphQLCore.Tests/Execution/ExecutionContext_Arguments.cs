@@ -101,15 +101,19 @@
         {
             this.schema = new GraphQLSchema();
             var rootType = new RootQueryType(this.schema);
-            var nestedTypeNonGeneric = new NestedNonGenericQueryType(this.schema);
-            var nestedType = new NestedQueryType(nestedTypeNonGeneric, this.schema);
+            var nestedTypeNonGeneric = new NestedNonGenericQueryType();
+            var nestedType = new NestedQueryType(nestedTypeNonGeneric);
+
+            this.schema.AddKnownType(rootType);
+            this.schema.AddKnownType(nestedTypeNonGeneric);
+            this.schema.AddKnownType(nestedType);
 
             this.schema.Query(rootType);
         }
 
         private class NestedNonGenericQueryType : GraphQLObjectType
         {
-            public NestedNonGenericQueryType(GraphQLSchema schema) : base("NestedNonGenericQueryType", "", schema)
+            public NestedNonGenericQueryType() : base("NestedNonGenericQueryType", "")
             {
                 this.Field("text", (int id, string str) => $"{id} is from the parent and {str} is the current type");
             }
@@ -117,7 +121,7 @@
 
         private class NestedQueryType : GraphQLObjectType<TestObject>
         {
-            public NestedQueryType(NestedNonGenericQueryType nestedTypeNonGeneric, GraphQLSchema schema) : base("NestedQueryType", "", schema)
+            public NestedQueryType(NestedNonGenericQueryType nestedTypeNonGeneric) : base("NestedQueryType", "")
             {
                 this.Field(instance => instance.Id);
                 this.Field(instance => instance.StringField);
@@ -127,7 +131,7 @@
 
         private class RootQueryType : GraphQLObjectType
         {
-            public RootQueryType(GraphQLSchema schema) : base("RootQueryType", "", schema)
+            public RootQueryType(GraphQLSchema schema) : base("RootQueryType", "")
             {
                 this.Field("nested", (int id) => new TestObject() { Id = id, StringField = "Test with id " + id });
                 this.Field("withArray", (int[] ids) => ids.Count());

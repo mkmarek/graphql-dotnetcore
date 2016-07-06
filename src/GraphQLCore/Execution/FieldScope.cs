@@ -73,7 +73,7 @@
             if (ReflectionUtilities.IsCollection(input.GetType()))
                 return this.CompleteCollectionType((IEnumerable)input, selection, arguments);
 
-            var schemaValue = TypeResolver.GetElementFromSchemaByModelType(input.GetType(), this.context.GraphQLSchema);
+            var schemaValue = this.context.GraphQLSchema.TypeTranslator.GetType(input.GetType());
             if (schemaValue is GraphQLObjectType)
             {
                 return this.CompleteObjectType((GraphQLObjectType)schemaValue, selection, arguments, input);
@@ -99,7 +99,7 @@
         private Func<IList<GraphQLArgument>, object> GetFieldDefinition(GraphQLObjectType type, GraphQLFieldSelection selection)
         {
             if (selection.Name.Value == "__schema")
-                return (args) => this.context.GraphQLSchema.__Schema;
+                return (args) => this.context.GraphQLSchema.IntrospectedSchema;
 
             if (selection.Name.Value == "__type")
                 return (args) => TypeUtilities.InvokeWithArguments(args, this.GetTypeIntrospectionExpression());
@@ -107,7 +107,7 @@
             return (args) => type.ResolveField(selection, args, parent);
         }
 
-        private Expression<Func<string, __Type>> GetTypeIntrospectionExpression()
+        private Expression<Func<string, IntrospectedType>> GetTypeIntrospectionExpression()
         {
             return (string name) => this.context.GraphQLSchema.GetGraphQLType(name);
         }

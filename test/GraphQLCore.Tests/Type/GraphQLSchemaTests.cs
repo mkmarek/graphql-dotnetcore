@@ -23,14 +23,14 @@
         public void SetUp()
         {
             this.schema = new GraphQLSchema();
-            var rootType = new RootQueryType(this.schema);
+            var rootType = new RootQueryType();
 
             schema.Query(rootType);
         }
 
         private class RootQueryType : GraphQLObjectType
         {
-            public RootQueryType(GraphQLSchema schema) : base("RootQueryType", "", schema)
+            public RootQueryType() : base("RootQueryType", "")
             {
                 this.Field("hello", () => "world");
                 this.Field("test", () => "test");

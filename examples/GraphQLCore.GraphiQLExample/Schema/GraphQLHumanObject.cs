@@ -1,13 +1,13 @@
 ﻿namespace GraphQLCore.GraphiQLExample.Schema
 {
-    using Type;
     using Models;
+    using Type;
 
     public class GraphQLHumanObject : GraphQLObjectType<Human>
     {
-        public GraphQLHumanObject(GraphQLSchema schema)
-                : base("Human", "A humanoid creature in the Star Wars universe.", schema)
-            {
+        public GraphQLHumanObject()
+                : base("Human", "A humanoid creature in the Star Wars universe.")
+        {
             this.Field("id", e => e.Id);
             this.Field("name", e => e.Name);
             this.Field("friends", e => e.Friends);

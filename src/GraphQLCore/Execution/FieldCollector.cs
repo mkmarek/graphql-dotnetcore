@@ -1,12 +1,11 @@
 ﻿namespace GraphQLCore.Execution
 {
     using Language.AST;
-    using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
     using Type;
     using Utils;
+
     public class FieldCollector
     {
         private Dictionary<string, GraphQLFragmentDefinition> Fragments;
@@ -25,7 +24,6 @@
 
             return fields;
         }
-
 
         private void CollectField(GraphQLFieldSelection selection, Dictionary<string, IList<GraphQLFieldSelection>> fields)
         {

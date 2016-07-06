@@ -129,15 +129,15 @@
         public void SetUp()
         {
             this.schema = new GraphQLSchema();
-            var nestedType = new NestedQueryType(this.schema);
-            var rootType = new RootQueryType(nestedType, this.schema);
+            var nestedType = new NestedQueryType();
+            var rootType = new RootQueryType(nestedType);
 
             this.schema.Query(rootType);
         }
 
         private class NestedQueryType : GraphQLObjectType
         {
-            public NestedQueryType(GraphQLSchema schema) : base("NestedQueryType", "", schema)
+            public NestedQueryType() : base("NestedQueryType", "")
             {
                 this.Field("a", () => "1");
                 this.Field("b", () => "2");
@@ -146,7 +146,7 @@
 
         private class RootQueryType : GraphQLObjectType
         {
-            public RootQueryType(NestedQueryType nested, GraphQLSchema schema) : base("RootQueryType", "", schema)
+            public RootQueryType(NestedQueryType nested) : base("RootQueryType", "")
             {
                 this.Field("nested", () => nested);
             }

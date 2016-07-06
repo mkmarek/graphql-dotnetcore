@@ -10,6 +10,12 @@
     {
         private GraphQLSchema schema;
 
+        private interface ITestType
+        {
+            bool A { get; set; }
+            float B { get; set; }
+        }
+
         [Test]
         public void Execute_Introspecting__InputValue_HasDescription()
         {
@@ -25,30 +31,16 @@
         }
 
         [Test]
-        public void Execute_Introspecting__Schema_HasDescription()
-        {
-            var result = GetSchemaTypes().SingleOrDefault(e => e.name == "__Schema");
-            Assert.IsNotNull(result.description);
-        }
-
-        [Test]
-        public void Execute_Introspecting__Schema_IsTypeKindObject()
-        {
-            var result = GetSchemaTypes().SingleOrDefault(e => e.name == "__Schema");
-            Assert.AreEqual("OBJECT", result.kind);
-        }
-
-        [Test]
         public void Execute_Introspecting__Type_HasDescription()
         {
-            var result = GetSchemaTypes().SingleOrDefault(e => e.name == "__Schema");
+            var result = GetSchemaTypes().SingleOrDefault(e => e.name == "__Type");
             Assert.IsNotNull(result.description);
         }
 
         [Test]
         public void Execute_Introspecting__Type_IsTypeKindObject()
         {
-            var result = GetSchemaTypes().SingleOrDefault(e => e.name == "__Schema");
+            var result = GetSchemaTypes().SingleOrDefault(e => e.name == "__Type");
             Assert.AreEqual("OBJECT", result.kind);
         }
 
@@ -99,6 +91,20 @@
         {
             var result = GetSchemaTypes().SingleOrDefault(e => e.name == "Int");
             Assert.AreEqual("SCALAR", result.kind);
+        }
+
+        [Test]
+        public void Execute_IntrospectingIntrospectedSchemaType_HasDescription()
+        {
+            var result = GetSchemaTypes().SingleOrDefault(e => e.name == "__Type");
+            Assert.IsNotNull(result.description);
+        }
+
+        [Test]
+        public void Execute_IntrospectingIntrospectedSchemaType_IsTypeKindObject()
+        {
+            var result = GetSchemaTypes().SingleOrDefault(e => e.name == "__Type");
+            Assert.AreEqual("OBJECT", result.kind);
         }
 
         [Test]
@@ -280,6 +286,13 @@
         }
 
         [Test]
+        public void Execute_QueryType_GetsTheRootObjectName()
+        {
+            var schema = GetSchema();
+            Assert.AreEqual("RootQueryType", schema.queryType.name);
+        }
+
+        [Test]
         public void Execute_RootQueryType2IField_ShouldBeInterfaceType()
         {
             var field = GetFieldForObject("RootQueryType", "type2i");
@@ -295,11 +308,22 @@
             Assert.AreEqual("T2", field.type.name);
         }
 
-        [Test]
-        public void Execute_QueryType_GetsTheRootObjectName()
+        [SetUp]
+        public void SetUp()
         {
-            var schema = GetSchema();
-            Assert.AreEqual("RootQueryType", schema.queryType.name);
+            this.schema = new GraphQLSchema();
+
+            var type2 = new T2(this.schema);
+            var type1 = new T1(type2, this.schema);
+            var t2interface = new T2Interface(this.schema);
+            var rootType = new RootQueryType(type1, t2interface, this.schema);
+
+            this.schema.AddKnownType(type1);
+            this.schema.AddKnownType(type2);
+            this.schema.AddKnownType(t2interface);
+            this.schema.AddKnownType(rootType);
+
+            this.schema.Query(rootType);
         }
 
         [Test]
@@ -332,59 +356,6 @@
             dynamic type = GetType("T2Interface");
 
             Assert.AreEqual("T2", ((IEnumerable<dynamic>)type.possibleTypes).SingleOrDefault().name);
-        }
-
-        [SetUp]
-        public void SetUp()
-        {
-            this.schema = new GraphQLSchema();
-            
-            var type2 = new T2(this.schema);
-            var type1 = new T1(type2, this.schema);
-            var t2interface = new T2Interface(this.schema);
-
-            var rootType = new RootQueryType(type1, t2interface, this.schema);
-
-            this.schema.Query(rootType);
-        }
-
-        private class T1 : GraphQLObjectType
-        {
-            public T1(T2 type2, GraphQLSchema schema) : base("T1", "", schema)
-            {
-                this.Field("a", () => "1");
-                this.Field("b", () => 2);
-                this.Field("c", () => new int[] { 1, 2, 3 });
-                this.Field("type2", () => new TestType());
-            }
-        }
-
-        private class T2 : GraphQLObjectType<TestType>
-        {
-            public T2(GraphQLSchema schema) : base("T2", "", schema)
-            {
-                this.Field("a", e => e.A);
-                this.Field("b", e => e.B);
-                this.Field("sum", (int[] numbers) => numbers.Sum());
-            }
-        }
-
-        private class T2Interface : GraphQLInterfaceType<ITestType>
-        {
-            public T2Interface(GraphQLSchema schema) : base("T2Interface", "", schema)
-            {
-                this.Field("a", e => e.A);
-                this.Field("b", e => e.B);
-            }
-        }
-
-        private class RootQueryType : GraphQLObjectType
-        {
-            public RootQueryType(T1 type1, T2Interface type2Interface, GraphQLSchema schema) : base("RootQueryType", "", schema)
-            {
-                this.Field("type1", () => type1);
-                this.Field("type2i", () => (ITestType)new TestType());
-            }
         }
 
         private dynamic GetField(string fieldName)
@@ -456,7 +427,7 @@
                       }
                       interfaces {
                         name
-                      }      
+                      }
                     }
                 interfaces {
                     name kind description
@@ -473,7 +444,7 @@
                             name
                             kind
                         }
-                    }  
+                    }
                   }
                   args {
                     name
@@ -511,10 +482,43 @@
             ").__type;
         }
 
-        private interface ITestType
+        private class RootQueryType : GraphQLObjectType
         {
-            bool A { get; set; }
-            float B { get; set; }
+            public RootQueryType(T1 type1, T2Interface type2Interface, GraphQLSchema schema) : base("RootQueryType", "")
+            {
+                this.Field("type1", () => type1);
+                this.Field("type2i", () => (ITestType)new TestType());
+            }
+        }
+
+        private class T1 : GraphQLObjectType
+        {
+            public T1(T2 type2, GraphQLSchema schema) : base("T1", "")
+            {
+                this.Field("a", () => "1");
+                this.Field("b", () => 2);
+                this.Field("c", () => new int[] { 1, 2, 3 });
+                this.Field("type2", () => new TestType());
+            }
+        }
+
+        private class T2 : GraphQLObjectType<TestType>
+        {
+            public T2(GraphQLSchema schema) : base("T2", "")
+            {
+                this.Field("a", e => e.A);
+                this.Field("b", e => e.B);
+                this.Field("sum", (int[] numbers) => numbers.Sum());
+            }
+        }
+
+        private class T2Interface : GraphQLInterfaceType<ITestType>
+        {
+            public T2Interface(GraphQLSchema schema) : base("T2Interface", "")
+            {
+                this.Field("a", e => e.A);
+                this.Field("b", e => e.B);
+            }
         }
 
         private class TestType : ITestType

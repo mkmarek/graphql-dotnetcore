@@ -173,7 +173,7 @@
 
         private class NestedQueryType : GraphQLObjectType
         {
-            public NestedQueryType(GraphQLSchema schema) : base("NestedQueryType", "", schema)
+            public NestedQueryType(GraphQLSchema schema) : base("NestedQueryType", "")
             {
                 this.Field("a", () => "1");
                 this.Field("b", () => "2");
@@ -182,7 +182,7 @@
 
         private class RootQueryType : GraphQLObjectType
         {
-            public RootQueryType(NestedQueryType nested, GraphQLSchema schema) : base("RootQueryType", "", schema)
+            public RootQueryType(NestedQueryType nested, GraphQLSchema schema) : base("RootQueryType", "")
             {
                 this.Field("a", () => "world");
                 this.Field("b", () => "test");

@@ -11,7 +11,6 @@
     using Microsoft.Extensions.Logging;
     using System.IO;
 
-
     public class Startup
     {
         public Startup(IHostingEnvironment env)

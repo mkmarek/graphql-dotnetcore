@@ -88,55 +88,58 @@
         {
             this.schema = new GraphQLSchema();
 
-            var rootType = new RootQueryType(this.schema);
-            var nestedType = new NestedQueryType(this.schema);
+            var rootType = new RootQueryType();
+            var nestedType = new NestedQueryType();
             nestedType.Field("howdy", () => "xzyt");
 
-            var anotherSestedType = new AnotherNestedQueryType(this.schema);
+            var anotherSestedType = new AnotherNestedQueryType();
             anotherSestedType.Field("stuff", () => "a");
 
             nestedType.Field("anotherNested", () => anotherSestedType);
             rootType.Field("nested", () => nestedType);
 
-            var typeWithAccessor = new CustomObject(this.schema);
+            var typeWithAccessor = new CustomObject();
             typeWithAccessor.Field("Hello", e => e.Hello);
             typeWithAccessor.Field("Test", e => e.Test);
 
             rootType.Field("acessorBasedProp", () => new TestType() { Hello = "world", Test = "stuff" });
 
+            this.schema.AddKnownType(rootType);
+            this.schema.AddKnownType(anotherSestedType);
+            this.schema.AddKnownType(nestedType);
+            this.schema.AddKnownType(typeWithAccessor);
             this.schema.Query(rootType);
-        }
-
-        public class RootQueryType : GraphQLObjectType
-        {
-            public RootQueryType(GraphQLSchema schema) : base("RootQueryType", "", schema)
-            {
-                this.Field("hello", () => "world");
-                this.Field("test", () => "test");
-            }
-        }
-
-        public class NestedQueryType : GraphQLObjectType
-        {
-            public NestedQueryType(GraphQLSchema schema) : base("NestedQueryType", "", schema)
-            {
-            }
         }
 
         public class AnotherNestedQueryType : GraphQLObjectType
         {
-            public AnotherNestedQueryType(GraphQLSchema schema) : base("AnotherNestedQueryType", "", schema)
+            public AnotherNestedQueryType() : base("AnotherNestedQueryType", "")
             {
             }
         }
 
         public class CustomObject : GraphQLObjectType<TestType>
         {
-            public CustomObject(GraphQLSchema schema) : base("CustomObject", "", schema)
+            public CustomObject() : base("CustomObject", "")
             {
             }
         }
 
+        public class NestedQueryType : GraphQLObjectType
+        {
+            public NestedQueryType() : base("NestedQueryType", "")
+            {
+            }
+        }
+
+        public class RootQueryType : GraphQLObjectType
+        {
+            public RootQueryType() : base("RootQueryType", "")
+            {
+                this.Field("hello", () => "world");
+                this.Field("test", () => "test");
+            }
+        }
 
         public class TestType
         {

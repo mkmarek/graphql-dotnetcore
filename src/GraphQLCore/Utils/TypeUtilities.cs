@@ -3,14 +3,11 @@
     using Exceptions;
     using Language.AST;
     using System;
-    using System.Reflection;
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
-    using Type;
-    using Type.Introspection;
-    using Type.Scalars;
+    using System.Reflection;
 
     public static class TypeUtilities
     {
@@ -22,17 +19,18 @@
             return TryConvertToParameterType(input, parameter);
         }
 
+        public static object ConvertTo(object input, Type target)
+        {
+            if (target.GetTypeInfo().IsEnum)
+                return TryConvertToEnumParameterType(input, target);
+
+            return Convert.ChangeType(input, target);
+        }
+
         public static object[] FetchArgumentValues(LambdaExpression expression, IList<GraphQLArgument> arguments)
         {
             return ReflectionUtilities.GetParameters(expression)
                 .Select(e => ChangeValueType(GetArgumentValue(arguments, e.Name), e))
-                .ToArray();
-        }
-
-        public static __InputValue[] FetchInputArguments(LambdaExpression expression, GraphQLSchema schema)
-        {
-            return ReflectionUtilities.GetParameters(expression)
-                .Select(e => new __InputValue(e, schema))
                 .ToArray();
         }
 
@@ -54,49 +52,7 @@
             return output;
         }
 
-        public static string GetTypeKind(__Type e)
-        {
-            return (string)e.ResolveField("kind");
-        }
-
-        public static string GetTypeName(__Type e)
-        {
-            return (string)e.ResolveField("name");
-        }
-
-        public static string[] GetTypeNames(List<__Type> typeList)
-        {
-            return typeList.Select(e => GetTypeName(e)).ToArray();
-        }
-
-        public static object InvokeWithArguments(IList<GraphQLArgument> arguments, LambdaExpression expression)
-        {
-            var argumentValues = FetchArgumentValues(expression, arguments);
-
-            return expression.Compile().DynamicInvoke(argumentValues);
-        }     
-
-        public static object TryConvertToParameterType(object input, ParameterExpression parameter)
-        {
-            try
-            {
-                if (parameter.Type.GetTypeInfo().IsEnum)
-                    return TryConvertToEnumParameterType(input, parameter.Type);
-
-                return Convert.ChangeType(input, parameter.Type);
-            }
-            catch (Exception ex)
-            {
-                throw new GraphQLException($"Can't convert input of type {input.GetType().Name} to {parameter.Type.Name}.", ex);
-            }
-        }
-
-        private static object TryConvertToEnumParameterType(object input, Type type)
-        {
-            return Enum.Parse(type, input as string);
-        }
-
-        private static object GetValue(GraphQLValue value)
+        public static object GetValue(GraphQLValue value)
         {
             switch (value.Kind)
             {
@@ -109,6 +65,30 @@
             }
 
             throw new NotImplementedException();
+        }
+
+        public static object InvokeWithArguments(IList<GraphQLArgument> arguments, LambdaExpression expression)
+        {
+            var argumentValues = FetchArgumentValues(expression, arguments);
+
+            return expression.Compile().DynamicInvoke(argumentValues);
+        }
+
+        public static object TryConvertToParameterType(object input, ParameterExpression parameter)
+        {
+            try
+            {
+                return ConvertTo(input, parameter.Type);
+            }
+            catch (Exception ex)
+            {
+                throw new GraphQLException($"Can't convert input of type {input.GetType().Name} to {parameter.Type.Name}.", ex);
+            }
+        }
+
+        private static object TryConvertToEnumParameterType(object input, Type type)
+        {
+            return Enum.Parse(type, input as string);
         }
     }
 }

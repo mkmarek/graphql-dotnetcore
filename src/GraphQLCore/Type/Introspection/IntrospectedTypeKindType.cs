@@ -12,11 +12,12 @@
         UNION
     }
 
-    public class __TypeKind : GraphQLEnumType<TypeKind>
+    public class IntrospectedTypeKindType : GraphQLEnumType<TypeKind>
     {
-        public __TypeKind(GraphQLSchema schema) : base("__TypeKind", "An enum describing what kind of type a given `__Type` is.", null)
+        public IntrospectedTypeKindType() : base(
+            "__TypeKind",
+            "An enum describing what kind of type a given `__Type` is.")
         {
-            this.schema = schema;
         }
     }
 }

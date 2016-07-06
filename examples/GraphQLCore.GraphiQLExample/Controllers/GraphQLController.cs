@@ -2,7 +2,6 @@
 {
     using Microsoft.AspNetCore.Mvc;
     using Models;
-    using Schema;
     using System;
     using Type;
 
@@ -21,8 +20,9 @@
         {
             try
             {
-                return this.Json( new { data = schema.Execute(input.Query) });
-            } catch(Exception ex)
+                return this.Json(new { data = schema.Execute(input.Query) });
+            }
+            catch (Exception ex)
             {
                 return this.Json(
                     new

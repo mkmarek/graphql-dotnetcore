@@ -59,7 +59,7 @@
         {
             switch (this.operation.Operation)
             {
-                case OperationType.Query: return this.GraphQLSchema.RootType;
+                case OperationType.Query: return this.GraphQLSchema.QueryType;
                 default: throw new Exception("Can only execute queries");
             }
         }

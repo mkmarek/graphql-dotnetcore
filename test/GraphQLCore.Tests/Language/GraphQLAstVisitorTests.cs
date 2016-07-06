@@ -37,23 +37,23 @@
             this.parser = new Parser(new Lexer());
             this.visitor = Substitute.ForPartsOf<GraphQLAstVisitor>();
 
-            this.visitedDefinitions = MockVisitMethod<ASTNode>((visitor) => visitor.VisitOperationDefinition(null));
-            this.visitedSelectionSets = MockVisitMethod<GraphQLSelectionSet>((visitor) => visitor.VisitSelectionSet(null));
-            this.visitedFieldSelections = MockVisitMethod<GraphQLFieldSelection>((visitor) => visitor.VisitFieldSelection(null));
-            this.visitedNames = MockVisitMethod<GraphQLName>((visitor) => visitor.VisitName(null));
-            this.visitedArguments = MockVisitMethod<GraphQLArgument>((visitor) => visitor.VisitArgument(null));
-            this.visitedAliases = MockVisitMethod<GraphQLName>((visitor) => visitor.VisitAlias(null));
-            this.visitedFragmentSpreads = MockVisitMethod<GraphQLFragmentSpread>((visitor) => visitor.VisitFragmentSpread(null));
-            this.visitedFragmentDefinitions = MockVisitMethod<GraphQLFragmentDefinition>((visitor) => visitor.VisitFragmentDefinition(null));
-            this.visitedFragmentTypeConditions = MockVisitMethod<GraphQLNamedType>((visitor) => visitor.VisitNamedType(null));
-            this.visitedInlineFragments = MockVisitMethod<GraphQLInlineFragment>((visitor) => visitor.VisitInlineFragment(null));
-            this.visitedDirectives = MockVisitMethod<GraphQLDirective>((visitor) => visitor.VisitDirective(null));
-            this.visitedVariables = MockVisitMethod<GraphQLVariable>((visitor) => visitor.VisitVariable(null));
-            this.visitedIntValues = MockVisitMethod<GraphQLValue<int>>((visitor) => visitor.VisitIntValue(null));
-            this.visitedFloatValues = MockVisitMethod<GraphQLValue<float>>((visitor) => visitor.VisitFloatValue(null));
-            this.visitedStringValues = MockVisitMethod<GraphQLValue<string>>((visitor) => visitor.VisitStringValue(null));
-            this.visitedBooleanValues = MockVisitMethod<GraphQLValue<bool>>((visitor) => visitor.VisitBooleanValue(null));
-            this.visitedEnumValues = MockVisitMethod<GraphQLValue<string>>((visitor) => visitor.VisitEnumValue(null));
+            this.visitedDefinitions = MockVisitMethod<ASTNode>((visitor) => visitor.BeginVisitOperationDefinition(null));
+            this.visitedSelectionSets = MockVisitMethod<GraphQLSelectionSet>((visitor) => visitor.BeginVisitSelectionSet(null));
+            this.visitedFieldSelections = MockVisitMethod<GraphQLFieldSelection>((visitor) => visitor.BeginVisitFieldSelection(null));
+            this.visitedNames = MockVisitMethod<GraphQLName>((visitor) => visitor.BeginVisitName(null));
+            this.visitedArguments = MockVisitMethod<GraphQLArgument>((visitor) => visitor.BeginVisitArgument(null));
+            this.visitedAliases = MockVisitMethod<GraphQLName>((visitor) => visitor.BeginVisitAlias(null));
+            this.visitedFragmentSpreads = MockVisitMethod<GraphQLFragmentSpread>((visitor) => visitor.BeginVisitFragmentSpread(null));
+            this.visitedFragmentDefinitions = MockVisitMethod<GraphQLFragmentDefinition>((visitor) => visitor.BeginVisitFragmentDefinition(null));
+            this.visitedFragmentTypeConditions = MockVisitMethod<GraphQLNamedType>((visitor) => visitor.BeginVisitNamedType(null));
+            this.visitedInlineFragments = MockVisitMethod<GraphQLInlineFragment>((visitor) => visitor.BeginVisitInlineFragment(null));
+            this.visitedDirectives = MockVisitMethod<GraphQLDirective>((visitor) => visitor.BeginVisitDirective(null));
+            this.visitedVariables = MockVisitMethod<GraphQLVariable>((visitor) => visitor.BeginVisitVariable(null));
+            this.visitedIntValues = MockVisitMethod<GraphQLValue<int>>((visitor) => visitor.BeginVisitIntValue(null));
+            this.visitedFloatValues = MockVisitMethod<GraphQLValue<float>>((visitor) => visitor.BeginVisitFloatValue(null));
+            this.visitedStringValues = MockVisitMethod<GraphQLValue<string>>((visitor) => visitor.BeginVisitStringValue(null));
+            this.visitedBooleanValues = MockVisitMethod<GraphQLValue<bool>>((visitor) => visitor.BeginVisitBooleanValue(null));
+            this.visitedEnumValues = MockVisitMethod<GraphQLValue<string>>((visitor) => visitor.BeginVisitEnumValue(null));
         }
 
         [Test]

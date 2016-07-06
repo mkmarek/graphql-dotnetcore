@@ -29,13 +29,6 @@
         public int Start { get; set; }
         public object Value { get; set; }
 
-        public override string ToString()
-        {
-            return this.Value != null
-                ? $"{GetTokenKindDescription(Kind)} \"{this.Value}\""
-                : GetTokenKindDescription(Kind);
-        }
-
         public static string GetTokenKindDescription(TokenKind kind)
         {
             switch (kind)
@@ -61,6 +54,13 @@
             }
 
             return "";
+        }
+
+        public override string ToString()
+        {
+            return this.Value != null
+                ? $"{GetTokenKindDescription(Kind)} \"{this.Value}\""
+                : GetTokenKindDescription(Kind);
         }
     }
 }

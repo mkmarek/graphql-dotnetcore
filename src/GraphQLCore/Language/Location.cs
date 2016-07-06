@@ -4,9 +4,6 @@
 
     public class Location
     {
-        public int Line { get; private set; }
-        public int Column { get; private set; }
-
         public Location(ISource source, int position)
         {
             var lineRegex = new Regex("\r\n|[\n\r]", RegexOptions.ECMAScript);
@@ -22,5 +19,8 @@
                 this.Column = position + 1 - (match.Index + matches[0].Length);
             }
         }
+
+        public int Column { get; private set; }
+        public int Line { get; private set; }
     }
 }

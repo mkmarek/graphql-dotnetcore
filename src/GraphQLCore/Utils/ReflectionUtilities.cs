@@ -24,17 +24,6 @@
             return ToArray(elementType, Cast(elementType, input));
         }
 
-        public static List<Type> GetGenericArgumentsFromAllParents(Type type)
-        {
-            var arguments = type.GenericTypeArguments.ToList();
-
-            var baseType = type.GetTypeInfo().BaseType;
-            if (baseType != null)
-                arguments.AddRange(GetGenericArgumentsFromAllParents(baseType));
-
-            return arguments;
-        }
-
         public static object ChangeToCollection(object input, ParameterExpression parameter)
         {
             if (parameter.Type.IsArray)
@@ -56,6 +45,20 @@
                 return collectionType.GetElementType();
 
             return collectionType.GenericTypeArguments.Single();
+        }
+
+        public static Type GetGenericArgumentsEagerly(Type type)
+        {
+            var argument = type.GenericTypeArguments.FirstOrDefault();
+
+            if (argument != null)
+                return argument;
+
+            var baseType = type.GetTypeInfo().BaseType;
+            if (baseType != null)
+                return GetGenericArgumentsEagerly(baseType);
+
+            return argument;
         }
 
         public static ParameterExpression[] GetParameters(LambdaExpression resolver)
@@ -87,6 +90,19 @@
             return expression.Type.GenericTypeArguments.LastOrDefault();
         }
 
+        public static bool IsEnum(Type type)
+        {
+            return type.GetTypeInfo().IsEnum;
+        }
+
+        public static bool IsStruct(Type type)
+        {
+            return type.GetTypeInfo().IsValueType &&
+                !type.GetTypeInfo().IsPrimitive &&
+                !type.Namespace.StartsWith("System") &&
+                !type.GetTypeInfo().IsEnum;
+        }
+
         public static object ToArray(System.Type type, object input)
         {
             var toArray = typeof(Enumerable).GetRuntimeMethods()
@@ -96,29 +112,6 @@
             return toArray.Invoke(null, new object[] { input });
         }
 
-        public static List<Type> GetGenericArguments(Type type)
-        {
-            var types = GetAllParentsAndCurrentTypeFrom(type);
-
-            return types.SelectMany(e => e.GenericTypeArguments).ToList();
-        }
-
-        internal static bool IsClass(Type type)
-        {
-            return !type.GetTypeInfo().IsValueType &&
-                !type.GetTypeInfo().IsPrimitive &&
-                !type.Namespace.StartsWith("System") &&
-                !type.GetTypeInfo().IsEnum;
-        }
-
-        public static bool IsStruct(Type type)
-        {
-            return type.GetTypeInfo().IsValueType && 
-                !type.GetTypeInfo().IsPrimitive && 
-                !type.Namespace.StartsWith("System") && 
-                !type.GetTypeInfo().IsEnum;
-        }
-
         public static object ToList(System.Type type, object input)
         {
             var toList = typeof(Enumerable).GetRuntimeMethods()
@@ -126,23 +119,6 @@
                 .MakeGenericMethod(type);
 
             return toList.Invoke(null, new object[] { input });
-        }
-
-        internal static bool IsCollection(System.Type type)
-        {
-            return (type.IsArray || typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo())) && type != typeof(string);
-        }
-
-        internal static List<Type> GetAllParentsAndCurrentTypeFrom(Type type)
-        {
-            var types = new List<Type>();
-            while (type != null)
-            {
-                types.Add(type);
-                type = type.GetTypeInfo().BaseType;
-            }
-
-            return types;
         }
 
         internal static List<Type> GetAllImplementingInterfaces(Type type)
@@ -155,6 +131,11 @@
             }
 
             return types;
+        }
+
+        internal static bool IsCollection(System.Type type)
+        {
+            return (type.IsArray || typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo())) && type != typeof(string);
         }
     }
 }

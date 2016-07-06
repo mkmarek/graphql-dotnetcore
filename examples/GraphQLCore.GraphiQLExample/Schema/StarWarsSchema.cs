@@ -6,7 +6,15 @@
     {
         public StarWarsSchema()
         {
-            this.Query(new Query(this));
+            var rootQuery = new Query();
+
+            this.AddKnownType(new GraphQLCharacterInterface());
+            this.AddKnownType(new GraphQLHumanObject());
+            this.AddKnownType(new GraphQLDroidObject());
+            this.AddKnownType(new GraphQLEpisodeEnum());
+            this.AddKnownType(rootQuery);
+
+            this.Query(rootQuery);
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace GraphQLCore.Language
+﻿namespace GraphQLCore.Language
 {
     public class Source : ISource
     {

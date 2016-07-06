@@ -10,8 +10,7 @@ These objects could be used for example for root queries.
 ```csharp
 public class Query : GraphQLObjectType
 {
-	public Query(GraphQLSchema schema) 
-		: base("Query", "Sample root query defintion", schema)
+	public Query() : base("Query", "Sample root query defintion")
 	{
 		this.Field("sum", (int[] numbers) => numbers.Sum());
 	}

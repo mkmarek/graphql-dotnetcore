@@ -4,25 +4,32 @@
     using Introspection;
     using Language;
     using Language.AST;
-    using System.Collections.Generic;
     using System.Linq;
-    using Utils;
+    using Translation;
 
     public class GraphQLSchema : IGraphQLSchema
     {
-        public List<GraphQLScalarType> SchemaTypes { get; private set; }
+        private IIntrospector introspector;
+        private ISchemaObserver schemaObserver;
 
         public GraphQLSchema()
         {
-            this.SchemaTypes = new List<GraphQLScalarType>();
-            this.SchemaTypes.Add(new __Type(this));
-            this.SchemaTypes.Add(new __TypeKind(this));
-            this.SchemaTypes.Add(new __InputValue(null, this));
-            this.__Schema = new __Schema(this);
+            this.schemaObserver = new SchemaObserver();
+            this.TypeTranslator = new TypeTranslator(this.schemaObserver);
+            this.introspector = new Introspector(this.TypeTranslator);
+            this.IntrospectedSchema = new IntrospectedSchemaType(this.schemaObserver, this.introspector, this);
+
+            this.RegisterIntrospectionTypes();
         }
 
-        public __Schema __Schema { get; private set; }
-        public GraphQLObjectType RootType { get; private set; }
+        public IntrospectedSchemaType IntrospectedSchema { get; private set; }
+        public GraphQLObjectType QueryType { get; private set; }
+        public ITypeTranslator TypeTranslator { get; private set; }
+
+        public void AddKnownType(GraphQLNullableType type)
+        {
+            this.schemaObserver.AddKnownType(type);
+        }
 
         public dynamic Execute(string expression)
         {
@@ -32,54 +39,29 @@
             }
         }
 
-        public IEnumerable<__Type> Introspect()
-        {
-            var result = new List<__Type>();
-
-            foreach (var type in this.SchemaTypes)
-            {
-                if (!TypeUtilities.GetTypeNames(result).Contains(type.Name))
-                {
-                    result.Add(new __Type(type, this));
-                    if (type is GraphQLObjectType)
-                        AppendObjectTypes(result, (GraphQLObjectType)type);
-                }
-            }
-
-            return result.Where(e => TypeUtilities.GetTypeName(e) != null)
-                .ToList();
-        }
-
         public void Query(GraphQLObjectType root)
         {
-            this.RootType = root;
-            ;
+            this.QueryType = root;
         }
 
-        internal __Type GetGraphQLType(string name)
+        internal IntrospectedType GetGraphQLType(string name)
         {
-            return this.Introspect().Where(e => TypeUtilities.GetTypeName(e) == name).FirstOrDefault();
-        }
-
-        internal void RegisterType(GraphQLScalarType value)
-        {
-            this.SchemaTypes.Add(value);
-        }
-
-        private void AppendObjectTypes(List<__Type> result, GraphQLObjectType objectType)
-        {
-            var types = TypeResolver.IntrospectObjectFieldTypes(objectType, this);
-
-            foreach (var type in types)
-            {
-                if (!TypeUtilities.GetTypeNames(result).Contains(TypeUtilities.GetTypeName(type)))
-                    result.Add(type);
-            }
+            return this.IntrospectedSchema.Introspect().Where(e => e.Name == name).FirstOrDefault();
         }
 
         private GraphQLDocument GetAst(string expression)
         {
             return new Parser(new Lexer()).Parse(new Source(expression));
+        }
+
+        private void RegisterIntrospectionTypes()
+        {
+            this.schemaObserver.AddKnownType(new IntrospectedTypeKindType());
+            this.schemaObserver.AddKnownType(new IntrospectedTypeType());
+            this.schemaObserver.AddKnownType(new IntrospectedFieldType());
+            this.schemaObserver.AddKnownType(new IntrospectedInputValueType());
+            this.schemaObserver.AddKnownType(new GraphQLEnumValue(null, null));
+            this.schemaObserver.AddKnownType(this.IntrospectedSchema);
         }
     }
 }

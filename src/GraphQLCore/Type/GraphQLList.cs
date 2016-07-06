@@ -1,24 +1,12 @@
 ﻿namespace GraphQLCore.Type
 {
-    using Execution;
-    using Introspection;
-    using System;
-    using Utils;
-
-    public class GraphQLList : GraphQLObjectType
+    public class GraphQLList : GraphQLNullableType
     {
-        private __Type memberType;
-
-        public GraphQLList(Type collectionType, GraphQLSchema schema) : base(null, null, null)
+        public GraphQLList(GraphQLScalarType memberType) : base(null, null)
         {
-            this.schema = schema;
-            this.memberType = TypeResolver.ResolveObjectArgumentType(
-                ReflectionUtilities.GetCollectionMemberType(collectionType), schema);
+            this.MemberType = memberType;
         }
 
-        internal __Type GetMemberType()
-        {
-            return this.memberType;
-        }
+        public GraphQLScalarType MemberType { get; private set; }
     }
 }

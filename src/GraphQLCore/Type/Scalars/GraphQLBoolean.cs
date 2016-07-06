@@ -1,10 +1,10 @@
 ﻿namespace GraphQLCore.Type.Scalars
 {
-    public class GraphQLBoolean : GraphQLScalarType
+    public class GraphQLBoolean : GraphQLNullableType
     {
-        public GraphQLBoolean(GraphQLSchema schema) : base("Boolean",
-            "The `Boolean` scalar type represents `true` or `false`.",
-            schema)
+        public GraphQLBoolean() : base(
+            "Boolean",
+            "The `Boolean` scalar type represents `true` or `false`.")
         {
         }
     }

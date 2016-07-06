@@ -3,6 +3,7 @@
     using Exceptions;
     using GraphQLCore.Type;
     using NUnit.Framework;
+    using System.Linq;
 
     public class GraphQLObjectTypeTests
     {
@@ -51,6 +52,38 @@
         }
 
         [Test]
+        public void GetFieldInfo_SingleResolverWithTwoArguments_ReturnsCorrectAmountOfArguments()
+        {
+            type.Field("A", (int a, string b) => "y");
+
+            var info = type.GetFieldInfo("A");
+
+            Assert.AreEqual(2, info.Arguments.Count);
+        }
+
+        [Test]
+        public void GetFieldsInfo_SingleAccessor_ReturnsCorrectInformationReflectedFromLambda()
+        {
+            type.Field("A", e => e.Test);
+
+            var info = type.GetFieldsInfo();
+
+            Assert.AreEqual("A", info.Single().Name);
+            Assert.AreEqual(typeof(int), info.Single().ReturnValueType);
+            Assert.AreEqual(false, info.Single().IsResolver);
+        }
+
+        [Test]
+        public void GetFieldsInfo_SingleAccessor_ReturnsZeroArguments()
+        {
+            type.Field("A", e => e.Test);
+
+            var info = type.GetFieldsInfo();
+
+            Assert.AreEqual(0, info.Single().Arguments.Count);
+        }
+
+        [Test]
         public void Name_HasCorrectName()
         {
             Assert.AreEqual("Test", type.Name);
@@ -59,7 +92,7 @@
         [SetUp]
         public void SetUp()
         {
-            this.type = new GraphQLTestModelType(new GraphQLSchema());
+            this.type = new GraphQLTestModelType();
         }
 
         [Test]
@@ -70,7 +103,7 @@
 
         public class GraphQLTestModelType : GraphQLObjectType<TestModel>
         {
-            public GraphQLTestModelType(GraphQLSchema schema) : base("Test", "Test description", schema)
+            public GraphQLTestModelType() : base("Test", "Test description")
             {
             }
         }

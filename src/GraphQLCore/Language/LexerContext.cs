@@ -52,12 +52,9 @@ namespace GraphQLCore.Language
                 $"Unexpected character {this.ResolveCharName(code, unicode)}", this.source, this.currentIndex);
         }
 
-        private string IfUnicodeGetString()
+        public bool OnlyHexInString(string test)
         {
-            return this.source.Body.Length > this.currentIndex + 5 &&
-                this.OnlyHexInString(this.source.Body.Substring(this.currentIndex + 2, 4))
-                ? this.source.Body.Substring(this.currentIndex, 6)
-                : null;
+            return System.Text.RegularExpressions.Regex.IsMatch(test, @"\A\b[0-9a-fA-F]+\b\Z");
         }
 
         public Token ReadNumber()
@@ -114,14 +111,6 @@ namespace GraphQLCore.Language
             };
         }
 
-        private void CheckStringTermination(char code)
-        {
-            if (code != '"')
-            {
-                throw new GraphQLSyntaxErrorException("Unterminated string.", this.source, this.currentIndex);
-            }
-        }
-
         private static bool IsValidNameCharacter(char code)
         {
             return code == '_' || char.IsLetterOrDigit(code);
@@ -156,6 +145,15 @@ namespace GraphQLCore.Language
             return Convert.ToByte(code.ToString(), 16);
         }
 
+        private void CheckForInvalidCharacters(char code)
+        {
+            if (code < 0x0020 && code != 0x0009)
+            {
+                throw new GraphQLSyntaxErrorException(
+                    $"Invalid character within String: \\u{((int)code).ToString("D4")}.", this.source, this.currentIndex);
+            }
+        }
+
         private Token CheckForPunctuationTokens(char code)
         {
             switch (code)
@@ -187,6 +185,14 @@ namespace GraphQLCore.Language
                 return this.CreatePunctuationToken(TokenKind.SPREAD, 3);
             }
             return null;
+        }
+
+        private void CheckStringTermination(char code)
+        {
+            if (code != '"')
+            {
+                throw new GraphQLSyntaxErrorException("Unterminated string.", this.source, this.currentIndex);
+            }
         }
 
         private Token CreateEOFToken()
@@ -280,14 +286,9 @@ namespace GraphQLCore.Language
             return position;
         }
 
-        public bool OnlyHexInString(string test)
-        {
-            return System.Text.RegularExpressions.Regex.IsMatch(test, @"\A\b[0-9a-fA-F]+\b\Z");
-        }
-
         private char GetUnicodeChar()
         {
-            var expression = this.source.Body.Substring(this.currentIndex,5);
+            var expression = this.source.Body.Substring(this.currentIndex, 5);
 
             if (!this.OnlyHexInString(expression.Substring(1)))
             {
@@ -301,6 +302,14 @@ namespace GraphQLCore.Language
                 CharToHex(NextCode()));
 
             return character;
+        }
+
+        private string IfUnicodeGetString()
+        {
+            return this.source.Body.Length > this.currentIndex + 5 &&
+                this.OnlyHexInString(this.source.Body.Substring(this.currentIndex + 2, 4))
+                ? this.source.Body.Substring(this.currentIndex, 6)
+                : null;
         }
 
         private char NextCode()
@@ -343,23 +352,6 @@ namespace GraphQLCore.Language
             return value;
         }
 
-        private void CheckForInvalidCharacters(char code)
-        {
-            if (code < 0x0020 && code != 0x0009)
-            {
-                throw new GraphQLSyntaxErrorException(
-                    $"Invalid character within String: \\u{((int)code).ToString("D4")}.", this.source, this.currentIndex);
-            }
-        }
-
-        private string ResolveCharName(char code, string unicodeString = null)
-        {
-            if (code == '\0') return "<EOF>";
-            if (!string.IsNullOrWhiteSpace(unicodeString)) return $"\"{unicodeString}\""; ;
-
-            return $"\"{code}\"";
-        }
-
         private int ReadDigits(ISource source, int start, char firstCode)
         {
             var body = source.Body;
@@ -397,11 +389,19 @@ namespace GraphQLCore.Language
             return CreateNameToken(start);
         }
 
+        private string ResolveCharName(char code, string unicodeString = null)
+        {
+            if (code == '\0') return "<EOF>";
+            if (!string.IsNullOrWhiteSpace(unicodeString)) return $"\"{unicodeString}\""; ;
+
+            return $"\"{code}\"";
+        }
+
         private void ValidateCharacterCode(int code)
         {
             if (code < 0x0020 && code != 0x0009 && code != 0x000A && code != 0x000D)
             {
-                throw new GraphQLSyntaxErrorException($"Invalid character \"\\u{code.ToString("D4")}\".", 
+                throw new GraphQLSyntaxErrorException($"Invalid character \"\\u{code.ToString("D4")}\".",
                     this.source, this.currentIndex);
             };
         }

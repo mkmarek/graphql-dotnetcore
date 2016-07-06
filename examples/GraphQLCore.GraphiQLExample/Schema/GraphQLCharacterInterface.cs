@@ -1,12 +1,12 @@
 ﻿namespace GraphQLCore.GraphiQLExample.Schema
 {
-    using Type;
     using Models;
+    using Type;
 
     public class GraphQLCharacterInterface : GraphQLInterfaceType<ICharacter>
     {
-        public GraphQLCharacterInterface(GraphQLSchema schema) 
-            : base("Character", "A character in the Star Wars Trilogy", schema)
+        public GraphQLCharacterInterface()
+            : base("Character", "A character in the Star Wars Trilogy")
         {
             this.Field("id", e => e.Id);
             this.Field("name", e => e.Name);

@@ -1,12 +1,12 @@
 ﻿namespace GraphQLCore.Type.Scalars
 {
-    public class GraphQLFloat : GraphQLScalarType
+    public class GraphQLFloat : GraphQLNullableType
     {
-        public GraphQLFloat(GraphQLSchema schema) : base("Float",
+        public GraphQLFloat() : base(
+            "Float",
             "The `Float` scalar type represents signed double-precision fractional " +
             "values as specified by " +
-            "[IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point). ",
-            schema)
+            "[IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point). ")
         {
         }
     }
