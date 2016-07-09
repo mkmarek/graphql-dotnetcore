@@ -81,6 +81,9 @@
                 return this.CompleteObjectType((GraphQLObjectType)schemaValue, selection, arguments, input);
             }
 
+            if (ReflectionUtilities.IsEnum(input.GetType()))
+                return input.ToString();
+
             return input;
         }
 

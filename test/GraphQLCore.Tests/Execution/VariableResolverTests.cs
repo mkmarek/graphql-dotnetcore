@@ -1,19 +1,18 @@
 ﻿namespace GraphQLCore.Tests.Execution
 {
     using GraphQLCore.Execution;
-    using NUnit.Framework;
-    using System.Dynamic;
     using GraphQLCore.Language.AST;
-    using System;
-    using System.Collections.Generic;
     using GraphQLCore.Type.Translation;
     using NSubstitute;
+    using NUnit.Framework;
+    using System.Collections.Generic;
+    using System.Dynamic;
 
     public class VariableResolverTests
     {
-        private VariableResolver variableResolver;
-        private ITypeTranslator typeTranslator;
         private GraphQLNamedType intNamedType;
+        private ITypeTranslator typeTranslator;
+        private VariableResolver variableResolver;
 
         [Test]
         public void GetValue_ScalarIntVariable_CallsTypeTranslatorWithCorrectType()
@@ -34,6 +33,17 @@
             this.variableResolver = new VariableResolver(variables, this.typeTranslator, this.GetVariableDefinitions());
         }
 
+        private static GraphQLNamedType GetIntNamedType()
+        {
+            return new GraphQLNamedType()
+            {
+                Name = new GraphQLName()
+                {
+                    Value = "Int"
+                },
+            };
+        }
+
         private IEnumerable<GraphQLVariableDefinition> GetVariableDefinitions()
         {
             var definitions = new List<GraphQLVariableDefinition>();
@@ -51,17 +61,6 @@
             });
 
             return definitions;
-        }
-
-        private static GraphQLNamedType GetIntNamedType()
-        {
-            return new GraphQLNamedType()
-            {
-                Name = new GraphQLName()
-                {
-                    Value = "Int"
-                },
-            };
         }
     }
 }

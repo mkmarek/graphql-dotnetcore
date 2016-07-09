@@ -23,6 +23,7 @@
             this.Field("stringListArgField", (string[] stringListArg) => stringListArg);
             this.Field("nonNullIntListArgField", (int[] nonNullIntListArg) => nonNullIntListArg);
             this.Field("intListArgField", (int?[] intListArg) => intListArg);
+            this.Field("complicatedObjectArgField", (ComplicatedObject complicatedObjectArg) => complicatedObjectArg);
         }
     }
 
@@ -32,6 +33,7 @@
         public FurColor EnumField { get; set; }
         public float FloatField { get; set; }
         public int? IntField { get; set; }
+        public ComplicatedObject Nested { get; set; }
         public int NonNullIntField { get; set; }
         public string StringField { get; set; }
         public string[] StringListField { get; set; }
@@ -43,11 +45,12 @@
         {
             this.Field("intField", e => e.IntField);
             this.Field("nonNullIntField", e => e.NonNullIntField);
-            this.Field("stringField", e => e.StringListField);
+            this.Field("stringField", e => e.StringField);
             this.Field("booleanField", e => e.BooleanField);
             this.Field("enumField", e => e.EnumField);
             this.Field("floatField", e => e.FloatField);
             this.Field("stringListField", e => e.StringListField);
+            this.Field("nested", e => e.Nested);
         }
     }
 

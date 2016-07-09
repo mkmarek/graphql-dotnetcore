@@ -4,6 +4,7 @@
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Dynamic;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
@@ -152,48 +153,32 @@
             return (type.IsArray || typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo())) && type != typeof(string);
         }
 
-        public static object ChangeValueType(object input, Type parameterType)
+        public static object ChangeValueType(object input, Type target)
         {
-            if (input == null || parameterType == null)
+            if (input == null || target == null)
                 return null;
 
-            if (IsCollection(parameterType))
-                return ChangeToCollection(input, parameterType);
-
-            return TryConvertToParameterType(input, parameterType);
-        }
-
-        public static object ConvertTo(object input, Type target)
-        {
             if (input.GetType() == target)
                 return input;
 
-            if (target.GetTypeInfo().IsEnum)
-                return TryConvertToEnumParameterType(input, target);
+            var underlyingNullableType = Nullable.GetUnderlyingType(target);
+            if (underlyingNullableType != null)
+                return ChangeValueType(input, underlyingNullableType);
 
-            return Convert.ChangeType(input, target);
-        }
+            if (IsCollection(target))
+                return ChangeToCollection(input, target);
 
-        public static object TryConvertToParameterType(object input, Type parameterType)
-        {
+            if (IsEnum(target))
+                return Enum.Parse(target, input as string);
+
             try
             {
-                var underlyingNullableType = Nullable.GetUnderlyingType(parameterType);
-
-                if (underlyingNullableType == null)
-                    return ConvertTo(input, parameterType);
-
-                return ConvertTo(input, underlyingNullableType);
+                return Convert.ChangeType(input, target);
             }
             catch (Exception ex)
             {
-                throw new GraphQLException($"Can't convert input of type {input.GetType().Name} to {parameterType.Name}.", ex);
+                throw new GraphQLException($"Can't convert input of type {input.GetType().Name} to {target.Name}.", ex);
             }
-        }
-
-        private static object TryConvertToEnumParameterType(object input, Type type)
-        {
-            return Enum.Parse(type, input as string);
         }
     }
 }

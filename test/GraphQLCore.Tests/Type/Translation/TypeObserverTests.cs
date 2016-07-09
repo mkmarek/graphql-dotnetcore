@@ -56,7 +56,7 @@
         {
             var fields = complicatedObjectTypeObserver.GetFields();
 
-            Assert.AreEqual(7, fields.Count());
+            Assert.AreEqual(8, fields.Count());
         }
 
         [SetUp]

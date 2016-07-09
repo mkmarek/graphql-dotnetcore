@@ -55,7 +55,10 @@
 
             if (reflectedType == null)
             {
-                reflectedType = this.schemaObserver.GetTypeFor(type);
+                if (type is GraphQLNonNullType)
+                    reflectedType = this.schemaObserver.GetTypeFor(((GraphQLNonNullType)type).UnderlyingNullableType);
+                else
+                    reflectedType = this.schemaObserver.GetTypeFor(type);
             }
 
             return reflectedType;

@@ -91,6 +91,7 @@
             schemaObserver.AddKnownType(new QueryRoot());
             schemaObserver.AddKnownType(new ComplicatedArgs());
             schemaObserver.AddKnownType(new FurColorEnum());
+            schemaObserver.AddKnownType(new ComplicatedObjectType());
 
             var typeTranslator = new TypeTranslator(schemaObserver);
             this.introspector = new Introspector(typeTranslator);
