@@ -24,24 +24,6 @@
             this.Field(ReflectionUtilities.GetPropertyInfo(accessor).Name, accessor);
         }
 
-        internal override object ResolveField(
-            GraphQLFieldSelection field, IList<GraphQLArgument> arguments, object parent)
-        {
-            var name = this.GetFieldName(field);
-
-            if (this.fields.ContainsKey(name))
-            {
-                var fieldInfo = this.fields[this.GetFieldName(field)];
-
-                if (fieldInfo.IsResolver)
-                    return base.ResolveField(field, arguments, parent);
-
-                return this.ProcessField(fieldInfo.Lambda.Compile().DynamicInvoke(new object[] { parent }));
-            }
-
-            return null;
-        }
-
         protected void AddAcessor(string fieldName, LambdaExpression accessor)
         {
             if (this.ContainsField(fieldName))

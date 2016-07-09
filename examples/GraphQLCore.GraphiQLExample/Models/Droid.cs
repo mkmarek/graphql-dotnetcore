@@ -9,6 +9,5 @@
         public string Id { get; set; }
         public string Name { get; set; }
         public string PrimaryFunction { get; set; }
-        public string SecretBackstory { get; set; }
     }
 }

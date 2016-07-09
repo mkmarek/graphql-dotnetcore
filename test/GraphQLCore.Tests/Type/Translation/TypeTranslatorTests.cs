@@ -33,7 +33,7 @@
         }
 
         [Test]
-        public void Translate_ClassType_UsesSchemaObserverToGetCorrectType()
+        public void GetType_ClassType_UsesSchemaObserverToGetCorrectType()
         {
             var type = typeof(TestClass);
 
@@ -43,7 +43,7 @@
         }
 
         [Test]
-        public void Translate_EnumType_ReturnsNonNullOfEnumSchemeType()
+        public void GetType_EnumType_ReturnsNonNullOfEnumSchemeType()
         {
             var type = typeof(FurColor);
 
@@ -54,7 +54,7 @@
         }
 
         [Test]
-        public void Translate_NullableEnumType_ReturnsEnumSchemeType()
+        public void GetType_NullableEnumType_ReturnsEnumSchemeType()
         {
             var type = typeof(FurColor?);
 
@@ -64,7 +64,7 @@
         }
 
         [Test]
-        public void Translate_NullableStructType_ReturnsSchemeObjectType()
+        public void GetType_NullableStructType_ReturnsSchemeObjectType()
         {
             var type = typeof(TestStruct?);
 
@@ -74,7 +74,7 @@
         }
 
         [Test]
-        public void Translate_StructType_ReturnsNonNullOfObjectType()
+        public void GetType_StructType_ReturnsNonNullOfObjectType()
         {
             var type = typeof(TestStruct);
 
@@ -85,7 +85,7 @@
         }
 
         [Test]
-        public void TranslateList_ListOfNonNullInt_CreatesGraphQLListInstance()
+        public void GetType_ListOfNonNullInt_CreatesGraphQLListInstance()
         {
             var type = typeof(int[]);
 
@@ -97,7 +97,7 @@
         }
 
         [Test]
-        public void TranslateScalar_BooleanType_CreatesGraphQLBooleanInstance()
+        public void GetType_BooleanType_CreatesGraphQLBooleanInstance()
         {
             var type = typeof(bool);
 
@@ -108,7 +108,7 @@
         }
 
         [Test]
-        public void TranslateScalar_FloatType_CreatesGraphQLFloatInstance()
+        public void GetType_FloatType_CreatesGraphQLFloatInstance()
         {
             var type = typeof(float);
 
@@ -119,7 +119,7 @@
         }
 
         [Test]
-        public void TranslateScalar_IntType_CreatesGraphQLIntInstance()
+        public void GetType_IntType_CreatesGraphQLIntInstance()
         {
             var type = typeof(int);
 
@@ -130,7 +130,7 @@
         }
 
         [Test]
-        public void TranslateScalar_NullableBooleanType_CreatesGraphQLBooleanInstance()
+        public void GetType_NullableBooleanType_CreatesGraphQLBooleanInstance()
         {
             var type = typeof(bool?);
 
@@ -140,7 +140,7 @@
         }
 
         [Test]
-        public void TranslateScalar_NullableFloatType_CreatesGraphQLFloatInstance()
+        public void GetType_NullableFloatType_CreatesGraphQLFloatInstance()
         {
             var type = typeof(float?);
 
@@ -150,7 +150,7 @@
         }
 
         [Test]
-        public void TranslateScalar_NullableIntType_CreatesGraphQLIntInstance()
+        public void GetType_NullableIntType_CreatesGraphQLIntInstance()
         {
             var type = typeof(int?);
 
@@ -160,13 +160,31 @@
         }
 
         [Test]
-        public void TranslateScalar_NullableStringType_CreatesGraphQLStringInstance()
+        public void GetType_NullableStringType_CreatesGraphQLStringInstance()
         {
             var type = typeof(string);
 
             var graphqlType = translator.GetType(type);
 
             Assert.IsInstanceOf<GraphQLString>(graphqlType);
+        }
+
+        [Test]
+        public void GetType_IntNamedType_GetsValueFromKnownTypesByCorrectName()
+        {
+            this.schemaObserver.GetKnownTypes().Returns(new GraphQLNullableType[] { new GraphQLInt() });
+
+            var graphqlType = translator.GetType(GetGraphQLNamedType("Int"));
+
+            Assert.IsInstanceOf<GraphQLInt>(graphqlType);
+        }
+
+        private static GraphQLCore.Language.AST.GraphQLNamedType GetGraphQLNamedType(string name)
+        {
+            return new GraphQLCore.Language.AST.GraphQLNamedType()
+            {
+                Name = new GraphQLCore.Language.AST.GraphQLName() { Value = name }
+            };
         }
 
         public struct TestStruct { }

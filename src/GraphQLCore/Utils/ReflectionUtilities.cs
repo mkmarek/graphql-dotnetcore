@@ -1,5 +1,6 @@
 ﻿namespace GraphQLCore.Utils
 {
+    using Exceptions;
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -9,32 +10,39 @@
 
     public class ReflectionUtilities
     {
+        public static IEnumerable<TResult> ConvertEnumerable<TResult>(IEnumerable source)
+        {
+            foreach (var element in source)
+                yield return (TResult)ChangeValueType(element, typeof(TResult));
+
+        }
+
         public static object Cast(System.Type type, object input)
         {
-            var cast = typeof(Enumerable).GetRuntimeMethod("Cast", new System.Type[] { typeof(IEnumerable) })
+            var cast = typeof(ReflectionUtilities).GetRuntimeMethod("ConvertEnumerable", new System.Type[] { typeof(IEnumerable) })
                 .MakeGenericMethod(type);
 
             return cast.Invoke(null, new object[] { input });
         }
 
-        public static object ChangeToArrayCollection(object input, ParameterExpression parameter)
+        public static object ChangeToArrayCollection(object input, Type parameterType)
         {
-            var elementType = parameter.Type.GetElementType();
+            var elementType = parameterType.GetElementType();
 
             return ToArray(elementType, Cast(elementType, input));
         }
 
-        public static object ChangeToCollection(object input, ParameterExpression parameter)
+        public static object ChangeToCollection(object input, Type parameterType)
         {
-            if (parameter.Type.IsArray)
-                return ChangeToArrayCollection(input, parameter);
+            if (parameterType.IsArray)
+                return ChangeToArrayCollection(input, parameterType);
 
-            return ChangeToListCollection(input, parameter);
+            return ChangeToListCollection(input, parameterType);
         }
 
-        public static object ChangeToListCollection(object input, ParameterExpression parameter)
+        public static object ChangeToListCollection(object input, Type parameterType)
         {
-            var elementType = parameter.Type.GenericTypeArguments.Single();
+            var elementType = parameterType.GenericTypeArguments.Single();
 
             return ToList(elementType, Cast(elementType, input));
         }
@@ -45,6 +53,12 @@
                 return collectionType.GetElementType();
 
             return collectionType.GenericTypeArguments.Single();
+        }
+
+        internal static Type CreateListTypeOf(Type type)
+        {
+            var listType = typeof(List<>);
+            return listType.MakeGenericType(type);
         }
 
         public static Type GetGenericArgumentsEagerly(Type type)
@@ -112,7 +126,7 @@
             return toArray.Invoke(null, new object[] { input });
         }
 
-        public static object ToList(System.Type type, object input)
+        public static object ToList(Type type, object input)
         {
             var toList = typeof(Enumerable).GetRuntimeMethods()
                 .SingleOrDefault(e => e.Name == "ToList")
@@ -133,9 +147,53 @@
             return types;
         }
 
-        internal static bool IsCollection(System.Type type)
+        internal static bool IsCollection(Type type)
         {
             return (type.IsArray || typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo())) && type != typeof(string);
+        }
+
+        public static object ChangeValueType(object input, Type parameterType)
+        {
+            if (input == null || parameterType == null)
+                return null;
+
+            if (IsCollection(parameterType))
+                return ChangeToCollection(input, parameterType);
+
+            return TryConvertToParameterType(input, parameterType);
+        }
+
+        public static object ConvertTo(object input, Type target)
+        {
+            if (input.GetType() == target)
+                return input;
+
+            if (target.GetTypeInfo().IsEnum)
+                return TryConvertToEnumParameterType(input, target);
+
+            return Convert.ChangeType(input, target);
+        }
+
+        public static object TryConvertToParameterType(object input, Type parameterType)
+        {
+            try
+            {
+                var underlyingNullableType = Nullable.GetUnderlyingType(parameterType);
+
+                if (underlyingNullableType == null)
+                    return ConvertTo(input, parameterType);
+
+                return ConvertTo(input, underlyingNullableType);
+            }
+            catch (Exception ex)
+            {
+                throw new GraphQLException($"Can't convert input of type {input.GetType().Name} to {parameterType.Name}.", ex);
+            }
+        }
+
+        private static object TryConvertToEnumParameterType(object input, Type type)
+        {
+            return Enum.Parse(type, input as string);
         }
     }
 }

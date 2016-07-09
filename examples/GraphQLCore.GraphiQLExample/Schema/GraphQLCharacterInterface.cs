@@ -12,7 +12,6 @@
             this.Field("name", e => e.Name);
             this.Field("friends", e => e.Friends);
             this.Field("appearsIn", e => e.AppearsIn);
-            this.Field("secretBackstory", e => e.SecretBackstory);
         }
     }
 }

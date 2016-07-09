@@ -2,7 +2,10 @@
 {
     using Microsoft.AspNetCore.Mvc;
     using Models;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
     using System;
+    using System.Dynamic;
     using Type;
 
     [Route("api/[controller]")]
@@ -20,7 +23,12 @@
         {
             try
             {
-                return this.Json(new { data = schema.Execute(input.Query) });
+                return this.Json(
+                    new
+                    {
+                        data = this.schema.Execute(input.Query, GetVariables(input))
+                    }
+                );
             }
             catch (Exception ex)
             {
@@ -31,6 +39,14 @@
                     }
                 );
             }
+        }
+
+        private static dynamic GetVariables(GraphiQLInput input)
+        {
+            if (string.IsNullOrWhiteSpace(input.Variables))
+                return new ExpandoObject();
+
+            return JsonConvert.DeserializeObject<ExpandoObject>(input.Variables);
         }
     }
 }

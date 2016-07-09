@@ -14,13 +14,15 @@
     {
         public ComplicatedArgs() : base("ComplicatedArgs", "")
         {
-            this.Field("intArgField", (int? intArg) => "");
-            this.Field("nonNullIntArgField", (int nonNullIntArg) => "");
-            this.Field("stringArgField", (string stringArg) => "");
-            this.Field("booleanArgField", (bool booleanArg) => "");
-            this.Field("enumArgField", (FurColor enumArg) => "");
-            this.Field("floatArgField", (float floatArg) => "");
-            this.Field("stringListArgField", (string[] stringListArg) => "");
+            this.Field("intArgField", (int? intArg) => intArg);
+            this.Field("nonNullIntArgField", (int nonNullIntArg) => nonNullIntArg);
+            this.Field("stringArgField", (string stringArg) => stringArg);
+            this.Field("booleanArgField", (bool booleanArg) => booleanArg);
+            this.Field("enumArgField", (FurColor enumArg) => enumArg);
+            this.Field("floatArgField", (float floatArg) => floatArg);
+            this.Field("stringListArgField", (string[] stringListArg) => stringListArg);
+            this.Field("nonNullIntListArgField", (int[] nonNullIntListArg) => nonNullIntListArg);
+            this.Field("intListArgField", (int?[] intListArg) => intListArg);
         }
     }
 
@@ -51,7 +53,7 @@
 
     public class FurColorEnum : GraphQLEnumType<FurColor>
     {
-        public FurColorEnum() : base("FurColorEnum", "")
+        public FurColorEnum() : base("FurColor", "")
         {
         }
     }

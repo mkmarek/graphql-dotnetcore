@@ -1,6 +1,6 @@
 ﻿namespace GraphQLCore.Type
 {
-    using GraphQLCore.Type.Introspection;
+    using Introspection;
     using Translation;
 
     public interface IGraphQLSchema
@@ -10,6 +10,8 @@
         ITypeTranslator TypeTranslator { get; }
 
         dynamic Execute(string expression);
+
+        dynamic Execute(string query, dynamic variables);
 
         void Query(GraphQLObjectType root);
     }

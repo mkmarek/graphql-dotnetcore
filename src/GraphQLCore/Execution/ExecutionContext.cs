@@ -2,8 +2,13 @@
 {
     using Language.AST;
     using System;
+    using System.Collections;
     using System.Collections.Generic;
+    using System.Dynamic;
+    using System.Linq;
+    using System.Linq.Expressions;
     using Type;
+    using Utils;
 
     public class ExecutionContext : IDisposable
     {
@@ -12,13 +17,22 @@
         private FieldCollector fieldCollector;
         private Dictionary<string, GraphQLFragmentDefinition> fragments;
         private GraphQLOperationDefinition operation;
+        private VariableResolver operationVariableResolver;
+        private dynamic variables;
 
         public ExecutionContext(GraphQLSchema graphQLSchema, GraphQLDocument ast)
         {
             this.GraphQLSchema = graphQLSchema;
             this.ast = ast;
             this.fragments = new Dictionary<string, GraphQLFragmentDefinition>();
-            this.fieldCollector = new FieldCollector(this.fragments);
+            this.fieldCollector = new FieldCollector(this.fragments, this);
+            this.variables = new ExpandoObject();
+        }
+
+        public ExecutionContext(GraphQLSchema graphQLSchema, GraphQLDocument ast, dynamic variables) 
+            : this(graphQLSchema, ast)
+        {
+            this.variables = variables;
         }
 
         public void Dispose()
@@ -33,6 +47,8 @@
             if (this.operation == null)
                 throw new Exception("Must provide an operation.");
 
+            this.operationVariableResolver = new VariableResolver(
+                this.variables, this.GraphQLSchema.TypeTranslator, this.operation.VariableDefinitions);
             var type = this.GetOperationRootType();
 
             return ComposeResultForType(type, this.operation.SelectionSet);
@@ -46,7 +62,7 @@
 
         internal FieldScope CreateScope(GraphQLObjectType type, object parentObject)
         {
-            return new FieldScope(this, type, parentObject);
+            return new FieldScope(this, type, parentObject, this.operationVariableResolver);
         }
 
         internal dynamic GetResultFromScope(GraphQLObjectType type, GraphQLSelectionSet selectionSet, FieldScope scope)
@@ -88,6 +104,55 @@
 
             if (this.operation == null)
                 this.operation = graphQLOperationDefinition;
+        }
+
+
+        public object[] FetchArgumentValues(LambdaExpression expression, IList<GraphQLArgument> arguments)
+        {
+            return ReflectionUtilities.GetParameters(expression)
+                .Select(e => ReflectionUtilities.ChangeValueType(GetArgumentValue(arguments, e.Name), e.Type))
+                .ToArray();
+        }
+
+        public object GetArgumentValue(IEnumerable<GraphQLArgument> arguments, string argumentName)
+        {
+            var value = arguments.SingleOrDefault(e => e.Name.Value == argumentName).Value;
+
+            return this.GetValue(value);
+        }
+
+        public object InvokeWithArguments(IList<Language.AST.GraphQLArgument> arguments, LambdaExpression expression)
+        {
+            var argumentValues = FetchArgumentValues(expression, arguments);
+
+            return expression.Compile().DynamicInvoke(argumentValues);
+        }
+
+        public IEnumerable GetListValue(Language.AST.GraphQLValue value)
+        {
+            IList output = new List<object>();
+            var list = ((GraphQLValue<IEnumerable<GraphQLValue>>)value).Value;
+
+            foreach (var item in list)
+                output.Add(GetValue(item));
+
+            return output;
+        }
+
+        public object GetValue(GraphQLValue value)
+        {
+            var literalValue = this.GraphQLSchema.TypeTranslator.GetLiteralValue(value);
+
+            if (literalValue != null)
+                return literalValue;
+
+            switch (value.Kind)
+            {
+                case ASTNodeKind.ListValue: return GetListValue(value);
+                case ASTNodeKind.Variable: return  this.operationVariableResolver.GetValue((GraphQLVariable)value);
+            }
+
+            throw new NotImplementedException();
         }
     }
 }

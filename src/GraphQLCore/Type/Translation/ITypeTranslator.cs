@@ -1,6 +1,8 @@
 ﻿namespace GraphQLCore.Type.Translation
 {
     using Exceptions;
+    using Language.AST;
+    using System.Collections.Generic;
 
     public interface ITypeTranslator
     {
@@ -10,6 +12,12 @@
 
         GraphQLScalarType GetType(System.Type type);
 
-        GraphQLException[] IsValidLiteralValue(GraphQLScalarType inputType, Language.AST.GraphQLValue astValue);
+        GraphQLException[] IsValidLiteralValue(GraphQLScalarType inputType, GraphQLValue astValue);
+
+        object GetLiteralValue(GraphQLValue value);
+
+        GraphQLScalarType GetType(GraphQLNamedType type);
+
+        System.Type GetType(GraphQLScalarType type);
     }
 }

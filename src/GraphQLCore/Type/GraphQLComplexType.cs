@@ -19,6 +19,9 @@
 
         public GraphQLObjectTypeFieldInfo GetFieldInfo(string fieldName)
         {
+            if (!this.ContainsField(fieldName))
+                return null;
+
             return this.fields[fieldName];
         }
 

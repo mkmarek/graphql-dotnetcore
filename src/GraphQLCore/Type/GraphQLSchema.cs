@@ -39,6 +39,14 @@
             }
         }
 
+        public dynamic Execute(string expression, dynamic variables)
+        {
+            using (var context = new ExecutionContext(this, this.GetAst(expression), variables))
+            {
+                return context.Execute();
+            }
+        }
+
         public void Query(GraphQLObjectType root)
         {
             this.QueryType = root;

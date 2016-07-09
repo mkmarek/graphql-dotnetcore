@@ -19,7 +19,7 @@
         {
             var introspectedTypeObject = this.introspector.Introspect(new FurColorEnum());
 
-            Assert.AreEqual("FurColorEnum", introspectedTypeObject.Name);
+            Assert.AreEqual("FurColor", introspectedTypeObject.Name);
             Assert.AreEqual(TypeKind.ENUM, introspectedTypeObject.Kind);
             Assert.IsNull(introspectedTypeObject.OfType);
             Assert.IsNotNull(introspectedTypeObject.Description);

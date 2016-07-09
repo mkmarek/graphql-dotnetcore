@@ -5,14 +5,17 @@
     using System.Linq;
     using Type;
     using Utils;
+    using Type.Translation;
 
     public class FieldCollector
     {
         private Dictionary<string, GraphQLFragmentDefinition> Fragments;
+        private ExecutionContext executionContext;
 
-        public FieldCollector(Dictionary<string, GraphQLFragmentDefinition> fragments)
+        public FieldCollector(Dictionary<string, GraphQLFragmentDefinition> fragments, ExecutionContext executionContext)
         {
             this.Fragments = fragments;
+            this.executionContext = executionContext;
         }
 
         public Dictionary<string, IList<GraphQLFieldSelection>> CollectFields(GraphQLObjectType runtimeType, GraphQLSelectionSet selectionSet)
@@ -85,11 +88,11 @@
         private bool ShouldIncludeNode(IEnumerable<GraphQLDirective> directives)
         {
             var skipAST = directives?.FirstOrDefault(e => e.Name.Value == "skip");
-            if (skipAST != null && TypeUtilities.GetArgumentValue(skipAST.Arguments, "if").Equals(true))
+            if (skipAST != null && this.executionContext.GetArgumentValue(skipAST.Arguments, "if").Equals(true))
                 return false;
 
             var includeAST = directives?.FirstOrDefault(e => e.Name.Value == "include");
-            if (includeAST != null && TypeUtilities.GetArgumentValue(includeAST.Arguments, "if").Equals(false))
+            if (includeAST != null && this.executionContext.GetArgumentValue(includeAST.Arguments, "if").Equals(false))
                 return false;
 
             return true;

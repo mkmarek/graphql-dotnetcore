@@ -16,14 +16,16 @@
         private List<GraphQLArgument> arguments;
         private ExecutionContext context;
         private object parent;
+        private VariableResolver variableResolver;
         private GraphQLObjectType type;
 
-        public FieldScope(ExecutionContext context, GraphQLObjectType type, object parent)
+        public FieldScope(ExecutionContext context, GraphQLObjectType type, object parent, VariableResolver variableResolver)
         {
             this.type = type;
             this.context = context;
             this.parent = parent;
             this.arguments = new List<GraphQLArgument>();
+            this.variableResolver = variableResolver;
         }
 
         public dynamic GetObject(Dictionary<string, IList<GraphQLFieldSelection>> fields)
@@ -102,14 +104,48 @@
                 return (args) => this.context.GraphQLSchema.IntrospectedSchema;
 
             if (selection.Name.Value == "__type")
-                return (args) => TypeUtilities.InvokeWithArguments(args, this.GetTypeIntrospectionExpression());
+                return (args) => this.context.InvokeWithArguments(args, this.GetTypeIntrospectionExpression());
 
-            return (args) => type.ResolveField(selection, args, parent);
+            return (args) => this.ResolveField(GetFieldInfo(type, selection), args, parent);
         }
 
         private Expression<Func<string, IntrospectedType>> GetTypeIntrospectionExpression()
         {
             return (string name) => this.context.GraphQLSchema.GetGraphQLType(name);
+        }
+
+        private GraphQLObjectTypeFieldInfo GetFieldInfo(GraphQLObjectType type, GraphQLFieldSelection selection)
+        {
+            var name = this.GetFieldName(selection);
+            return type.GetFieldInfo(name);
+        }
+
+        private object ResolveField(
+            GraphQLObjectTypeFieldInfo fieldInfo, IList<GraphQLArgument> arguments, object parent)
+        {
+            if (fieldInfo == null)
+                return null;
+
+            if (fieldInfo.IsResolver)
+                return this.ProcessField(this.context.InvokeWithArguments(arguments, fieldInfo.Lambda));
+
+            return this.ProcessField(fieldInfo.Lambda.Compile().DynamicInvoke(new object[] { parent }));
+        }
+
+        private object ProcessField(object input)
+        {
+            if (input == null)
+                return null;
+
+            if (ReflectionUtilities.IsEnum(input.GetType()))
+                return input.ToString();
+
+            return input;
+        }
+
+        protected string GetFieldName(GraphQLFieldSelection selection)
+        {
+            return selection.Name?.Value ?? selection.Alias?.Value;
         }
     }
 }

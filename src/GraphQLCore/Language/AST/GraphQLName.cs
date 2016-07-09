@@ -10,6 +10,6 @@
             }
         }
 
-        public string Value { get; internal set; }
+        public string Value { get; set; }
     }
 }
