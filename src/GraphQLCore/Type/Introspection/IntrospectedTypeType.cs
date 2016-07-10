@@ -21,6 +21,7 @@
             this.Field("ofType", e => e.OfType);
             this.Field("interfaces", e => e.Interfaces);
             this.Field("possibleTypes", e => e.PossibleTypes);
+            this.Field("inputFields", e => e.InputFields);
         }
     }
 }

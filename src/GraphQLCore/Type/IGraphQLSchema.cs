@@ -7,6 +7,7 @@
     {
         IntrospectedSchemaType IntrospectedSchema { get; }
         GraphQLObjectType QueryType { get; }
+        GraphQLObjectType MutationType { get; }
         ITypeTranslator TypeTranslator { get; }
 
         dynamic Execute(string expression);

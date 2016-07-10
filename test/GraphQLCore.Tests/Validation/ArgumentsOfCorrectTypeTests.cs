@@ -15,13 +15,14 @@
     {
         private ArgumentsOfCorrectType argumentsOfCorrectType;
         private ValidationContext validationContext;
-        private IGraphQLSchema validationTestSchema;
+        private TestSchema validationTestSchema;
 
         [SetUp]
         public void SetUp()
         {
             this.argumentsOfCorrectType = new ArgumentsOfCorrectType();
             this.validationTestSchema = new TestSchema();
+
             this.validationContext = new ValidationContext();
         }
 

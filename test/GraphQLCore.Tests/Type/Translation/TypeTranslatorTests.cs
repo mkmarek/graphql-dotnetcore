@@ -172,7 +172,7 @@
         [Test]
         public void GetType_IntNamedType_GetsValueFromKnownTypesByCorrectName()
         {
-            this.schemaObserver.GetKnownTypes().Returns(new GraphQLNullableType[] { new GraphQLInt() });
+            this.schemaObserver.GetOutputKnownTypes().Returns(new GraphQLNullableType[] { new GraphQLInt() });
 
             var graphqlType = translator.GetType(GetGraphQLNamedType("Int"));
 

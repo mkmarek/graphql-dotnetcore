@@ -26,6 +26,11 @@
             return cast.Invoke(null, new object[] { input });
         }
 
+        internal static bool IsInterface(Type type)
+        {
+            return type.GetTypeInfo().IsInterface;
+        }
+
         public static object ChangeToArrayCollection(object input, Type parameterType)
         {
             var elementType = parameterType.GetElementType();

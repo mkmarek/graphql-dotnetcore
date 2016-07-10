@@ -1,6 +1,6 @@
 ﻿namespace GraphQLCore.Type.Introspection
 {
-    public class IntrospectedArgument
+    public class IntrospectedInputValue
     {
         public string DeprecationReason { get; set; }
         public string Description { get; set; }

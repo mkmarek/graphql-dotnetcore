@@ -136,6 +136,17 @@
             return this.schemaObserver.GetSchemaTypeFor(type);
         }
 
+        private GraphQLScalarType GetSchemaInputType(Type type)
+        {
+            if (this.IsNullable(type))
+                return this.schemaObserver.GetSchemaInputTypeFor(Nullable.GetUnderlyingType(type));
+
+            if (this.IsValueType(type))
+                return new GraphQLNonNullType(this.schemaObserver.GetSchemaInputTypeFor(type));
+
+            return this.schemaObserver.GetSchemaInputTypeFor(type);
+        }
+
         private bool IsNullable(Type type)
         {
             return Nullable.GetUnderlyingType(type) != null;
@@ -175,8 +186,19 @@
 
         public GraphQLScalarType GetType(Language.AST.GraphQLNamedType type)
         {
-            return this.schemaObserver.GetKnownTypes()
+            return this.schemaObserver.GetOutputKnownTypes()
                 .Single(e => e.Name == type.Name.Value);
+        }
+
+        public GraphQLScalarType GetInputType(Type type)
+        {
+            if (ReflectionUtilities.IsCollection(type))
+                return new GraphQLList(this.GetInputType(ReflectionUtilities.GetCollectionMemberType(type)));
+
+            if (this.bindings.ContainsKey(type))
+                return this.bindings[type];
+
+            return this.GetSchemaInputType(type);
         }
     }
 }

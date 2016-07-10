@@ -25,13 +25,17 @@
 
             this.Field("types", () => this.Introspect());
             this.Field("queryType", () => introspector.Introspect(this.schema.QueryType));
+            this.Field("mutationType", () => introspector.Introspect(this.schema.MutationType));
         }
 
         public IEnumerable<IntrospectedType> Introspect()
         {
             var result = new List<IntrospectedType>();
 
-            foreach (var type in this.schemaObserver.GetKnownTypes())
+            foreach (var type in this.schemaObserver.GetOutputKnownTypes())
+                result.Add(this.introspector.Introspect(type));
+
+            foreach (var type in this.schemaObserver.GetInputKnownTypes().Where(e => !result.Any(r => r.Name == e.Name)))
                 result.Add(this.introspector.Introspect(type));
 
             return result

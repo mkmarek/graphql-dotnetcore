@@ -2,7 +2,7 @@
 {
     using Introspection;
 
-    public class IntrospectedInputValueType : GraphQLObjectType<IntrospectedArgument>
+    public class IntrospectedInputValueType : GraphQLObjectType<IntrospectedInputValue>
     {
         public IntrospectedInputValueType() : base("__InputValue", "")
         {

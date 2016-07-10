@@ -54,6 +54,21 @@
         }
     }
 
+    public class ComplicatedInputObjectType : GraphQLInputObjectType<ComplicatedObject>
+    {
+        public ComplicatedInputObjectType() : base("ComplicatedInputObjectType", "ComplicatedInputObjectType description")
+        {
+            this.Field("intField", e => e.IntField);
+            this.Field("nonNullIntField", e => e.NonNullIntField);
+            this.Field("stringField", e => e.StringField);
+            this.Field("booleanField", e => e.BooleanField);
+            this.Field("enumField", e => e.EnumField);
+            this.Field("floatField", e => e.FloatField);
+            this.Field("stringListField", e => e.StringListField);
+            this.Field("nested", e => e.Nested);
+        }
+    }
+
     public class FurColorEnum : GraphQLEnumType<FurColor>
     {
         public FurColorEnum() : base("FurColor", "")

@@ -7,12 +7,14 @@
     {
         void AddKnownType(GraphQLNullableType type);
 
-        IEnumerable<GraphQLNullableType> GetKnownTypes();
+        IEnumerable<GraphQLNullableType> GetOutputKnownTypes();
 
-        GraphQLNullableType GetSchemaTypeFor(System.Type type);
+        GraphQLNullableType GetSchemaTypeFor(Type type);
 
         Type GetTypeFor(GraphQLScalarType type);
 
         GraphQLComplexType[] GetTypesImplementing(GraphQLNullableType objectType);
+        GraphQLNullableType GetSchemaInputTypeFor(Type type);
+        IEnumerable<GraphQLNullableType> GetInputKnownTypes();
     }
 }

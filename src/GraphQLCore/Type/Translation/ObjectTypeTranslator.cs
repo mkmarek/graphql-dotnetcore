@@ -28,6 +28,9 @@
 
         public GraphQLFieldConfig[] GetFields()
         {
+            if (this.objectType is GraphQLInputObjectType)
+                return this.GetInputFieldsFromObject((GraphQLComplexType)this.objectType);
+
             if (this.objectType is GraphQLComplexType)
                 return this.GetFieldsFromObject((GraphQLComplexType)this.objectType);
 
@@ -60,10 +63,20 @@
             };
         }
 
+        private GraphQLFieldConfig CreateInputFieldConfigTypeFromFieldInfo(GraphQLObjectTypeFieldInfo fieldInfo)
+        {
+            return new GraphQLFieldConfig()
+            {
+                Name = fieldInfo.Name,
+                Type = this.typeTranslator.GetInputType(fieldInfo.ReturnValueType),
+                Arguments = GetArguments(fieldInfo)
+            };
+        }
+
         private Dictionary<string, GraphQLScalarType> GetArguments(GraphQLObjectTypeFieldInfo fieldInfo)
         {
             return fieldInfo.Arguments
-                .Select(e => new { Name = e.Key, Type = this.typeTranslator.GetType(e.Value.Type) })
+                .Select(e => new { Name = e.Key, Type = this.typeTranslator.GetInputType(e.Value.Type) })
                 .ToDictionary(e => e.Name, e => e.Type);
         }
 
@@ -79,6 +92,13 @@
             var fieldInfos = type.GetFieldsInfo();
 
             return fieldInfos.Select(e => this.CreateFieldConfigTypeFromFieldInfo(e)).ToArray();
+        }
+
+        private GraphQLFieldConfig[] GetInputFieldsFromObject(GraphQLComplexType type)
+        {
+            var fieldInfos = type.GetFieldsInfo();
+
+            return fieldInfos.Select(e => this.CreateInputFieldConfigTypeFromFieldInfo(e)).ToArray();
         }
     }
 }

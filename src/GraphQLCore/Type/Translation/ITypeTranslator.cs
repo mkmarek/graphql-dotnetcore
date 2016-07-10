@@ -2,7 +2,7 @@
 {
     using Exceptions;
     using Language.AST;
-    using System.Collections.Generic;
+    using System;
 
     public interface ITypeTranslator
     {
@@ -10,7 +10,7 @@
 
         IObjectTypeTranslator GetObjectTypeTranslatorFor(GraphQLNullableType type);
 
-        GraphQLScalarType GetType(System.Type type);
+        GraphQLScalarType GetType(Type type);
 
         GraphQLException[] IsValidLiteralValue(GraphQLScalarType inputType, GraphQLValue astValue);
 
@@ -19,5 +19,6 @@
         GraphQLScalarType GetType(GraphQLNamedType type);
 
         System.Type GetType(GraphQLScalarType type);
+        GraphQLScalarType GetInputType(Type type);
     }
 }

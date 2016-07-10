@@ -2,7 +2,7 @@
 {
     public class IntrospectedField
     {
-        public IntrospectedArgument[] Arguments { get; set; }
+        public IntrospectedInputValue[] Arguments { get; set; }
         public string DeprecationReason { get; set; }
         public string Description { get; set; }
         public bool? IsDeprecated { get; set; }

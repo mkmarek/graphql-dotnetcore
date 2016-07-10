@@ -4,6 +4,7 @@
     {
         IntrospectedType Introspect(GraphQLScalarType type);
 
-        IntrospectedField IntrospectField(GraphQLFieldConfig e);
+        IntrospectedField IntrospectField(GraphQLFieldConfig field);
+        IntrospectedInputValue IntrospectInputValue(GraphQLFieldConfig field);
     }
 }

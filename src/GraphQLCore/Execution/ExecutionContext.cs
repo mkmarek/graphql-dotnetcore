@@ -63,9 +63,12 @@
 
         public object GetArgumentValue(IEnumerable<GraphQLArgument> arguments, string argumentName)
         {
-            var value = arguments.SingleOrDefault(e => e.Name.Value == argumentName).Value;
+            var argument = arguments.SingleOrDefault(e => e.Name.Value == argumentName);
 
-            return this.GetValue(value);
+            if (argument == null)
+                return null;
+
+            return this.GetValue(argument.Value);
         }
 
         public IEnumerable GetListValue(Language.AST.GraphQLValue value)
@@ -124,7 +127,8 @@
             switch (this.operation.Operation)
             {
                 case OperationType.Query: return this.GraphQLSchema.QueryType;
-                default: throw new Exception("Can only execute queries");
+                case OperationType.Mutation: return this.GraphQLSchema.MutationType;
+                default: throw new Exception($"Can't execute type {this.operation.Operation}");
             }
         }
 

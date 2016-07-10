@@ -64,6 +64,7 @@
         {
             this.typeTranslator = Substitute.For<ITypeTranslator>();
             this.schemaObserver = Substitute.For<ISchemaObserver>();
+            this.typeTranslator.GetInputType(typeof(int?)).Returns(new GraphQLInt());
             this.typeTranslator.GetType(typeof(int?)).Returns(new GraphQLInt());
 
             this.complicatedObjectTypeObserver = new ObjectTypeTranslator(new ComplicatedObjectType(), this.typeTranslator, this.schemaObserver);

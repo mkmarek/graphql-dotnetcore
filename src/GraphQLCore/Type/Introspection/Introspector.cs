@@ -1,5 +1,6 @@
 ﻿namespace GraphQLCore.Type.Introspection
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using Translation;
@@ -16,10 +17,10 @@
         public IntrospectedType Introspect(GraphQLScalarType type)
         {
             if (type is GraphQLList)
-                return this.IntrospectListType((GraphQLList)type);
+                return this.IntrospectListType((GraphQLList)type, () => this.Introspect(((GraphQLList)type).MemberType));
 
             if (type is GraphQLNonNullType)
-                return this.IntrospectNonNullType((GraphQLNonNullType)type);
+                return this.IntrospectNonNullType((GraphQLNonNullType)type, () => this.Introspect(((GraphQLNonNullType)type).UnderlyingNullableType));
 
             if (type is GraphQLEnumType)
                 return this.IntrospectEnumType((GraphQLEnumType)type);
@@ -29,6 +30,9 @@
 
             if (type is GraphQLInterfaceType)
                 return this.IntrospectInterfaceType((GraphQLInterfaceType)type);
+
+            if (type is GraphQLInputObjectType)
+                return this.IntrospectInputObjectType((GraphQLInputObjectType)type);
 
             return this.IntrospectScalarType(type);
         }
@@ -44,16 +48,26 @@
             };
         }
 
-        private IntrospectedArgument IntrospectArgument(KeyValuePair<string, GraphQLScalarType> argument)
+        public IntrospectedInputValue IntrospectInputValue(GraphQLFieldConfig fieldConfig)
         {
-            return new IntrospectedArgument()
+            return new IntrospectedInputValue()
+            {
+                Name = fieldConfig.Name,
+                Description = fieldConfig.Description,
+                Type = this.Introspect(fieldConfig.Type)
+            };
+        }
+
+        private IntrospectedInputValue IntrospectArgument(KeyValuePair<string, GraphQLScalarType> argument)
+        {
+            return new IntrospectedInputValue()
             {
                 Name = argument.Key,
                 Type = this.Introspect(argument.Value)
             };
         }
 
-        private IntrospectedArgument[] IntrospectArguments(GraphQLFieldConfig fieldConfig)
+        private IntrospectedInputValue[] IntrospectArguments(GraphQLFieldConfig fieldConfig)
         {
             return fieldConfig.Arguments.Select(e => this.IntrospectArgument(e)).ToArray();
         }
@@ -68,21 +82,24 @@
             return IntrospectedType.CreateForInterface(type, this, this.typeTranslator.GetObjectTypeTranslatorFor(type));
         }
 
-        private IntrospectedType IntrospectListType(GraphQLList type)
+        private IntrospectedType IntrospectListType(GraphQLList type, Func<IntrospectedType> innerType)
         {
-            return IntrospectedType.CreateForList(type, this.Introspect(type.MemberType));
+            return IntrospectedType.CreateForList(type, innerType());
         }
 
-        private IntrospectedType IntrospectNonNullType(GraphQLNonNullType type)
+        private IntrospectedType IntrospectNonNullType(GraphQLNonNullType type, Func<IntrospectedType> innerType)
         {
-            var underlyingType = this.Introspect(type.UnderlyingNullableType);
-
-            return IntrospectedType.CreateForNonNull(underlyingType);
+            return IntrospectedType.CreateForNonNull(innerType());
         }
 
         private IntrospectedType IntrospectObjectType(GraphQLObjectType type)
         {
             return IntrospectedType.CreateForObject(type, this, this.typeTranslator.GetObjectTypeTranslatorFor(type));
+        }
+
+        private IntrospectedType IntrospectInputObjectType(GraphQLInputObjectType type)
+        {
+            return IntrospectedType.CreateForInputObject(type, this, this.typeTranslator.GetObjectTypeTranslatorFor(type));
         }
 
         private IntrospectedType IntrospectScalarType(GraphQLScalarType scalarType)

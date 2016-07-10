@@ -322,6 +322,7 @@
             this.schema.AddKnownType(type2);
             this.schema.AddKnownType(t2interface);
             this.schema.AddKnownType(rootType);
+            this.schema.AddKnownType(new SampleInputObjectType());
 
             this.schema.Query(rootType);
         }
@@ -356,6 +357,14 @@
             dynamic type = GetType("T2Interface");
 
             Assert.AreEqual("T2", ((IEnumerable<dynamic>)type.possibleTypes).SingleOrDefault().name);
+        }
+
+        [Test]
+        public void SampleInputObjectType_HasInputObjectKind()
+        {
+            dynamic inputObject = GetType("SampleInputObjectType");
+
+            Assert.AreEqual("INPUT_OBJECT", inputObject.kind);
         }
 
         private dynamic GetField(string fieldName)
@@ -509,6 +518,15 @@
                 this.Field("a", e => e.A);
                 this.Field("b", e => e.B);
                 this.Field("sum", (int[] numbers) => numbers.Sum());
+            }
+        }
+
+        private class SampleInputObjectType : GraphQLInputObjectType<TestType>
+        {
+            public SampleInputObjectType() : base("SampleInputObjectType", "")
+            {
+                this.Field("a", e => e.A);
+                this.Field("b", e => e.B);
             }
         }
 

@@ -1,4 +1,6 @@
-﻿namespace GraphQLCore.Type.Introspection
+﻿using System;
+
+namespace GraphQLCore.Type.Introspection
 {
     public class IntrospectedType
     {
@@ -11,6 +13,8 @@
         public virtual GraphQLEnumValue[] EnumValues { get; protected set; }
 
         public virtual IntrospectedField[] Fields { get { return null; } }
+
+        public virtual IntrospectedInputValue[] InputFields { get { return null; } }
 
         public virtual IntrospectedType[] Interfaces { get { return null; } }
 
@@ -79,6 +83,16 @@
             var introspectedType = new IntrospectedType();
             introspectedType.Kind = TypeKind.NON_NULL;
             introspectedType.OfType = underlyingType;
+
+            return introspectedType;
+        }
+
+        internal static IntrospectedInputObject CreateForInputObject(GraphQLInputObjectType type, Introspector introspector, IObjectTypeTranslator typeObserver)
+        {
+            var introspectedType = new IntrospectedInputObject(introspector, typeObserver);
+            introspectedType.Kind = TypeKind.INPUT_OBJECT;
+            introspectedType.Description = type.Description;
+            introspectedType.Name = type.Name;
 
             return introspectedType;
         }
