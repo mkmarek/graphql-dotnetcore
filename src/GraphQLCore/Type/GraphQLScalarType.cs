@@ -5,7 +5,7 @@
         public GraphQLScalarType(string name, string description)
         {
             this.Name = name;
-            this.Description = description; ;
+            this.Description = description;
         }
 
         public string Description { get; protected set; }

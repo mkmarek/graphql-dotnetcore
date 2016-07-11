@@ -1,7 +1,6 @@
 ﻿namespace GraphQLCore.Type
 {
     using Exceptions;
-    using Language.AST;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
@@ -11,7 +10,7 @@
     {
         public GraphQLObjectType(string name, string description) : base(name, description)
         {
-            this.fields = new Dictionary<string, GraphQLObjectTypeFieldInfo>();
+            this.Fields = new Dictionary<string, GraphQLObjectTypeFieldInfo>();
         }
 
         public void Field<TFieldType>(string fieldName, LambdaExpression fieldLambda)
@@ -24,14 +23,19 @@
             if (this.ContainsField(fieldName))
                 throw new GraphQLException("Can't insert two fields with the same name.");
 
-            this.fields.Add(fieldName, new GraphQLObjectTypeFieldInfo()
+            this.Fields.Add(fieldName, this.CreateResolverFieldInfo(fieldName, resolver));
+        }
+
+        private GraphQLObjectTypeFieldInfo CreateResolverFieldInfo(string fieldName, LambdaExpression resolver)
+        {
+            return new GraphQLObjectTypeFieldInfo()
             {
                 Name = fieldName,
                 IsResolver = true,
                 Lambda = resolver,
                 Arguments = this.GetArguments(resolver),
                 ReturnValueType = ReflectionUtilities.GetReturnValueFromLambdaExpression(resolver)
-            });
+            };
         }
 
         private Dictionary<string, GraphQLObjectTypeArgumentInfo> GetArguments(LambdaExpression resolver)

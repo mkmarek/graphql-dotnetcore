@@ -6,19 +6,20 @@
 
     public interface ITypeTranslator
     {
+        GraphQLScalarType GetInputType(Type type);
+
+        object GetLiteralValue(GraphQLValue value);
+
         IObjectTypeTranslator GetObjectTypeTranslatorFor(System.Type type);
 
         IObjectTypeTranslator GetObjectTypeTranslatorFor(GraphQLNullableType type);
 
         GraphQLScalarType GetType(Type type);
 
-        GraphQLException[] IsValidLiteralValue(GraphQLScalarType inputType, GraphQLValue astValue);
-
-        object GetLiteralValue(GraphQLValue value);
-
         GraphQLScalarType GetType(GraphQLNamedType type);
 
         System.Type GetType(GraphQLScalarType type);
-        GraphQLScalarType GetInputType(Type type);
+
+        GraphQLException[] IsValidLiteralValue(GraphQLScalarType inputType, GraphQLValue astValue);
     }
 }

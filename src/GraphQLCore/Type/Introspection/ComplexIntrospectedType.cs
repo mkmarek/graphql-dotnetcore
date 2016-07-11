@@ -17,8 +17,8 @@ namespace GraphQLCore.Type.Introspection
         {
             get
             {
-                return typeObserver.GetFields()
-                    .Select(e => introspector.IntrospectField(e))
+                return this.typeObserver.GetFields()
+                    .Select(e => this.introspector.IntrospectField(e))
                     .ToArray();
             }
         }
@@ -27,8 +27,8 @@ namespace GraphQLCore.Type.Introspection
         {
             get
             {
-                return typeObserver.GetImplementingInterfaces()
-                    .Select(e => introspector.Introspect(e))
+                return this.typeObserver.GetImplementingInterfaces()
+                    .Select(e => this.introspector.Introspect(e))
                     .ToArray();
             }
         }
@@ -37,8 +37,8 @@ namespace GraphQLCore.Type.Introspection
         {
             get
             {
-                return typeObserver.GetPossibleTypes()
-                    .Select(e => introspector.Introspect(e))
+                return this.typeObserver.GetPossibleTypes()
+                    .Select(e => this.introspector.Introspect(e))
                     .ToArray();
             }
         }

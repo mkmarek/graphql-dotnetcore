@@ -1,7 +1,5 @@
 ﻿namespace GraphQLCore.Type
 {
-    using Introspection;
-
     public class IntrospectedInputObjectType : GraphQLObjectType<IntrospectedInputObject>
     {
         public IntrospectedInputObjectType() : base(null, null)

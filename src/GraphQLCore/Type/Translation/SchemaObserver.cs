@@ -15,15 +15,19 @@
             this.inputBindings = new Dictionary<string, GraphQLNullableType>();
         }
 
-        private Dictionary<string, GraphQLNullableType> outputBindings { get; set; }
-        private Dictionary<string, GraphQLNullableType> inputBindings { get; set; }
+        private Dictionary<string, GraphQLNullableType> inputBindings;
+        private Dictionary<string, GraphQLNullableType> outputBindings;
 
         public void AddKnownType(GraphQLNullableType type)
         {
             if (type is GraphQLInputObjectType)
+            {
                 this.AddInputObjectKnownType(type);
+            }
             else if (type is GraphQLComplexType)
+            {
                 this.AddOutputObjectKnownType(type);
+            }
             else
             {
                 this.AddInputObjectKnownType(type);
@@ -31,26 +35,9 @@
             }
         }
 
-        private void AddInputObjectKnownType(GraphQLNullableType type)
+        public IEnumerable<GraphQLNullableType> GetInputKnownTypes()
         {
-            var reflectedType = type.GetType();
-            var argument = ReflectionUtilities.GetGenericArgumentsEagerly(reflectedType);
-
-            if (argument == null)
-                this.inputBindings.Add(reflectedType.FullName, type);
-            else
-                this.inputBindings.Add(argument.FullName, type);
-        }
-
-        private void AddOutputObjectKnownType(GraphQLNullableType type)
-        {
-            var reflectedType = type.GetType();
-            var argument = ReflectionUtilities.GetGenericArgumentsEagerly(reflectedType);
-
-            if (argument == null)
-                this.outputBindings.Add(reflectedType.FullName, type);
-            else
-                this.outputBindings.Add(argument.FullName, type);
+            return this.inputBindings.Select(e => e.Value).ToList();
         }
 
         public IEnumerable<GraphQLNullableType> GetOutputKnownTypes()
@@ -58,9 +45,12 @@
             return this.outputBindings.Select(e => e.Value).ToList();
         }
 
-        public IEnumerable<GraphQLNullableType> GetInputKnownTypes()
+        public GraphQLNullableType GetSchemaInputTypeFor(Type type)
         {
-            return this.inputBindings.Select(e => e.Value).ToList();
+            if (this.inputBindings.ContainsKey(type.FullName))
+                return this.inputBindings[type.FullName];
+
+            throw new GraphQLException($"Unknown input type {type.FullName} have you added it to known types?");
         }
 
         public GraphQLNullableType GetSchemaTypeFor(Type type)
@@ -88,6 +78,28 @@
             return new GraphQLComplexType[] { };
         }
 
+        private void AddInputObjectKnownType(GraphQLNullableType type)
+        {
+            var reflectedType = type.GetType();
+            var argument = ReflectionUtilities.GetGenericArgumentsEagerly(reflectedType);
+
+            if (argument == null)
+                this.inputBindings.Add(reflectedType.FullName, type);
+            else
+                this.inputBindings.Add(argument.FullName, type);
+        }
+
+        private void AddOutputObjectKnownType(GraphQLNullableType type)
+        {
+            var reflectedType = type.GetType();
+            var argument = ReflectionUtilities.GetGenericArgumentsEagerly(reflectedType);
+
+            if (argument == null)
+                this.outputBindings.Add(reflectedType.FullName, type);
+            else
+                this.outputBindings.Add(argument.FullName, type);
+        }
+
         private GraphQLNullableType GetSchemaTypeFor(Type originalType, Type presumedSchemaType)
         {
             if (this.outputBindings.ContainsKey(presumedSchemaType.FullName))
@@ -98,14 +110,6 @@
                 return this.GetSchemaTypeFor(originalType, presumedSchemaType);
 
             throw new GraphQLException($"Unknown type {originalType.FullName} have you added it to known types?");
-        }
-
-        public GraphQLNullableType GetSchemaInputTypeFor(Type type)
-        {
-            if (this.inputBindings.ContainsKey(type.FullName))
-                return this.inputBindings[type.FullName];
-
-            throw new GraphQLException($"Unknown input type {type.FullName} have you added it to known types?");
         }
     }
 }

@@ -20,7 +20,7 @@
         INT = 16,
         FLOAT = 17,
         STRING = 18
-    };
+    }
 
     public class Token
     {
@@ -53,14 +53,14 @@
                 case TokenKind.STRING: return "String";
             }
 
-            return "";
+            return string.Empty;
         }
 
         public override string ToString()
         {
             return this.Value != null
-                ? $"{GetTokenKindDescription(Kind)} \"{this.Value}\""
-                : GetTokenKindDescription(Kind);
+                ? $"{GetTokenKindDescription(this.Kind)} \"{this.Value}\""
+                : GetTokenKindDescription(this.Kind);
         }
     }
 }

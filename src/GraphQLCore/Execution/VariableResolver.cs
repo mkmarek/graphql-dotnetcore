@@ -30,16 +30,13 @@ namespace GraphQLCore.Execution
 
             if (this.variables.ContainsKey(variableName))
             {
-                return GetValue(this.variables, variableName, typeDefinition);
+                return this.GetValue(this.variables, variableName, typeDefinition);
             }
 
             throw new NotImplementedException();
         }
 
-        internal object GetValue(GraphQLVariable value)
-        {
-            return this.GetValue(value.Name.Value);
-        }
+        internal object GetValue(GraphQLVariable value) => this.GetValue(value.Name.Value);
 
         private static List<GraphQLObjectTypeFieldInfo> GetFieldsFromDefinition(GraphQLObjectType typeDefinition)
         {
@@ -49,22 +46,22 @@ namespace GraphQLCore.Execution
         }
 
         private object CreateParameterObject(
-            GraphQLObjectType typeDefinition, IDictionary<string, dynamic> variable, List<GraphQLObjectTypeFieldInfo> fields)
+            GraphQLObjectType typeDefinition, IDictionary<string, dynamic> variable, IEnumerable<GraphQLObjectTypeFieldInfo> fields)
         {
             var systemType = this.GetSystemType(typeDefinition);
             var resultObject = Activator.CreateInstance(systemType);
-            var objectTypeTranslator = typeTranslator.GetObjectTypeTranslatorFor(typeDefinition);
+            var objectTypeTranslator = this.typeTranslator.GetObjectTypeTranslatorFor(typeDefinition);
 
             foreach (var field in fields)
             {
-                if (variable.ContainsKey(field.Name))
-                {
-                    var variableProp = this.GetValue(variable, field.Name, objectTypeTranslator.GetField(field.Name).Type);
-                    variableProp = ReflectionUtilities.ChangeValueType(variableProp,
-                        ReflectionUtilities.GetReturnValueFromLambdaExpression(field.Lambda));
+                if (!variable.ContainsKey(field.Name))
+                    continue;
 
-                    MakeSetterFromLambda(field.Lambda).DynamicInvoke(resultObject, variableProp);
-                }
+                var variableProp = this.GetValue(variable, field.Name, objectTypeTranslator.GetField(field.Name).Type);
+                variableProp = ReflectionUtilities.ChangeValueType(
+                    variableProp, ReflectionUtilities.GetReturnValueFromLambdaExpression(field.Lambda));
+
+                this.MakeSetterFromLambda(field.Lambda).DynamicInvoke(resultObject, variableProp);
             }
 
             return resultObject;
@@ -74,7 +71,7 @@ namespace GraphQLCore.Execution
         {
             var fields = GetFieldsFromDefinition(typeDefinition);
 
-            return CreateParameterObject(typeDefinition, variableValue, fields);
+            return this.CreateParameterObject(typeDefinition, variableValue, fields);
         }
 
         private object GetInputScalarValue(object variableValue, GraphQLScalarType typeDefinition)
@@ -94,8 +91,7 @@ namespace GraphQLCore.Execution
                 return this.typeTranslator.GetType((GraphQLNamedType)typeDefinition);
 
             if (typeDefinition is Language.AST.GraphQLNonNullType)
-                return new Type.GraphQLNonNullType((GraphQLNullableType)
-                    this.GetTypeDefinition(((Language.AST.GraphQLNonNullType)typeDefinition).Type));
+                return new Type.GraphQLNonNullType((GraphQLNullableType)this.GetTypeDefinition(((Language.AST.GraphQLNonNullType)typeDefinition).Type));
 
             if (typeDefinition is GraphQLListType)
                 return new GraphQLList(this.GetTypeDefinition(((GraphQLListType)typeDefinition).Type));

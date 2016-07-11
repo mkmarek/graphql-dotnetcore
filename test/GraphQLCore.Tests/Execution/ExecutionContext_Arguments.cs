@@ -96,6 +96,22 @@
             Assert.AreEqual("24 is from the parent and string argument is the current type", result.nested.nested.text);
         }
 
+        [Test]
+        public void Execute_NothingInNonMandatoryValue_InvokesResolverWithNullValue()
+        {
+            dynamic result = this.schema.Execute("{ isNull }");
+
+            Assert.AreEqual(true, result.isNull);
+        }
+
+        [Test]
+        public void Execute_ValueInNonMandatoryValue_InvokesResolverWithNullValue()
+        {
+            dynamic result = this.schema.Execute("{ isNull(nonMandatory: 1) }");
+
+            Assert.AreEqual(false, result.isNull);
+        }
+
         [SetUp]
         public void SetUp()
         {
@@ -135,6 +151,7 @@
             {
                 this.Field("nested", (int id) => new TestObject() { Id = id, StringField = "Test with id " + id });
                 this.Field("withArray", (int[] ids) => ids.Count());
+                this.Field("isNull", (int? nonMandatory) => !nonMandatory.HasValue);
                 this.Field("withList", (List<int> ids) => ids.Count());
                 this.Field("withIEnumerable", (IEnumerable<int> ids) => ids.Count());
             }

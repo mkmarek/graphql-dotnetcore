@@ -10,7 +10,8 @@
 
     public class ValidationASTVisitor : GraphQLAstVisitor
     {
-        protected IGraphQLSchema schema;
+        protected IGraphQLSchema Schema { get; set; }
+
         private GraphQLScalarType argumentType;
         private Dictionary<string, GraphQLScalarType> argumentTypes;
         private Stack<string> fieldStack;
@@ -20,7 +21,7 @@
 
         public ValidationASTVisitor(IGraphQLSchema schema)
         {
-            this.schema = schema;
+            this.Schema = schema;
             this.parentTypeStack = new Stack<GraphQLObjectType>();
             this.typeStack = new Stack<GraphQLObjectType>();
             this.fieldStack = new Stack<string>();
@@ -31,7 +32,7 @@
         public override GraphQLArgument BeginVisitArgument(GraphQLArgument argument)
         {
             var fieldName = this.fieldStack.Peek();
-            this.argumentType = translator.GetObjectTypeTranslatorFor(this.typeStack.Peek()).GetField(fieldName).Arguments
+            this.argumentType = this.translator.GetObjectTypeTranslatorFor(this.typeStack.Peek()).GetField(fieldName).Arguments
                 .SingleOrDefault(e => e.Key == argument.Name.Value).Value;
             this.argumentTypes.Remove(argument.Name.Value);
 
@@ -42,18 +43,18 @@
         {
             this.fieldStack.Push(selection.Name.Value);
 
-            argumentTypes.Clear();
+            this.argumentTypes.Clear();
             if (selection.Name?.Value != null)
             {
-                var arguments = translator.GetObjectTypeTranslatorFor(this.typeStack.Peek()).GetField(selection.Name.Value).Arguments;
+                var arguments = this.translator.GetObjectTypeTranslatorFor(this.typeStack.Peek()).GetField(selection.Name.Value).Arguments;
                 if (arguments != null)
                 {
-                    foreach (var argument in translator.GetObjectTypeTranslatorFor(this.typeStack.Peek()).GetField(selection.Name.Value).Arguments)
-                        argumentTypes.Add(argument.Key, argument.Value);
+                    foreach (var argument in this.translator.GetObjectTypeTranslatorFor(this.typeStack.Peek()).GetField(selection.Name.Value).Arguments)
+                        this.argumentTypes.Add(argument.Key, argument.Value);
                 }
             }
 
-            var obj = translator.GetObjectTypeTranslatorFor(this.typeStack.Peek()).GetField(selection.Name.Value).Type as GraphQLObjectType;
+            var obj = this.translator.GetObjectTypeTranslatorFor(this.typeStack.Peek()).GetField(selection.Name.Value).Type as GraphQLObjectType;
             if (obj != null)
                 this.typeStack.Push(obj);
 
@@ -64,7 +65,7 @@
         {
             switch (definition.Operation)
             {
-                case OperationType.Query: this.typeStack.Push(this.schema.QueryType); break;
+                case OperationType.Query: this.typeStack.Push(this.Schema.QueryType); break;
                 default: throw new NotImplementedException();
             }
 
@@ -76,8 +77,8 @@
 
         public override GraphQLFieldSelection EndVisitFieldSelection(GraphQLFieldSelection selection)
         {
-            fieldStack.Pop();
-            argumentTypes.Clear();
+            this.fieldStack.Pop();
+            this.argumentTypes.Clear();
 
             return base.EndVisitFieldSelection(selection);
         }

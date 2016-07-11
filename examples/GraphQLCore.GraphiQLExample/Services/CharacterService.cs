@@ -9,9 +9,9 @@
     {
         private readonly Characters characters = new Characters();
 
-        public IEnumerable<ICharacter> List(Episode episode)
+        public Droid GetDroidById(string id)
         {
-            return this.GetList().Where(e => e.AppearsIn.Contains(episode));
+            return this.GetList().SingleOrDefault(e => e.Id == id) as Droid;
         }
 
         public Human GetHumanById(string id)
@@ -19,9 +19,9 @@
             return this.GetList().SingleOrDefault(e => e.Id == id) as Human;
         }
 
-        public Droid GetDroidById(string id)
+        public IEnumerable<ICharacter> List(Episode episode)
         {
-            return this.GetList().SingleOrDefault(e => e.Id == id) as Droid;
+            return this.GetList().Where(e => e.AppearsIn.Contains(episode));
         }
 
         private IEnumerable<ICharacter> GetList()

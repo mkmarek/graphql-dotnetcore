@@ -3,7 +3,6 @@
     using Exceptions;
     using GraphQLCore.Language;
     using GraphQLCore.Language.AST;
-    using GraphQLCore.Type;
     using GraphQLCore.Validation;
     using GraphQLCore.Validation.Rules;
     using NUnit.Framework;

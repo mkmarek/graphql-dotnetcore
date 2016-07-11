@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace GraphQLCore.Type.Introspection
+﻿namespace GraphQLCore.Type.Introspection
 {
     public class IntrospectedType
     {
@@ -67,6 +65,16 @@ namespace GraphQLCore.Type.Introspection
             return introspectedType;
         }
 
+        internal static IntrospectedInputObject CreateForInputObject(GraphQLInputObjectType type, Introspector introspector, IObjectTypeTranslator typeObserver)
+        {
+            var introspectedType = new IntrospectedInputObject(introspector, typeObserver);
+            introspectedType.Kind = TypeKind.INPUT_OBJECT;
+            introspectedType.Description = type.Description;
+            introspectedType.Name = type.Name;
+
+            return introspectedType;
+        }
+
         internal static IntrospectedType CreateForList(GraphQLList type, IntrospectedType listItemType)
         {
             var introspectedType = new IntrospectedType();
@@ -83,16 +91,6 @@ namespace GraphQLCore.Type.Introspection
             var introspectedType = new IntrospectedType();
             introspectedType.Kind = TypeKind.NON_NULL;
             introspectedType.OfType = underlyingType;
-
-            return introspectedType;
-        }
-
-        internal static IntrospectedInputObject CreateForInputObject(GraphQLInputObjectType type, Introspector introspector, IObjectTypeTranslator typeObserver)
-        {
-            var introspectedType = new IntrospectedInputObject(introspector, typeObserver);
-            introspectedType.Kind = TypeKind.INPUT_OBJECT;
-            introspectedType.Description = type.Description;
-            introspectedType.Name = type.Name;
 
             return introspectedType;
         }

@@ -4,7 +4,7 @@
 
     public class IntrospectedInputValueType : GraphQLObjectType<IntrospectedInputValue>
     {
-        public IntrospectedInputValueType() : base("__InputValue", "")
+        public IntrospectedInputValueType() : base("__InputValue", string.Empty)
         {
             this.Field("name", e => e.Name);
             this.Field("description", e => e.Description);

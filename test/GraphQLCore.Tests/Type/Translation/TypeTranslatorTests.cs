@@ -14,22 +14,14 @@
         private TypeTranslator translator;
 
         [Test]
-        public void GetTypeObserverFor_ObjectType_ReturnsCorrectObserver()
+        public void GetType_BooleanType_CreatesGraphQLBooleanInstance()
         {
-            this.schemaObserver.AddKnownType(new FurColorEnum());
+            var type = typeof(bool);
 
-            var typeObserver = this.translator.GetObjectTypeTranslatorFor(typeof(FurColor));
+            var graphqlType = translator.GetType(type);
 
-            Assert.IsNotNull(typeObserver);
-        }
-
-        [SetUp]
-        public void SetUp()
-        {
-            this.schemaObserver = Substitute.For<ISchemaObserver>();
-            this.schemaObserver.GetSchemaTypeFor(typeof(TestStruct)).Returns(new TestScructObject());
-            this.schemaObserver.GetSchemaTypeFor(typeof(FurColor)).Returns(new FurColorEnum());
-            this.translator = new TypeTranslator(this.schemaObserver);
+            Assert.IsInstanceOf<GraphQLNonNullType>(graphqlType);
+            Assert.IsInstanceOf<GraphQLBoolean>(((GraphQLNonNullType)graphqlType).UnderlyingNullableType);
         }
 
         [Test]
@@ -54,34 +46,35 @@
         }
 
         [Test]
-        public void GetType_NullableEnumType_ReturnsEnumSchemeType()
+        public void GetType_FloatType_CreatesGraphQLFloatInstance()
         {
-            var type = typeof(FurColor?);
-
-            var graphqlType = translator.GetType(type);
-
-            Assert.IsInstanceOf<FurColorEnum>(graphqlType);
-        }
-
-        [Test]
-        public void GetType_NullableStructType_ReturnsSchemeObjectType()
-        {
-            var type = typeof(TestStruct?);
-
-            var graphqlType = translator.GetType(type);
-
-            Assert.IsInstanceOf<TestScructObject>(graphqlType);
-        }
-
-        [Test]
-        public void GetType_StructType_ReturnsNonNullOfObjectType()
-        {
-            var type = typeof(TestStruct);
+            var type = typeof(float);
 
             var graphqlType = translator.GetType(type);
 
             Assert.IsInstanceOf<GraphQLNonNullType>(graphqlType);
-            Assert.IsInstanceOf<TestScructObject>(((GraphQLNonNullType)graphqlType).UnderlyingNullableType);
+            Assert.IsInstanceOf<GraphQLFloat>(((GraphQLNonNullType)graphqlType).UnderlyingNullableType);
+        }
+
+        [Test]
+        public void GetType_IntNamedType_GetsValueFromKnownTypesByCorrectName()
+        {
+            this.schemaObserver.GetOutputKnownTypes().Returns(new GraphQLNullableType[] { new GraphQLInt() });
+
+            var graphqlType = translator.GetType(GetGraphQLNamedType("Int"));
+
+            Assert.IsInstanceOf<GraphQLInt>(graphqlType);
+        }
+
+        [Test]
+        public void GetType_IntType_CreatesGraphQLIntInstance()
+        {
+            var type = typeof(int);
+
+            var graphqlType = translator.GetType(type);
+
+            Assert.IsInstanceOf<GraphQLNonNullType>(graphqlType);
+            Assert.IsInstanceOf<GraphQLInt>(((GraphQLNonNullType)graphqlType).UnderlyingNullableType);
         }
 
         [Test]
@@ -97,39 +90,6 @@
         }
 
         [Test]
-        public void GetType_BooleanType_CreatesGraphQLBooleanInstance()
-        {
-            var type = typeof(bool);
-
-            var graphqlType = translator.GetType(type);
-
-            Assert.IsInstanceOf<GraphQLNonNullType>(graphqlType);
-            Assert.IsInstanceOf<GraphQLBoolean>(((GraphQLNonNullType)graphqlType).UnderlyingNullableType);
-        }
-
-        [Test]
-        public void GetType_FloatType_CreatesGraphQLFloatInstance()
-        {
-            var type = typeof(float);
-
-            var graphqlType = translator.GetType(type);
-
-            Assert.IsInstanceOf<GraphQLNonNullType>(graphqlType);
-            Assert.IsInstanceOf<GraphQLFloat>(((GraphQLNonNullType)graphqlType).UnderlyingNullableType);
-        }
-
-        [Test]
-        public void GetType_IntType_CreatesGraphQLIntInstance()
-        {
-            var type = typeof(int);
-
-            var graphqlType = translator.GetType(type);
-
-            Assert.IsInstanceOf<GraphQLNonNullType>(graphqlType);
-            Assert.IsInstanceOf<GraphQLInt>(((GraphQLNonNullType)graphqlType).UnderlyingNullableType);
-        }
-
-        [Test]
         public void GetType_NullableBooleanType_CreatesGraphQLBooleanInstance()
         {
             var type = typeof(bool?);
@@ -137,6 +97,16 @@
             var graphqlType = translator.GetType(type);
 
             Assert.IsInstanceOf<GraphQLBoolean>(graphqlType);
+        }
+
+        [Test]
+        public void GetType_NullableEnumType_ReturnsEnumSchemeType()
+        {
+            var type = typeof(FurColor?);
+
+            var graphqlType = translator.GetType(type);
+
+            Assert.IsInstanceOf<FurColorEnum>(graphqlType);
         }
 
         [Test]
@@ -170,13 +140,43 @@
         }
 
         [Test]
-        public void GetType_IntNamedType_GetsValueFromKnownTypesByCorrectName()
+        public void GetType_NullableStructType_ReturnsSchemeObjectType()
         {
-            this.schemaObserver.GetOutputKnownTypes().Returns(new GraphQLNullableType[] { new GraphQLInt() });
+            var type = typeof(TestStruct?);
 
-            var graphqlType = translator.GetType(GetGraphQLNamedType("Int"));
+            var graphqlType = translator.GetType(type);
 
-            Assert.IsInstanceOf<GraphQLInt>(graphqlType);
+            Assert.IsInstanceOf<TestScructObject>(graphqlType);
+        }
+
+        [Test]
+        public void GetType_StructType_ReturnsNonNullOfObjectType()
+        {
+            var type = typeof(TestStruct);
+
+            var graphqlType = translator.GetType(type);
+
+            Assert.IsInstanceOf<GraphQLNonNullType>(graphqlType);
+            Assert.IsInstanceOf<TestScructObject>(((GraphQLNonNullType)graphqlType).UnderlyingNullableType);
+        }
+
+        [Test]
+        public void GetTypeObserverFor_ObjectType_ReturnsCorrectObserver()
+        {
+            this.schemaObserver.AddKnownType(new FurColorEnum());
+
+            var typeObserver = this.translator.GetObjectTypeTranslatorFor(typeof(FurColor));
+
+            Assert.IsNotNull(typeObserver);
+        }
+
+        [SetUp]
+        public void SetUp()
+        {
+            this.schemaObserver = Substitute.For<ISchemaObserver>();
+            this.schemaObserver.GetSchemaTypeFor(typeof(TestStruct)).Returns(new TestScructObject());
+            this.schemaObserver.GetSchemaTypeFor(typeof(FurColor)).Returns(new FurColorEnum());
+            this.translator = new TypeTranslator(this.schemaObserver);
         }
 
         private static GraphQLCore.Language.AST.GraphQLNamedType GetGraphQLNamedType(string name)

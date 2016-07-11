@@ -12,13 +12,14 @@
 
     public class ExecutionContext : IDisposable
     {
-        internal GraphQLSchema GraphQLSchema;
         private GraphQLDocument ast;
         private FieldCollector fieldCollector;
         private Dictionary<string, GraphQLFragmentDefinition> fragments;
         private GraphQLOperationDefinition operation;
         private VariableResolver operationVariableResolver;
         private dynamic variables;
+
+        internal GraphQLSchema GraphQLSchema { get; private set; }
 
         public ExecutionContext(GraphQLSchema graphQLSchema, GraphQLDocument ast)
         {
@@ -49,15 +50,16 @@
 
             this.operationVariableResolver = new VariableResolver(
                 this.variables, this.GraphQLSchema.TypeTranslator, this.operation.VariableDefinitions);
+
             var type = this.GetOperationRootType();
 
-            return ComposeResultForType(type, this.operation.SelectionSet);
+            return this.ComposeResultForType(type, this.operation.SelectionSet);
         }
 
         public object[] FetchArgumentValues(LambdaExpression expression, IList<GraphQLArgument> arguments)
         {
             return ReflectionUtilities.GetParameters(expression)
-                .Select(e => ReflectionUtilities.ChangeValueType(GetArgumentValue(arguments, e.Name), e.Type))
+                .Select(e => ReflectionUtilities.ChangeValueType(this.GetArgumentValue(arguments, e.Name), e.Type))
                 .ToArray();
         }
 
@@ -77,7 +79,7 @@
             var list = ((GraphQLValue<IEnumerable<GraphQLValue>>)value).Value;
 
             foreach (var item in list)
-                output.Add(GetValue(item));
+                output.Add(this.GetValue(item));
 
             return output;
         }
@@ -91,24 +93,23 @@
 
             switch (value.Kind)
             {
-                case ASTNodeKind.ListValue: return GetListValue(value);
+                case ASTNodeKind.ListValue: return this.GetListValue(value);
                 case ASTNodeKind.Variable: return this.operationVariableResolver.GetValue((GraphQLVariable)value);
+                default: throw new NotImplementedException($"Unknoen kind {value.Kind}");
             }
-
-            throw new NotImplementedException();
         }
 
-        public object InvokeWithArguments(IList<Language.AST.GraphQLArgument> arguments, LambdaExpression expression)
+        public object InvokeWithArguments(IList<GraphQLArgument> arguments, LambdaExpression expression)
         {
-            var argumentValues = FetchArgumentValues(expression, arguments);
+            var argumentValues = this.FetchArgumentValues(expression, arguments);
 
             return expression.Compile().DynamicInvoke(argumentValues);
         }
 
         internal dynamic ComposeResultForType(GraphQLObjectType type, GraphQLSelectionSet selectionSet, object parentObject = null)
         {
-            var scope = CreateScope(type, parentObject);
-            return GetResultFromScope(type, selectionSet, scope);
+            var scope = this.CreateScope(type, parentObject);
+            return this.GetResultFromScope(type, selectionSet, scope);
         }
 
         internal FieldScope CreateScope(GraphQLObjectType type, object parentObject)

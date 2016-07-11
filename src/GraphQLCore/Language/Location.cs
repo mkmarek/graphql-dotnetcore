@@ -13,7 +13,8 @@
             var matches = lineRegex.Matches(source.Body);
             foreach (Match match in matches)
             {
-                if (match.Index >= position) break;
+                if (match.Index >= position)
+                    break;
 
                 this.Line++;
                 this.Column = position + 1 - (match.Index + matches[0].Length);

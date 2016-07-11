@@ -4,20 +4,12 @@
 
     public class Characters
     {
-        public readonly Human Luke = new Human()
+        public readonly Droid Artoo = new Droid()
         {
-            Id = "1000",
+            Id = "2001",
             AppearsIn = new Episode[] { Episode.EMPIRE, Episode.JEDI, Episode.NEWHOPE },
-            HomePlanet = "Tatooine",
-            Name = "Luke Skywalker"
-        };
-
-        public readonly Human Vader = new Human()
-        {
-            Id = "1001",
-            AppearsIn = new Episode[] { Episode.EMPIRE, Episode.JEDI, Episode.NEWHOPE },
-            HomePlanet = "Tatooine",
-            Name = "Darth Vader"
+            Name = "R2-D2",
+            PrimaryFunction = "Astromech"
         };
 
         public readonly Human Han = new Human()
@@ -32,6 +24,14 @@
             Id = "1003",
             AppearsIn = new Episode[] { Episode.EMPIRE, Episode.JEDI, Episode.NEWHOPE },
             Name = "Leia Organa"
+        };
+
+        public readonly Human Luke = new Human()
+        {
+            Id = "1000",
+            AppearsIn = new Episode[] { Episode.EMPIRE, Episode.JEDI, Episode.NEWHOPE },
+            HomePlanet = "Tatooine",
+            Name = "Luke Skywalker"
         };
 
         public readonly Human Tarkin = new Human()
@@ -49,12 +49,12 @@
             PrimaryFunction = "Protocol"
         };
 
-        public readonly Droid Artoo = new Droid()
+        public readonly Human Vader = new Human()
         {
-            Id = "2001",
+            Id = "1001",
             AppearsIn = new Episode[] { Episode.EMPIRE, Episode.JEDI, Episode.NEWHOPE },
-            Name = "R2-D2",
-            PrimaryFunction = "Astromech"
+            HomePlanet = "Tatooine",
+            Name = "Darth Vader"
         };
 
         public Characters()

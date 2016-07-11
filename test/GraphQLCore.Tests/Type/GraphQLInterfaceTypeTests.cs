@@ -3,12 +3,16 @@
     using Exceptions;
     using GraphQLCore.Type;
     using NUnit.Framework;
-    using System.Collections.Generic;
     using System.Linq;
 
     public class GraphQLInterfaceTypeTests
     {
         private GraphQLInterfaceType<TestInterfaceModel> type;
+
+        public interface TestInterfaceModel
+        {
+            int Test { get; set; }
+        }
 
         [Test]
         public void AddField_TwoAcessorsWithSameNames_ThrowsException()
@@ -38,7 +42,6 @@
         {
             Assert.AreEqual("Test description", type.Description);
         }
-
 
         [Test]
         public void GetFieldsInfo_SingleAccessor_ReturnsCorrectInformationReflectedFromLambda()
@@ -80,13 +83,6 @@
             Assert.AreEqual("Test", type.ToString());
         }
 
-        public class GraphQLTestInterfaceModelType : GraphQLInterfaceType<TestInterfaceModel>
-        {
-            public GraphQLTestInterfaceModelType() : base("Test", "Test description")
-            {
-            }
-        }
-
         public class GraphQLInvalidTestInterfaceModelType : GraphQLInterfaceType<TestModel>
         {
             public GraphQLInvalidTestInterfaceModelType() : base("Test", "Test description")
@@ -94,9 +90,11 @@
             }
         }
 
-        public interface TestInterfaceModel
+        public class GraphQLTestInterfaceModelType : GraphQLInterfaceType<TestInterfaceModel>
         {
-            int Test { get; set; }
+            public GraphQLTestInterfaceModelType() : base("Test", "Test description")
+            {
+            }
         }
 
         public class TestModel

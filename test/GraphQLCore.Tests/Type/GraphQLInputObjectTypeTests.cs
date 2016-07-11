@@ -10,28 +10,9 @@
     {
         private GraphQLInputObjectType<TestModel> type;
 
-
-        [Test]
-        public void AddField_TwoAcessorsWithSameNames_ThrowsException()
+        public interface TestInterfaceModel
         {
-            var exception = Assert.Throws<GraphQLException>(new TestDelegate(() =>
-            {
-                type.Field("A", model => model.Test);
-                type.Field("A", model => model.Test);
-            }));
-
-            Assert.AreEqual("Can't insert two fields with the same name.", exception.Message);
-        }
-
-        [Test]
-        public void AddField_InterfaceTypeField_ThrowsException()
-        {
-            var exception = Assert.Throws<GraphQLException>(new TestDelegate(() =>
-            {
-                type.Field("nested", model => model.Nested);
-            }));
-
-            Assert.AreEqual("Can't set accessor to interface based field", exception.Message);
+            int Test { get; set; }
         }
 
         [Test]
@@ -52,11 +33,33 @@
         }
 
         [Test]
+        public void AddField_InterfaceTypeField_ThrowsException()
+        {
+            var exception = Assert.Throws<GraphQLException>(new TestDelegate(() =>
+            {
+                type.Field("nested", model => model.Nested);
+            }));
+
+            Assert.AreEqual("Can't set accessor to interface based field", exception.Message);
+        }
+
+        [Test]
+        public void AddField_TwoAcessorsWithSameNames_ThrowsException()
+        {
+            var exception = Assert.Throws<GraphQLException>(new TestDelegate(() =>
+            {
+                type.Field("A", model => model.Test);
+                type.Field("A", model => model.Test);
+            }));
+
+            Assert.AreEqual("Can't insert two fields with the same name.", exception.Message);
+        }
+
+        [Test]
         public void Description_HasCorrectDescription()
         {
             Assert.AreEqual("Test description", type.Description);
         }
-
 
         [Test]
         public void GetFieldsInfo_SingleAccessor_ReturnsCorrectInformationReflectedFromLambda()
@@ -105,17 +108,12 @@
             }
         }
 
-        public interface TestInterfaceModel
-        {
-            int Test { get; set; }
-        }
-
         public class TestModel
         {
-            public int Test { get; set; }
             public TestInterfaceModel Nested { get; set; }
-            public TestInterfaceModel[] NestedInterfaceCollection { get; set; }
             public IEnumerable<string> NestedCollection { get; set; }
+            public TestInterfaceModel[] NestedInterfaceCollection { get; set; }
+            public int Test { get; set; }
         }
     }
 }

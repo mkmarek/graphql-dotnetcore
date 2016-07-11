@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-
-namespace GraphQLCore.Language.AST
+﻿namespace GraphQLCore.Language.AST
 {
+    using System.Collections.Generic;
+
     public class GraphQLDirectiveDefinition : GraphQLTypeDefinition
     {
         public IEnumerable<GraphQLInputValueDefinition> Arguments { get; set; }

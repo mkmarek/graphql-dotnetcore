@@ -17,7 +17,7 @@
 
         private static string MonetizeLineBreaks(string input)
         {
-            return (input ?? "")
+            return (input ?? string.Empty)
                 .Replace("\r\n", "\n")
                 .Replace("\r", "\n");
         }

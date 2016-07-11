@@ -59,7 +59,7 @@
             {
                 Name = fieldInfo.Name,
                 Type = this.typeTranslator.GetType(fieldInfo.ReturnValueType),
-                Arguments = GetArguments(fieldInfo)
+                Arguments = this.GetArguments(fieldInfo)
             };
         }
 
@@ -69,7 +69,7 @@
             {
                 Name = fieldInfo.Name,
                 Type = this.typeTranslator.GetInputType(fieldInfo.ReturnValueType),
-                Arguments = GetArguments(fieldInfo)
+                Arguments = this.GetArguments(fieldInfo)
             };
         }
 

@@ -77,6 +77,11 @@
             return IntrospectedType.CreateForEnum(type, GraphQLEnumValue.GetEnumValuesFor(type.EnumType));
         }
 
+        private IntrospectedType IntrospectInputObjectType(GraphQLInputObjectType type)
+        {
+            return IntrospectedType.CreateForInputObject(type, this, this.typeTranslator.GetObjectTypeTranslatorFor(type));
+        }
+
         private IntrospectedType IntrospectInterfaceType(GraphQLInterfaceType type)
         {
             return IntrospectedType.CreateForInterface(type, this, this.typeTranslator.GetObjectTypeTranslatorFor(type));
@@ -95,11 +100,6 @@
         private IntrospectedType IntrospectObjectType(GraphQLObjectType type)
         {
             return IntrospectedType.CreateForObject(type, this, this.typeTranslator.GetObjectTypeTranslatorFor(type));
-        }
-
-        private IntrospectedType IntrospectInputObjectType(GraphQLInputObjectType type)
-        {
-            return IntrospectedType.CreateForInputObject(type, this, this.typeTranslator.GetObjectTypeTranslatorFor(type));
         }
 
         private IntrospectedType IntrospectScalarType(GraphQLScalarType scalarType)

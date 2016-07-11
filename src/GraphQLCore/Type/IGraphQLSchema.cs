@@ -6,8 +6,8 @@
     public interface IGraphQLSchema
     {
         IntrospectedSchemaType IntrospectedSchema { get; }
-        GraphQLObjectType QueryType { get; }
         GraphQLObjectType MutationType { get; }
+        GraphQLObjectType QueryType { get; }
         ITypeTranslator TypeTranslator { get; }
 
         dynamic Execute(string expression);

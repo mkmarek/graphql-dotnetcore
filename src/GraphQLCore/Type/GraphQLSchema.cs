@@ -23,8 +23,8 @@
         }
 
         public IntrospectedSchemaType IntrospectedSchema { get; private set; }
-        public GraphQLObjectType QueryType { get; private set; }
         public GraphQLObjectType MutationType { get; private set; }
+        public GraphQLObjectType QueryType { get; private set; }
         public ITypeTranslator TypeTranslator { get; private set; }
 
         public void AddKnownType(GraphQLNullableType type)
@@ -48,14 +48,14 @@
             }
         }
 
-        public void Query(GraphQLObjectType root)
-        {
-            this.QueryType = root;
-        }
-
         public void Mutation(GraphQLObjectType root)
         {
             this.MutationType = root;
+        }
+
+        public void Query(GraphQLObjectType root)
+        {
+            this.QueryType = root;
         }
 
         internal IntrospectedType GetGraphQLType(string name)

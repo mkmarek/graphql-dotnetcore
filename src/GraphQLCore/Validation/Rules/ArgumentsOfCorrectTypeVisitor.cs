@@ -21,15 +21,15 @@
             var unvisitedArguments = this.GetUnvisitedArguments();
 
             foreach (var argumentType in unvisitedArguments)
-                this.Errors.AddRange(this.schema.TypeTranslator.IsValidLiteralValue(argumentType, null));
+                this.Errors.AddRange(this.Schema.TypeTranslator.IsValidLiteralValue(argumentType, null));
 
             return args;
         }
 
         public override GraphQLArgument EndVisitArgument(GraphQLArgument argument)
         {
-            var argumentType = base.GetArgumentDefinition();
-            this.Errors.AddRange(this.schema.TypeTranslator.IsValidLiteralValue(argumentType, argument.Value));
+            var argumentType = this.GetArgumentDefinition();
+            this.Errors.AddRange(this.Schema.TypeTranslator.IsValidLiteralValue(argumentType, argument.Value));
 
             return base.EndVisitArgument(argument);
         }

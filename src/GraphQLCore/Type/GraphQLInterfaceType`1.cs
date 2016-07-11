@@ -2,9 +2,7 @@
 {
     using Exceptions;
     using System;
-    using System.Collections.Generic;
     using System.Linq.Expressions;
-    using Utils;
 
     public abstract class GraphQLInterfaceType<T> : GraphQLInterfaceType
         where T : class
@@ -18,14 +16,7 @@
             if (this.ContainsField(fieldName))
                 throw new GraphQLException("Can't insert two fields with the same name.");
 
-            this.fields.Add(fieldName, new GraphQLObjectTypeFieldInfo()
-            {
-                Name = fieldName,
-                IsResolver = false,
-                Lambda = accessor,
-                Arguments = new Dictionary<string, GraphQLObjectTypeArgumentInfo>(),
-                ReturnValueType = ReflectionUtilities.GetReturnValueFromLambdaExpression(accessor)
-            });
+            this.Fields.Add(fieldName, this.CreateFieldInfo(fieldName, accessor));
         }
     }
 }

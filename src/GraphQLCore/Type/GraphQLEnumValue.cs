@@ -6,8 +6,8 @@
 
     public class GraphQLEnumValue : GraphQLObjectType
     {
-        public GraphQLEnumValue(string name, string description) :
-            base("__EnumValue", "")
+        public GraphQLEnumValue(string name, string description)
+            : base("__EnumValue", string.Empty)
         {
             this.Field("name", () => name);
             this.Field("description", () => description);
@@ -22,7 +22,7 @@
                 throw new ArgumentException("T must be an enum type");
             }
 
-            return Enum.GetNames(type).Select(e => new GraphQLEnumValue(e, "")).ToArray();
+            return Enum.GetNames(type).Select(e => new GraphQLEnumValue(e, string.Empty)).ToArray();
         }
     }
 }

@@ -2,18 +2,18 @@
 {
     public class GraphQLValue<T> : GraphQLValue
     {
-        private ASTNodeKind KindField;
+        private ASTNodeKind kindField;
 
         public GraphQLValue(ASTNodeKind kind)
         {
-            this.KindField = kind;
+            this.kindField = kind;
         }
 
         public override ASTNodeKind Kind
         {
             get
             {
-                return this.KindField;
+                return this.kindField;
             }
         }
 

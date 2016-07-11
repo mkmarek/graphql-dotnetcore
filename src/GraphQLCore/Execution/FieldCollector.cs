@@ -4,17 +4,15 @@
     using System.Collections.Generic;
     using System.Linq;
     using Type;
-    using Utils;
-    using Type.Translation;
 
     public class FieldCollector
     {
-        private Dictionary<string, GraphQLFragmentDefinition> Fragments;
         private ExecutionContext executionContext;
+        private Dictionary<string, GraphQLFragmentDefinition> fragments;
 
         public FieldCollector(Dictionary<string, GraphQLFragmentDefinition> fragments, ExecutionContext executionContext)
         {
-            this.Fragments = fragments;
+            this.fragments = fragments;
             this.executionContext = executionContext;
         }
 
@@ -65,8 +63,8 @@
 
         private void CollectFragmentSpreadFields(GraphQLObjectType runtimeType, GraphQLFragmentSpread fragmentSpread, Dictionary<string, IList<GraphQLFieldSelection>> fields)
         {
-            var fragment = this.Fragments[fragmentSpread.Name.Value];
-            CollectFragmentFields(runtimeType, fragment, fields);
+            var fragment = this.fragments[fragmentSpread.Name.Value];
+            this.CollectFragmentFields(runtimeType, fragment, fields);
         }
 
         private bool DoesFragmentConditionMatch(GraphQLObjectType runtimeType, GraphQLInlineFragment fragment)

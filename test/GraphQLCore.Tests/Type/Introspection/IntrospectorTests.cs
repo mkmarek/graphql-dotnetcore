@@ -69,19 +69,11 @@
         }
 
         [Test]
-        public void IntrospectField_IntField_ReturnsCorrectFieldProperties()
+        public void IntrospectField_InputObjectType_ReturnsCorrectNumberOfInputFieldsProperties()
         {
-            var field = this.introspector.IntrospectField(new GraphQLFieldConfig()
-            {
-                Name = "IntField",
-                Arguments = new Dictionary<string, GraphQLScalarType>(),
-                Type = new GraphQLInt(),
-                Description = "SomeDescription"
-            });
+            var inputObject = this.introspector.Introspect(new ComplicatedInputObjectType());
 
-            Assert.AreEqual("IntField", field.Name);
-            Assert.AreEqual("Int", field.Type.Name);
-            Assert.AreEqual("SomeDescription", field.Description);
+            Assert.AreEqual(8, inputObject.InputFields.Count());
         }
 
         [Test]
@@ -95,14 +87,6 @@
         }
 
         [Test]
-        public void IntrospectField_InputObjectType_ReturnsCorrectNumberOfInputFieldsProperties()
-        {
-            var inputObject = this.introspector.Introspect(new ComplicatedInputObjectType());
-
-            Assert.AreEqual(8, inputObject.InputFields.Count());
-        }
-
-        [Test]
         public void IntrospectField_InputObjectType_ReturnsNestedInputTypeWithCorrectProperties()
         {
             var inputObject = this.introspector.Introspect(new ComplicatedInputObjectType());
@@ -112,6 +96,22 @@
             Assert.AreEqual(TypeKind.INPUT_OBJECT, nestedField.Type.Kind);
             Assert.AreEqual("ComplicatedInputObjectType", nestedField.Type.Name);
             Assert.AreEqual("ComplicatedInputObjectType description", nestedField.Type.Description);
+        }
+
+        [Test]
+        public void IntrospectField_IntField_ReturnsCorrectFieldProperties()
+        {
+            var field = this.introspector.IntrospectField(new GraphQLFieldConfig()
+            {
+                Name = "IntField",
+                Arguments = new Dictionary<string, GraphQLScalarType>(),
+                Type = new GraphQLInt(),
+                Description = "SomeDescription"
+            });
+
+            Assert.AreEqual("IntField", field.Name);
+            Assert.AreEqual("Int", field.Type.Name);
+            Assert.AreEqual("SomeDescription", field.Description);
         }
 
         [SetUp]
