@@ -6,11 +6,16 @@
 
     public class Mutation : GraphQLObjectType
     {
+        private CharacterService service = new CharacterService();
+
         public Mutation() : base("Mutation", "")
         {
-            var service = new CharacterService();
+            this.Field("addDroid", (Droid droid) => this.CreateAndGet(droid));
+        }
 
-            this.Field("addDroid", (Droid droid) => service.GetDroidById("2000"));
+        private Droid CreateAndGet(Droid droid)
+        {
+            return service.GetDroidById(droid.Id);
         }
     }
 }

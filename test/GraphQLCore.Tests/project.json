@@ -3,7 +3,7 @@
 
   "dependencies": {
     "NETStandard.Library": "1.6.0",
-    "NSubstitute": "2.0.0-alpha001",
+    "NSubstitute": "2.0.0-*",
     "NUnit": "3.4.0",
     "dotnet-test-nunit": "3.4.0-beta-1",
     "System.Diagnostics.TraceSource": "4.0.0",
