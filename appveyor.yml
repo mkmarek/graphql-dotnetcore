@@ -26,7 +26,7 @@ artifacts:
   name: NuGet
 deploy:
 - provider: NuGet
-  server: https://www.myget.org/F/mkmarek/api/v2/package
+  server: https://www.myget.org/F/graphqlcore-ci/api/v2/package
   api_key:
     secure: HBFsroegv2i8MgKqviGCPhk+1MuouIORGImfdz2jZl4CJOkmOgU6XbwvHdA0O+vf
   skip_symbols: true
