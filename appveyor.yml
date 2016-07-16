@@ -26,6 +26,13 @@ artifacts:
   name: NuGet
 deploy:
 - provider: NuGet
+  server: https://www.myget.org/F/mkmarek/api/v2/package
+  api_key:
+    secure: HBFsroegv2i8MgKqviGCPhk+1MuouIORGImfdz2jZl4CJOkmOgU6XbwvHdA0O+vf
+  skip_symbols: true
+  on:
+    branch: develop
+- provider: NuGet
   name: production
   api_key:
     secure: /MthxnuF3ameISXW4ic3FRRjIc8VU/KFxOOFUHLlH7pJwRftyq8WG+28KGnQGg12
