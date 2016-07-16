@@ -4,27 +4,44 @@
     using Models;
     using System.Collections.Generic;
     using System.Linq;
+    using System;
 
     public class CharacterService
     {
-        private readonly Characters characters = new Characters();
+        private static readonly Characters characters = new Characters();
+        private static readonly List<ICharacter> characterList = GetList().ToList();
 
         public Droid GetDroidById(string id)
         {
-            return this.GetList().SingleOrDefault(e => e.Id == id) as Droid;
+            return characterList.SingleOrDefault(e => e.Id == id) as Droid;
         }
 
         public Human GetHumanById(string id)
         {
-            return this.GetList().SingleOrDefault(e => e.Id == id) as Human;
+            return characterList.SingleOrDefault(e => e.Id == id) as Human;
+        }
+
+        internal Droid CreateDroid(Droid droid)
+        {
+            var model = new Droid()
+            {
+                Id = Guid.NewGuid().ToString(),
+                AppearsIn = droid.AppearsIn,
+                Name = droid.Name,
+                PrimaryFunction = droid.PrimaryFunction
+            };
+
+            characterList.Add(model);
+
+            return model;
         }
 
         public IEnumerable<ICharacter> List(Episode episode)
         {
-            return this.GetList().Where(e => e.AppearsIn.Contains(episode));
+            return characterList.Where(e => e.AppearsIn.Contains(episode));
         }
 
-        private IEnumerable<ICharacter> GetList()
+        private static IEnumerable<ICharacter> GetList()
         {
             return new ICharacter[] {
                 characters.Artoo, characters.Han, characters.Leia, characters.Luke,

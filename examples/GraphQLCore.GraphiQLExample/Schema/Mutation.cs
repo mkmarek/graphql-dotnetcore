@@ -15,7 +15,7 @@
 
         private Droid CreateAndGet(Droid droid)
         {
-            return service.GetDroidById(droid.Id);
+            return service.CreateDroid(droid);
         }
     }
 }

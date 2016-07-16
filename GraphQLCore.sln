@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{20410A75-C8E6-45E4-B70A-9E88F8267359}"
 EndProject
@@ -33,6 +33,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "untyped-object-definition",
 		docs\untyped-object-definition\overview.md = docs\untyped-object-definition\overview.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "typed-object-definition", "typed-object-definition", "{95724C1A-471A-4FDF-89A1-B47A7CCB65F3}"
+	ProjectSection(SolutionItems) = preProject
+		docs\typed-object-definition\overview.md = docs\typed-object-definition\overview.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "interfaces", "interfaces", "{E08A50B9-BF75-4D71-9141-AF14C9740150}"
+	ProjectSection(SolutionItems) = preProject
+		docs\interfaces\overview.md = docs\interfaces\overview.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "input-object-definition", "input-object-definition", "{A36BE8A6-BCA4-43D2-A37A-27A165C9EECB}"
+	ProjectSection(SolutionItems) = preProject
+		docs\input-object-definition\overview.md = docs\input-object-definition\overview.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,5 +75,8 @@ Global
 		{6B63BCC0-2884-4515-9A92-E408ACF4C98E} = {650371FA-695E-4487-B31C-A8049D9643E6}
 		{7461D627-8C7A-4DDB-98A1-22C396AF749F} = {4457F826-BED6-498A-BD55-74CD33809CB7}
 		{A02D0A24-8979-46DC-B645-7EC4D3668128} = {F484E37E-9227-4DDC-BA9F-DE3239BFB4D8}
+		{95724C1A-471A-4FDF-89A1-B47A7CCB65F3} = {F484E37E-9227-4DDC-BA9F-DE3239BFB4D8}
+		{E08A50B9-BF75-4D71-9141-AF14C9740150} = {F484E37E-9227-4DDC-BA9F-DE3239BFB4D8}
+		{A36BE8A6-BCA4-43D2-A37A-27A165C9EECB} = {F484E37E-9227-4DDC-BA9F-DE3239BFB4D8}
 	EndGlobalSection
 EndGlobal
