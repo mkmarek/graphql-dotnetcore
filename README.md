@@ -91,13 +91,12 @@ or bugfix in place.
 
 ###Fork it
 ![](images/fork.png)
-
 ###Clone it
 ```
 git clone https://github.com/<your_username>/graphql-dotnetcore.git
 cd graphql-dotnetcore
 ```
-###Develop it
+###Do it
 ```
 git checkout develop
 ...
@@ -105,10 +104,10 @@ git add -A
 git commit -m "Awesome feature"
 ...
 git add -A
-git commit -m "Fix my awesome feature"
+git commit -m "Fix awesome feature"
 ...
 git add -A
-git commit -m "Fix the previous fix for my awesome feature"
+git commit -m "Fix the previous fix for awesome feature"
 ...
 ```
 ###Squash it
