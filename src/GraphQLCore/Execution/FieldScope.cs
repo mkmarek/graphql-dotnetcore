@@ -9,23 +9,32 @@
     using System.Linq.Expressions;
     using Type;
     using Type.Introspection;
+    using Type.Translation;
     using Utils;
 
     public class FieldScope
     {
         private List<GraphQLArgument> arguments;
-        private ExecutionContext context;
         private object parent;
         private GraphQLObjectType type;
-        private VariableResolver variableResolver;
+        private IValueResolver valueResolver;
+        private ITypeTranslator typeTranslator;
+        private IFieldCollector fieldCollector;
 
-        public FieldScope(ExecutionContext context, GraphQLObjectType type, object parent, VariableResolver variableResolver)
+        public FieldScope(
+            ITypeTranslator typeTranslator,
+            IValueResolver valueResolver,
+            IFieldCollector fieldCollector,
+            GraphQLObjectType type,
+            object parent)
         {
             this.type = type;
-            this.context = context;
             this.parent = parent;
             this.arguments = new List<GraphQLArgument>();
-            this.variableResolver = variableResolver;
+
+            this.fieldCollector = fieldCollector;
+            this.typeTranslator = typeTranslator;
+            this.valueResolver = valueResolver;
         }
 
         public dynamic GetObject(Dictionary<string, IList<GraphQLFieldSelection>> fields)
@@ -61,12 +70,19 @@
             return result;
         }
 
-        private object CompleteObjectType(GraphQLObjectType input, GraphQLFieldSelection selection, IList<GraphQLArgument> arguments, object parentObject)
+        private object CompleteObjectType(
+            GraphQLObjectType input, GraphQLFieldSelection selection, IList<GraphQLArgument> arguments, object parentObject)
         {
-            var scope = this.context.CreateScope(input, parentObject);
+            var scope = new FieldScope(
+                this.typeTranslator,
+                this.valueResolver,
+                this.fieldCollector,
+                input,
+                parentObject);
+
             scope.arguments = arguments.ToList();
 
-            return this.context.GetResultFromScope(input, selection.SelectionSet, scope);
+            return scope.GetObject(this.fieldCollector.CollectFields(input, selection.SelectionSet));
         }
 
         private object CompleteValue(object input, GraphQLFieldSelection selection, IList<GraphQLArgument> arguments)
@@ -80,7 +96,7 @@
             if (ReflectionUtilities.IsCollection(input.GetType()))
                 return this.CompleteCollectionType((IEnumerable)input, selection, arguments);
 
-            var schemaValue = this.context.GraphQLSchema.TypeTranslator.GetType(input.GetType());
+            var schemaValue = this.typeTranslator.GetType(input.GetType());
             if (schemaValue is GraphQLObjectType)
             {
                 return this.CompleteObjectType((GraphQLObjectType)schemaValue, selection, arguments, input);
@@ -92,29 +108,23 @@
             return input;
         }
 
-        private object ExecuteField(Func<IList<GraphQLArgument>, object> fieldResolver, GraphQLFieldSelection selection)
-        {
-            var args = this.arguments.ToList();
-            args.RemoveAll(e => selection.Arguments.Any(arg => arg.Name.Value.Equals(e.Name.Value)));
-            args.AddRange(selection.Arguments);
-
-            return this.CompleteValue(fieldResolver(args), selection, args);
-        }
-
         private object GetDefinitionAndExecuteField(GraphQLObjectType type, GraphQLFieldSelection selection)
         {
-            return this.ExecuteField(this.GetFieldDefinition(type, selection), selection);
+            var arguments = this.GetArgumentsFromSelection(selection);
+            var fieldInfo = this.GetFieldInfo(type, selection);
+            var resolvedValue = this.ResolveField(fieldInfo, arguments, this.parent);
+
+            return this.CompleteValue(resolvedValue, selection, arguments);
         }
 
-        private Func<IList<GraphQLArgument>, object> GetFieldDefinition(GraphQLObjectType type, GraphQLFieldSelection selection)
+        private List<GraphQLArgument> GetArgumentsFromSelection(GraphQLFieldSelection selection)
         {
-            if (selection.Name.Value == "__schema")
-                return (args) => this.context.GraphQLSchema.IntrospectedSchema;
+            var arguments = this.arguments.ToList();
 
-            if (selection.Name.Value == "__type")
-                return (args) => this.context.InvokeWithArguments(args, this.GetTypeIntrospectionExpression());
+            arguments.RemoveAll(e => selection.Arguments.Any(arg => arg.Name.Value.Equals(e.Name.Value)));
+            arguments.AddRange(selection.Arguments);
 
-            return (args) => this.ResolveField(this.GetFieldInfo(type, selection), args, this.parent);
+            return arguments;
         }
 
         private GraphQLObjectTypeFieldInfo GetFieldInfo(GraphQLObjectType type, GraphQLFieldSelection selection)
@@ -128,11 +138,6 @@
             return selection.Name?.Value ?? selection.Alias?.Value;
         }
 
-        private Expression<Func<string, IntrospectedType>> GetTypeIntrospectionExpression()
-        {
-            return (string name) => this.context.GraphQLSchema.GetGraphQLType(name);
-        }
-
         private object ProcessField(object input)
         {
             if (input == null)
@@ -144,16 +149,22 @@
             return input;
         }
 
-        private object ResolveField(
-                    GraphQLObjectTypeFieldInfo fieldInfo, IList<GraphQLArgument> arguments, object parent)
+        private object ResolveField(GraphQLObjectTypeFieldInfo fieldInfo, IList<GraphQLArgument> arguments, object parent)
         {
             if (fieldInfo == null)
                 return null;
 
             if (fieldInfo.IsResolver)
-                return this.ProcessField(this.context.InvokeWithArguments(arguments, fieldInfo.Lambda));
+                return this.ProcessField(this.InvokeWithArguments(arguments, fieldInfo.Lambda));
 
             return this.ProcessField(fieldInfo.Lambda.Compile().DynamicInvoke(new object[] { parent }));
+        }
+
+        private object InvokeWithArguments(IList<GraphQLArgument> arguments, LambdaExpression expression)
+        {
+            var argumentValues = this.valueResolver.FetchArgumentValues(expression, arguments);
+
+            return expression.Compile().DynamicInvoke(argumentValues);
         }
     }
 }

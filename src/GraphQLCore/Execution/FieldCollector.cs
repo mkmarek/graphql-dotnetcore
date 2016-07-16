@@ -5,15 +5,15 @@
     using System.Linq;
     using Type;
 
-    public class FieldCollector
+    public class FieldCollector : IFieldCollector
     {
-        private ExecutionContext executionContext;
+        private IValueResolver valueResolver;
         private Dictionary<string, GraphQLFragmentDefinition> fragments;
 
-        public FieldCollector(Dictionary<string, GraphQLFragmentDefinition> fragments, ExecutionContext executionContext)
+        public FieldCollector(Dictionary<string, GraphQLFragmentDefinition> fragments, IValueResolver valueResolver)
         {
             this.fragments = fragments;
-            this.executionContext = executionContext;
+            this.valueResolver = valueResolver;
         }
 
         public Dictionary<string, IList<GraphQLFieldSelection>> CollectFields(GraphQLObjectType runtimeType, GraphQLSelectionSet selectionSet)
@@ -86,11 +86,11 @@
         private bool ShouldIncludeNode(IEnumerable<GraphQLDirective> directives)
         {
             var skipAST = directives?.FirstOrDefault(e => e.Name.Value == "skip");
-            if (skipAST != null && this.executionContext.GetArgumentValue(skipAST.Arguments, "if").Equals(true))
+            if (skipAST != null && this.valueResolver.GetArgumentValue(skipAST.Arguments, "if").Equals(true))
                 return false;
 
             var includeAST = directives?.FirstOrDefault(e => e.Name.Value == "include");
-            if (includeAST != null && this.executionContext.GetArgumentValue(includeAST.Arguments, "if").Equals(false))
+            if (includeAST != null && this.valueResolver.GetArgumentValue(includeAST.Arguments, "if").Equals(false))
                 return false;
 
             return true;

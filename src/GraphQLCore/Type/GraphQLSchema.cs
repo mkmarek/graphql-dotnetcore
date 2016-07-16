@@ -56,9 +56,23 @@
         public void Query(GraphQLObjectType root)
         {
             this.QueryType = root;
+            this.SetupIntrospectionFields(root);
         }
 
-        internal IntrospectedType GetGraphQLType(string name)
+        private void SetupIntrospectionFields(GraphQLObjectType objectType)
+        {
+            if (!objectType.ContainsField("__schema"))
+            {
+                objectType.Field("__schema", () => this.IntrospectedSchema);
+            }
+
+            if (!objectType.ContainsField("__type"))
+            {
+                objectType.Field("__type", (string name) => this.GetGraphQLType(name));
+            }
+        }
+
+        private IntrospectedType GetGraphQLType(string name)
         {
             return this.IntrospectedSchema.Introspect().Where(e => e.Name == name).FirstOrDefault();
         }

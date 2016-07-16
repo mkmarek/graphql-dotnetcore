@@ -10,7 +10,7 @@ using System.Linq.Expressions;
 
 namespace GraphQLCore.Execution
 {
-    public class VariableResolver
+    public class VariableResolver : IVariableResolver
     {
         private ITypeTranslator typeTranslator;
         private IEnumerable<GraphQLVariableDefinition> variableDefinitions;
@@ -36,7 +36,7 @@ namespace GraphQLCore.Execution
             throw new NotImplementedException();
         }
 
-        internal object GetValue(GraphQLVariable value) => this.GetValue(value.Name.Value);
+        public object GetValue(GraphQLVariable value) => this.GetValue(value.Name.Value);
 
         private static List<GraphQLObjectTypeFieldInfo> GetFieldsFromDefinition(GraphQLObjectType typeDefinition)
         {
