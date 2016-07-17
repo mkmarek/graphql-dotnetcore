@@ -1,6 +1,5 @@
 ﻿namespace GraphQLCore.Utils
 {
-    using Exceptions;
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -10,6 +9,49 @@
 
     public class ReflectionUtilities
     {
+        public static object ChangeToArrayCollection(object input, Type parameterType)
+        {
+            var elementType = parameterType.GetElementType();
+
+            return ToArray(elementType, ConvertEnumerable(input, elementType));
+        }
+
+        public static object ChangeToCollection(object input, Type parameterType)
+        {
+            if (parameterType.IsArray)
+                return ChangeToArrayCollection(input, parameterType);
+
+            return ChangeToListCollection(input, parameterType);
+        }
+
+        public static object ChangeToListCollection(object input, Type parameterType)
+        {
+            var elementType = parameterType.GenericTypeArguments.Single();
+
+            return ToList(elementType, ConvertEnumerable(input, elementType));
+        }
+
+        public static object ChangeValueType(object input, Type target)
+        {
+            if (input == null || target == null)
+                return null;
+
+            if (input.GetType() == target)
+                return input;
+
+            var underlyingNullableType = Nullable.GetUnderlyingType(target);
+            if (underlyingNullableType != null)
+                return ChangeValueType(input, underlyingNullableType);
+
+            if (IsCollection(target))
+                return ChangeToCollection(input, target);
+
+            if (IsEnum(target))
+                return Enum.Parse(target, input as string);
+
+            return null;
+        }
+
         public static IEnumerable<TResult> ConvertEnumerable<TResult>(IEnumerable source)
         {
             foreach (var element in source)
@@ -70,57 +112,12 @@
             return expression.Type.GenericTypeArguments.LastOrDefault();
         }
 
-        public static object ChangeToArrayCollection(object input, Type parameterType)
-        {
-            var elementType = parameterType.GetElementType();
-
-            return ToArray(elementType, ConvertEnumerable(input, elementType));
-        }
-
-        public static object ChangeToCollection(object input, Type parameterType)
-        {
-            if (parameterType.IsArray)
-                return ChangeToArrayCollection(input, parameterType);
-
-            return ChangeToListCollection(input, parameterType);
-        }
-
-        public static object ChangeToListCollection(object input, Type parameterType)
-        {
-            var elementType = parameterType.GenericTypeArguments.Single();
-
-            return ToList(elementType, ConvertEnumerable(input, elementType));
-        }
-
-        public static object ChangeValueType(object input, Type target)
-        {
-            if (input == null || target == null)
-                return null;
-
-            if (input.GetType() == target)
-                return input;
-
-            var underlyingNullableType = Nullable.GetUnderlyingType(target);
-            if (underlyingNullableType != null)
-                return ChangeValueType(input, underlyingNullableType);
-
-            if (IsCollection(target))
-                return ChangeToCollection(input, target);
-
-            if (IsEnum(target))
-                return Enum.Parse(target, input as string);
-
-            try
-            {
-                return Convert.ChangeType(input, target);
-            }
-            catch (Exception ex)
-            {
-                throw new GraphQLException($"Can't convert input of type {input.GetType().Name} to {target.Name}.", ex);
-            }
-        }
-
         public static bool IsEnum(Type type) => type.GetTypeInfo().IsEnum;
+
+        public static bool IsNullable(Type type)
+        {
+            return Nullable.GetUnderlyingType(type) != null;
+        }
 
         public static bool IsStruct(Type type)
         {
@@ -128,6 +125,14 @@
                 !type.GetTypeInfo().IsPrimitive &&
                 !type.Namespace.StartsWith("System") &&
                 !type.GetTypeInfo().IsEnum;
+        }
+
+        public static bool IsValueType(Type type)
+        {
+            return
+                type.GetTypeInfo().IsValueType ||
+                IsStruct(type) ||
+                IsEnum(type);
         }
 
         public static object ToArray(Type type, object input)

@@ -4,16 +4,15 @@
     using System.Collections.Generic;
     using System.Linq;
     using Type;
+    using Type.Scalar;
 
     public class FieldCollector : IFieldCollector
     {
-        private IValueResolver valueResolver;
         private Dictionary<string, GraphQLFragmentDefinition> fragments;
 
-        public FieldCollector(Dictionary<string, GraphQLFragmentDefinition> fragments, IValueResolver valueResolver)
+        public FieldCollector(Dictionary<string, GraphQLFragmentDefinition> fragments)
         {
             this.fragments = fragments;
-            this.valueResolver = valueResolver;
         }
 
         public Dictionary<string, IList<GraphQLFieldSelection>> CollectFields(GraphQLObjectType runtimeType, GraphQLSelectionSet selectionSet)
@@ -24,6 +23,20 @@
                 this.CollectFieldsInSelection(runtimeType, selection, fields);
 
             return fields;
+        }
+
+        private static GraphQLValue GetIncludeIfArgumentValue(IEnumerable<GraphQLDirective> directives)
+        {
+            var skipAST = directives?.FirstOrDefault(e => e.Name.Value == "include");
+
+            return skipAST?.Arguments?.SingleOrDefault(e => e.Name.Value == "if")?.Value;
+        }
+
+        private static GraphQLValue GetSkipIfArgumentValue(IEnumerable<GraphQLDirective> directives)
+        {
+            var skipAST = directives?.FirstOrDefault(e => e.Name.Value == "skip");
+
+            return skipAST?.Arguments?.SingleOrDefault(e => e.Name.Value == "if")?.Value;
         }
 
         private void CollectField(GraphQLFieldSelection selection, Dictionary<string, IList<GraphQLFieldSelection>> fields)
@@ -85,12 +98,14 @@
 
         private bool ShouldIncludeNode(IEnumerable<GraphQLDirective> directives)
         {
-            var skipAST = directives?.FirstOrDefault(e => e.Name.Value == "skip");
-            if (skipAST != null && this.valueResolver.GetArgumentValue(skipAST.Arguments, "if").Equals(true))
+            var boolean = new GraphQLBoolean();
+            var shouldSkip = GetSkipIfArgumentValue(directives);
+            var shouldContinue = GetIncludeIfArgumentValue(directives);
+
+            if (shouldSkip != null && boolean.GetFromAst(shouldSkip).Equals(true))
                 return false;
 
-            var includeAST = directives?.FirstOrDefault(e => e.Name.Value == "include");
-            if (includeAST != null && this.valueResolver.GetArgumentValue(includeAST.Arguments, "if").Equals(false))
+            if (shouldContinue != null && boolean.GetFromAst(shouldContinue).Equals(false))
                 return false;
 
             return true;

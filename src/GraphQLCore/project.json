@@ -11,7 +11,8 @@
     "StyleCop.Analyzers": {
       "version": "1.0.0",
       "type": "build"
-    }
+    },
+    "System.Linq": "4.1.0"
   },
   "buildOptions": {
     "additionalArguments": [ "/ruleset:ruleset.ruleset", "/additionalfile:stylecop.json" ]

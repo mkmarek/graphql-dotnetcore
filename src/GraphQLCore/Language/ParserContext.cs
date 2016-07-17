@@ -243,9 +243,9 @@
         private GraphQLValue ParseBooleanValue(Token token)
         {
             this.Advance();
-            return new GraphQLValue<bool>(ASTNodeKind.BooleanValue)
+            return new GraphQLScalarValue(ASTNodeKind.BooleanValue)
             {
-                Value = token.Value.Equals("true"),
+                Value = token.Value,
                 Location = this.GetLocation(token.Start)
             };
         }
@@ -365,7 +365,7 @@
         private GraphQLValue ParseEnumValue(Token token)
         {
             this.Advance();
-            return new GraphQLValue<string>(ASTNodeKind.EnumValue)
+            return new GraphQLScalarValue(ASTNodeKind.EnumValue)
             {
                 Value = token.Value.ToString(),
                 Location = this.GetLocation(token.Start)
@@ -425,9 +425,9 @@
         {
             var token = this.currentToken;
             this.Advance();
-            return new GraphQLValue<float>(ASTNodeKind.FloatValue)
+            return new GraphQLScalarValue(ASTNodeKind.FloatValue)
             {
-                Value = (float)token.Value,
+                Value = token.Value,
                 Location = this.GetLocation(token.Start)
             };
         }
@@ -523,9 +523,9 @@
             var token = this.currentToken;
             this.Advance();
 
-            return new GraphQLValue<int>(ASTNodeKind.IntValue)
+            return new GraphQLScalarValue(ASTNodeKind.IntValue)
             {
-                Value = (int)token.Value,
+                Value = token.Value,
                 Location = this.GetLocation(token.Start)
             };
         }
@@ -550,10 +550,11 @@
             Func<GraphQLValue> constant = () => this.ParseConstantValue();
             Func<GraphQLValue> value = () => this.ParseValueValue();
 
-            return new GraphQLValue<IEnumerable<GraphQLValue>>(ASTNodeKind.ListValue)
+            return new GraphQLListValue(ASTNodeKind.ListValue)
             {
-                Value = this.Any(TokenKind.BRACKET_L, isConstant ? constant : value, TokenKind.BRACKET_R),
-                Location = this.GetLocation(start)
+                Values = this.Any(TokenKind.BRACKET_L, isConstant ? constant : value, TokenKind.BRACKET_R),
+                Location = this.GetLocation(start),
+                AstValue = this.source.Body.Substring(start, this.currentToken.End - start - 1)
             };
         }
 
@@ -726,6 +727,21 @@
             };
         }
 
+        private GraphQLSchemaDefinition ParseSchemaDefinition()
+        {
+            var start = this.currentToken.Start;
+            this.ExpectKeyword("schema");
+            var directives = this.ParseDirectives();
+            var operationTypes = this.Many(TokenKind.BRACE_L, () => this.ParseOperationTypeDefinition(), TokenKind.BRACE_R);
+
+            return new GraphQLSchemaDefinition()
+            {
+                Directives = directives,
+                OperationTypes = operationTypes,
+                Location = this.GetLocation(start)
+            };
+        }
+
         private ASTNode ParseSelection()
         {
             return this.Peek(TokenKind.SPREAD) ?
@@ -743,26 +759,11 @@
             };
         }
 
-        private GraphQLSchemaDefinition ParseSchemaDefinition()
-        {
-            var start = this.currentToken.Start;
-            this.ExpectKeyword("schema");
-            var directives = this.ParseDirectives();
-            var operationTypes = this.Many(TokenKind.BRACE_L, () => this.ParseOperationTypeDefinition(), TokenKind.BRACE_R);
-
-            return new GraphQLSchemaDefinition()
-            {
-                Directives = directives,
-                OperationTypes = operationTypes,
-                Location = this.GetLocation(start)
-            };
-        }
-
         private GraphQLValue ParseString(bool isConstant)
         {
             var token = this.currentToken;
             this.Advance();
-            return new GraphQLValue<string>(ASTNodeKind.StringValue)
+            return new GraphQLScalarValue(ASTNodeKind.StringValue)
             {
                 Value = token.Value as string,
                 Location = this.GetLocation(token.Start)

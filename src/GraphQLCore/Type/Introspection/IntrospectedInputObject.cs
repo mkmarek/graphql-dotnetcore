@@ -1,27 +1,31 @@
 ﻿namespace GraphQLCore.Type
 {
-    using GraphQLCore.Type.Introspection;
+    using Introspection;
     using System.Linq;
+    using Translation;
 
     public class IntrospectedInputObject : IntrospectedType
     {
-        private IIntrospector introspector;
+        private ISchemaObserver schemaObserver;
+        private GraphQLInputObjectType type;
 
-        private IObjectTypeTranslator typeObserver;
-
-        internal IntrospectedInputObject(IIntrospector introspector, IObjectTypeTranslator typeObserver)
+        public IntrospectedInputObject(ISchemaObserver schemaObserver, GraphQLInputObjectType type)
         {
-            this.introspector = introspector;
-            this.typeObserver = typeObserver;
+            this.type = type;
+            this.schemaObserver = schemaObserver;
         }
 
         public override IntrospectedInputValue[] InputFields
         {
             get
             {
-                return this.typeObserver.GetFields()
-                    .Select(e => this.introspector.IntrospectInputValue(e))
-                    .ToArray();
+                return this.type.GetFieldsInfo()
+                    .Select(field => new IntrospectedInputValue()
+                    {
+                        Name = field.Name,
+                        Type = this.GetInputTypeFrom(field.SystemType, this.schemaObserver)
+                            .Introspect(this.schemaObserver)
+                    }).ToArray();
             }
         }
     }

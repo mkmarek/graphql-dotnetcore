@@ -53,6 +53,18 @@
         }
 
         [Test]
+        public void Lex_InvalidCharacter_ThrowsExceptionWithCorrectMessage()
+        {
+            var exception = Assert.Throws<GraphQLSyntaxErrorException>(
+                new TestDelegate(() => new Lexer().Lex(new Source("\u0007"))));
+
+            Assert.AreEqual((@"Syntax Error GraphQL (1:1) Invalid character " + "\"\\u0007\"" + @".
+1: \u0007
+   ^
+").Replace(Environment.NewLine, "\n"), exception.Message);
+        }
+
+        [Test]
         public void Lex_InvalidEscapeSequenceXCharacter_ThrowsExceptionWithCorrectMessage()
         {
             var exception = Assert.Throws<GraphQLSyntaxErrorException>(
@@ -73,18 +85,6 @@
             Assert.AreEqual((@"Syntax Error GraphQL (1:7) Invalid character escape sequence: \z.
 1: " + "\"bad \\z esc\"" + @"
          ^
-").Replace(Environment.NewLine, "\n"), exception.Message);
-        }
-
-        [Test]
-        public void Lex_InvalidCharacter_ThrowsExceptionWithCorrectMessage()
-        {
-            var exception = Assert.Throws<GraphQLSyntaxErrorException>(
-                new TestDelegate(() => new Lexer().Lex(new Source("\u0007"))));
-
-            Assert.AreEqual((@"Syntax Error GraphQL (1:1) Invalid character " + "\"\\u0007\"" + @".
-1: \u0007
-   ^
 ").Replace(Environment.NewLine, "\n"), exception.Message);
         }
 
@@ -191,16 +191,15 @@
             var exception = Assert.Throws<GraphQLSyntaxErrorException>(
                 new TestDelegate(() => new Lexer().Lex(new Source(@"
 
-
                      ?
 
 "))));
 
             Assert.AreEqual((@"Syntax Error GraphQL (4:22) Unexpected character " + "\"?\"" + @"
-3: 
+3:
 4:                      ?
                         ^
-5: 
+5:
 ").Replace(Environment.NewLine, "\n"), exception.Message);
         }
 

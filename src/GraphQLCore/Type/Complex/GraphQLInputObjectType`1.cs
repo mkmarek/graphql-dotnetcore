@@ -1,6 +1,7 @@
 ﻿namespace GraphQLCore.Type
 {
     using Exceptions;
+    using Language.AST;
     using System;
     using System.Linq.Expressions;
     using Utils;
@@ -23,6 +24,11 @@
                 throw new GraphQLException("Can't set accessor to interface based field");
 
             this.Fields.Add(fieldName, this.CreateFieldInfo(fieldName, accessor));
+        }
+
+        public override object GetFromAst(GraphQLValue astValue)
+        {
+            return null;
         }
 
         private bool IsInterfaceOrCollectionOfInterfaces(Type type)

@@ -6,37 +6,34 @@
 
     public class IntrospectedSchemaType : GraphQLObjectType
     {
-        private IIntrospector introspector;
         private IGraphQLSchema schema;
         private ISchemaObserver schemaObserver;
 
         public IntrospectedSchemaType(
             ISchemaObserver schemaObserver,
-            IIntrospector introspector,
             IGraphQLSchema schema) : base(
             "__Schema",
             "A GraphQL Schema defines the capabilities of a GraphQL server. It " +
             "exposes all available types and directives on the server, as well as " +
             "the entry points for query, mutation, and subscription operations.")
         {
-            this.introspector = introspector;
             this.schemaObserver = schemaObserver;
             this.schema = schema;
 
-            this.Field("types", () => this.Introspect());
-            this.Field("queryType", () => introspector.Introspect(this.schema.QueryType));
-            this.Field("mutationType", () => introspector.Introspect(this.schema.MutationType));
+            this.Field("types", () => this.IntrospectAllSchemaTypes());
+            this.Field("queryType", () => this.schema.QueryType.Introspect(this.schemaObserver));
+            this.Field("mutationType", () => this.schema.MutationType.Introspect(this.schemaObserver));
         }
 
-        public IEnumerable<IntrospectedType> Introspect()
+        public IEnumerable<IntrospectedType> IntrospectAllSchemaTypes()
         {
             var result = new List<IntrospectedType>();
 
             foreach (var type in this.schemaObserver.GetOutputKnownTypes())
-                result.Add(this.introspector.Introspect(type));
+                result.Add(type.Introspect(this.schemaObserver));
 
             foreach (var type in this.schemaObserver.GetInputKnownTypes().Where(e => !result.Any(r => r.Name == e.Name)))
-                result.Add(this.introspector.Introspect(type));
+                result.Add(type.Introspect(this.schemaObserver));
 
             return result
                 .Where(e => e.Name != null)

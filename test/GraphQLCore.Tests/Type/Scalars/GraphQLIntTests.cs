@@ -1,6 +1,6 @@
 ﻿namespace GraphQLCore.Tests.Type
 {
-    using GraphQLCore.Type.Scalars;
+    using GraphQLCore.Type.Scalar;
     using NUnit.Framework;
 
     [TestFixture]

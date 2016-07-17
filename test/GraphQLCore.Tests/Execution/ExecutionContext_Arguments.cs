@@ -1,6 +1,5 @@
 ﻿namespace GraphQLCore.Tests.Execution
 {
-    using Exceptions;
     using GraphQLCore.Type;
     using NUnit.Framework;
     using System.Collections.Generic;
@@ -20,33 +19,6 @@
         }
 
         [Test]
-        public void Execute_EntityFetchedWithBooleanFalseValuedArgument_PrintsCorrectValues()
-        {
-            dynamic result = this.schema.Execute("{ nested(id: false) { Id, StringField } }");
-
-            Assert.AreEqual(0, result.nested.Id);
-            Assert.AreEqual("Test with id 0", result.nested.StringField);
-        }
-
-        [Test]
-        public void Execute_EntityFetchedWithBooleanTrueValuedArgument_PrintsCorrectValues()
-        {
-            dynamic result = this.schema.Execute("{ nested(id: true) { Id, StringField } }");
-
-            Assert.AreEqual(1, result.nested.Id);
-            Assert.AreEqual("Test with id 1", result.nested.StringField);
-        }
-
-        [Test]
-        public void Execute_EntityFetchedWithFloatArgument_PrintsCorrectValues()
-        {
-            dynamic result = this.schema.Execute("{ nested(id: 42.5) { Id, StringField } }");
-
-            Assert.AreEqual(42, result.nested.Id);
-            Assert.AreEqual("Test with id 42", result.nested.StringField);
-        }
-
-        [Test]
         public void Execute_EntityFetchedWithIntegerArgument_PrintsCorrectValues()
         {
             dynamic result = this.schema.Execute("{ nested(id: 42) { Id, StringField } }");
@@ -56,20 +28,19 @@
         }
 
         [Test]
-        public void Execute_EntityFetchedWithListIdArgument_ThrowsException()
+        public void Execute_FloatViaArgument_PrintsCorrectFloat()
         {
-            var exception = Assert.Throws<GraphQLException>(new TestDelegate(() => this.schema.Execute("{ nested(id: [1,2,3]) { Id, StringField } }")));
+            dynamic result = this.schema.Execute("{ withFloat(value: 3.14) }");
 
-            Assert.AreEqual("Can't convert input of type List`1 to Int32.", exception.Message);
+            Assert.AreEqual(3.14f, result.withFloat);
         }
 
         [Test]
-        public void Execute_EntityFetchedWithStringArgument_PrintsCorrectValues()
+        public void Execute_FloatViaArgumentWithInt_PrintsCorrectFloat()
         {
-            dynamic result = this.schema.Execute("{ nested(id: \"42\") { Id, StringField } }");
+            dynamic result = this.schema.Execute("{ withFloat(value: 3) }");
 
-            Assert.AreEqual(42, result.nested.Id);
-            Assert.AreEqual("Test with id 42", result.nested.StringField);
+            Assert.AreEqual(3.0f, result.withFloat);
         }
 
         [Test]
@@ -152,6 +123,7 @@
                 this.Field("nested", (int id) => new TestObject() { Id = id, StringField = "Test with id " + id });
                 this.Field("withArray", (int[] ids) => ids.Count());
                 this.Field("isNull", (int? nonMandatory) => !nonMandatory.HasValue);
+                this.Field("withFloat", (float value) => value);
                 this.Field("withList", (List<int> ids) => ids.Count());
                 this.Field("withIEnumerable", (IEnumerable<int> ids) => ids.Count());
             }

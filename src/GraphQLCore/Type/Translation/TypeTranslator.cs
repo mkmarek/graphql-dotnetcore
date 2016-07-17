@@ -1,7 +1,6 @@
 ﻿namespace GraphQLCore.Type.Translation
 {
-    using Exceptions;
-    using Scalars;
+    using Scalar;
     using System;
     using System.Collections.Generic;
     using System.Dynamic;
@@ -11,12 +10,12 @@
 
     public class TypeTranslator : ITypeTranslator
     {
-        private Dictionary<Type, GraphQLScalarType> bindings;
+        private Dictionary<Type, GraphQLBaseType> bindings;
         private ISchemaObserver schemaObserver;
 
         public TypeTranslator(ISchemaObserver schemaObserver)
         {
-            this.bindings = new Dictionary<Type, GraphQLScalarType>();
+            this.bindings = new Dictionary<Type, GraphQLBaseType>();
             this.schemaObserver = schemaObserver;
             this.RegisterBindings();
             this.RegisterScalarsToSchemeObserver();
@@ -41,44 +40,7 @@
             return resultObject;
         }
 
-        public GraphQLScalarType GetInputType(Type type)
-        {
-            if (ReflectionUtilities.IsCollection(type))
-                return new GraphQLList(this.GetInputType(ReflectionUtilities.GetCollectionMemberType(type)));
-
-            if (this.bindings.ContainsKey(type))
-                return this.bindings[type];
-
-            return this.GetSchemaInputType(type);
-        }
-
-        public object GetLiteralValue(Language.AST.GraphQLValue value)
-        {
-            switch (value.Kind)
-            {
-                case Language.AST.ASTNodeKind.BooleanValue: return ((Language.AST.GraphQLValue<bool>)value).Value;
-                case Language.AST.ASTNodeKind.IntValue: return ((Language.AST.GraphQLValue<int>)value).Value;
-                case Language.AST.ASTNodeKind.FloatValue: return ((Language.AST.GraphQLValue<float>)value).Value;
-                case Language.AST.ASTNodeKind.StringValue: return ((Language.AST.GraphQLValue<string>)value).Value;
-                case Language.AST.ASTNodeKind.EnumValue: return ((Language.AST.GraphQLValue<string>)value).Value;
-            }
-
-            return null;
-        }
-
-        public IObjectTypeTranslator GetObjectTypeTranslatorFor(Type type)
-        {
-            var schemaType = this.schemaObserver.GetSchemaTypeFor(type);
-
-            return this.GetObjectTypeTranslatorFor(schemaType);
-        }
-
-        public IObjectTypeTranslator GetObjectTypeTranslatorFor(GraphQLNullableType type)
-        {
-            return new ObjectTypeTranslator(type, this, this.schemaObserver);
-        }
-
-        public GraphQLScalarType GetType(Type type)
+        public GraphQLBaseType GetType(Type type)
         {
             if (ReflectionUtilities.IsCollection(type))
                 return new GraphQLList(this.GetType(ReflectionUtilities.GetCollectionMemberType(type)));
@@ -89,7 +51,7 @@
             return this.GetSchemaType(type);
         }
 
-        public Type GetType(GraphQLScalarType type)
+        public Type GetType(GraphQLBaseType type)
         {
             if (type is GraphQLList)
                 return ReflectionUtilities.CreateListTypeOf(this.GetType(((GraphQLList)type).MemberType));
@@ -110,48 +72,13 @@
             return reflectedType;
         }
 
-        public GraphQLScalarType GetType(Language.AST.GraphQLNamedType type)
+        public GraphQLBaseType GetType(Language.AST.GraphQLNamedType type)
         {
             return this.schemaObserver.GetOutputKnownTypes()
                 .Single(e => e.Name == type.Name.Value);
         }
 
-        public GraphQLException[] IsValidLiteralValue(GraphQLScalarType inputType, Language.AST.GraphQLValue astValue)
-        {
-            if (inputType is GraphQLNonNullType)
-            {
-                if (astValue == null)
-                {
-                    return new GraphQLException[]
-                    {
-                        new GraphQLException($"Expected {inputType.Name ?? "non-null"} found null")
-                    };
-                }
-
-                return this.IsValidLiteralValue(((GraphQLNonNullType)inputType).UnderlyingNullableType, astValue);
-            }
-
-            if (astValue == null)
-                return new GraphQLException[] { };
-
-            if (astValue.Kind == Language.AST.ASTNodeKind.Variable) // this method is checking only literals
-                return new GraphQLException[] { };
-
-            object value = this.GetLiteralValue(astValue);
-
-            try
-            {
-                ReflectionUtilities.ChangeValueType(value, this.GetType(inputType));
-            }
-            catch (Exception ex)
-            {
-                return new GraphQLException[] { new GraphQLException($"Expected {inputType.Name ?? "non-null"} found null", ex) };
-            }
-
-            return new GraphQLException[] { };
-        }
-
-        public object TranslatePerDefinition(object inputObject, GraphQLScalarType typeDefinition)
+        public object TranslatePerDefinition(object inputObject, GraphQLBaseType typeDefinition)
         {
             if (inputObject is ExpandoObject && typeDefinition is GraphQLObjectType)
                 return this.CreateObjectFromDynamic((GraphQLObjectType)typeDefinition, (ExpandoObject)inputObject);
@@ -177,12 +104,12 @@
                 .ToList();
         }
 
-        private static GraphQLNullableType GetUnderlyingNullableType(GraphQLScalarType type)
+        private static GraphQLBaseType GetUnderlyingNullableType(GraphQLBaseType type)
         {
             return ((GraphQLNonNullType)type).UnderlyingNullableType;
         }
 
-        private static bool IsMatchingValueType(GraphQLScalarType type, GraphQLScalarType bindingType)
+        private static bool IsMatchingValueType(GraphQLBaseType type, GraphQLBaseType bindingType)
         {
             if (type is GraphQLNonNullType && bindingType is GraphQLNonNullType)
                 return IsMatchingValueType(GetUnderlyingNullableType(type), GetUnderlyingNullableType(bindingType));
@@ -202,18 +129,7 @@
             this.MakeSetterFromLambda(expression).DynamicInvoke(resultObject, variableProp);
         }
 
-        private GraphQLScalarType GetSchemaInputType(Type type)
-        {
-            if (this.IsNullable(type))
-                return this.schemaObserver.GetSchemaInputTypeFor(Nullable.GetUnderlyingType(type));
-
-            if (this.IsValueType(type))
-                return new GraphQLNonNullType(this.schemaObserver.GetSchemaInputTypeFor(type));
-
-            return this.schemaObserver.GetSchemaInputTypeFor(type);
-        }
-
-        private GraphQLScalarType GetSchemaType(Type type)
+        private GraphQLBaseType GetSchemaType(Type type)
         {
             if (this.IsNullable(type))
                 return this.schemaObserver.GetSchemaTypeFor(Nullable.GetUnderlyingType(type));
@@ -245,7 +161,7 @@
             return setter.Compile();
         }
 
-        private void RegisterBinding<T>(GraphQLNullableType type)
+        private void RegisterBinding<T>(GraphQLBaseType type)
         {
             this.bindings.Add(typeof(T), type);
         }
@@ -264,10 +180,6 @@
 
         private void RegisterScalarsToSchemeObserver()
         {
-            this.schemaObserver.AddKnownType(new GraphQLInt());
-            this.schemaObserver.AddKnownType(new GraphQLFloat());
-            this.schemaObserver.AddKnownType(new GraphQLBoolean());
-            this.schemaObserver.AddKnownType(new GraphQLString());
         }
     }
 }

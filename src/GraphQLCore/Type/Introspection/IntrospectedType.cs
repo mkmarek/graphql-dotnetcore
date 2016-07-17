@@ -1,14 +1,14 @@
-﻿namespace GraphQLCore.Type.Introspection
+﻿using GraphQLCore.Type.Translation;
+using GraphQLCore.Utils;
+using System;
+
+namespace GraphQLCore.Type.Introspection
 {
     public class IntrospectedType
     {
-        internal IntrospectedType()
-        {
-        }
+        public string Description { get; set; }
 
-        public string Description { get; protected set; }
-
-        public virtual GraphQLEnumValue[] EnumValues { get; protected set; }
+        public virtual GraphQLEnumValue[] EnumValues { get; set; }
 
         public virtual IntrospectedField[] Fields { get { return null; } }
 
@@ -16,83 +16,40 @@
 
         public virtual IntrospectedType[] Interfaces { get { return null; } }
 
-        public TypeKind Kind { get; protected set; }
+        public TypeKind Kind { get; set; }
 
-        public string Name { get; protected set; }
+        public string Name { get; set; }
 
-        public IntrospectedType OfType { get; protected set; }
+        public IntrospectedType OfType { get; set; }
 
         public virtual IntrospectedType[] PossibleTypes { get { return null; } }
 
-        public static IntrospectedType CreateForInterface(GraphQLInterfaceType type, IIntrospector introspector, IObjectTypeTranslator typeObserver)
+        protected GraphQLBaseType GetInputTypeFrom(System.Type type, ISchemaObserver schemaObserver)
         {
-            var introspectedType = new ComplexIntrospectedType(introspector, typeObserver);
-            introspectedType.Name = type.Name;
-            introspectedType.Description = type.Description;
-            introspectedType.Kind = TypeKind.INTERFACE;
+            if (ReflectionUtilities.IsCollection(type))
+                return new GraphQLList(this.GetInputTypeFrom(ReflectionUtilities.GetCollectionMemberType(type), schemaObserver));
 
-            return introspectedType;
+            if (ReflectionUtilities.IsNullable(type))
+                return schemaObserver.GetSchemaTypeFor(Nullable.GetUnderlyingType(type));
+
+            if (ReflectionUtilities.IsValueType(type))
+                return new GraphQLNonNullType(schemaObserver.GetSchemaInputTypeFor(type));
+
+            return schemaObserver.GetSchemaInputTypeFor(type);
         }
 
-        public static IntrospectedType CreateForObject(GraphQLObjectType type, IIntrospector introspector, IObjectTypeTranslator typeObserver)
+        protected GraphQLBaseType GetOutputTypeFrom(System.Type type, ISchemaObserver schemaObserver)
         {
-            var introspectedType = new ComplexIntrospectedType(introspector, typeObserver);
-            introspectedType.Name = type.Name;
-            introspectedType.Description = type.Description;
-            introspectedType.Kind = TypeKind.OBJECT;
+            if (ReflectionUtilities.IsCollection(type))
+                return new GraphQLList(this.GetOutputTypeFrom(ReflectionUtilities.GetCollectionMemberType(type), schemaObserver));
 
-            return introspectedType;
-        }
+            if (ReflectionUtilities.IsNullable(type))
+                return schemaObserver.GetSchemaTypeFor(Nullable.GetUnderlyingType(type));
 
-        public static IntrospectedType CreateForScalar(GraphQLScalarType type)
-        {
-            var introspectedType = new IntrospectedType();
-            introspectedType.Name = type.Name;
-            introspectedType.Description = type.Description;
-            introspectedType.Kind = TypeKind.SCALAR;
+            if (ReflectionUtilities.IsValueType(type))
+                return new GraphQLNonNullType(schemaObserver.GetSchemaTypeFor(type));
 
-            return introspectedType;
-        }
-
-        internal static IntrospectedType CreateForEnum(GraphQLEnumType type, GraphQLEnumValue[] enumValues)
-        {
-            var introspectedType = new IntrospectedType();
-            introspectedType.Name = type.Name;
-            introspectedType.Description = type.Description;
-            introspectedType.Kind = TypeKind.ENUM;
-            introspectedType.EnumValues = enumValues;
-
-            return introspectedType;
-        }
-
-        internal static IntrospectedInputObject CreateForInputObject(GraphQLInputObjectType type, Introspector introspector, IObjectTypeTranslator typeObserver)
-        {
-            var introspectedType = new IntrospectedInputObject(introspector, typeObserver);
-            introspectedType.Kind = TypeKind.INPUT_OBJECT;
-            introspectedType.Description = type.Description;
-            introspectedType.Name = type.Name;
-
-            return introspectedType;
-        }
-
-        internal static IntrospectedType CreateForList(GraphQLList type, IntrospectedType listItemType)
-        {
-            var introspectedType = new IntrospectedType();
-            introspectedType.Name = type.Name;
-            introspectedType.Description = type.Description;
-            introspectedType.Kind = TypeKind.LIST;
-            introspectedType.OfType = listItemType;
-
-            return introspectedType;
-        }
-
-        internal static IntrospectedType CreateForNonNull(IntrospectedType underlyingType)
-        {
-            var introspectedType = new IntrospectedType();
-            introspectedType.Kind = TypeKind.NON_NULL;
-            introspectedType.OfType = underlyingType;
-
-            return introspectedType;
+            return schemaObserver.GetSchemaTypeFor(type);
         }
     }
 }

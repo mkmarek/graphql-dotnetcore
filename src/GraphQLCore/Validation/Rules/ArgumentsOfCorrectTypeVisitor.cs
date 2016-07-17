@@ -14,22 +14,18 @@
 
         public List<GraphQLException> Errors { get; private set; }
 
-        public override IEnumerable<GraphQLArgument> BeginVisitArguments(IEnumerable<GraphQLArgument> arguments)
-        {
-            var args = base.BeginVisitArguments(arguments);
-
-            var unvisitedArguments = this.GetUnvisitedArguments();
-
-            foreach (var argumentType in unvisitedArguments)
-                this.Errors.AddRange(this.Schema.TypeTranslator.IsValidLiteralValue(argumentType, null));
-
-            return args;
-        }
-
         public override GraphQLArgument EndVisitArgument(GraphQLArgument argument)
         {
             var argumentType = this.GetArgumentDefinition();
-            this.Errors.AddRange(this.Schema.TypeTranslator.IsValidLiteralValue(argumentType, argument.Value));
+            var astValue = argument.Value;
+
+            var errors = this.LiteralValueValidator.IsValid(argumentType, astValue);
+
+            foreach (var error in errors)
+            {
+                this.Errors.Add(new GraphQLException(
+                    $"Argument \"{argument.Name.Value}\" has invalid value {astValue} {error.Message}"));
+            }
 
             return base.EndVisitArgument(argument);
         }

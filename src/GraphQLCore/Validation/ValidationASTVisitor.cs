@@ -10,31 +10,29 @@
 
     public class ValidationASTVisitor : GraphQLAstVisitor
     {
-        protected IGraphQLSchema Schema { get; set; }
-
-        private GraphQLScalarType argumentType;
-        private Dictionary<string, GraphQLScalarType> argumentTypes;
+        private GraphQLBaseType argumentType;
         private Stack<string> fieldStack;
-        private Stack<GraphQLObjectType> parentTypeStack;
+        private GraphQLBaseType lastType;
+        private IGraphQLSchema schema;
         private ITypeTranslator translator;
-        private Stack<GraphQLObjectType> typeStack;
+        private Stack<GraphQLBaseType> typeStack;
 
         public ValidationASTVisitor(IGraphQLSchema schema)
         {
-            this.Schema = schema;
-            this.parentTypeStack = new Stack<GraphQLObjectType>();
-            this.typeStack = new Stack<GraphQLObjectType>();
+            this.typeStack = new Stack<GraphQLBaseType>();
             this.fieldStack = new Stack<string>();
-            this.argumentTypes = new Dictionary<string, GraphQLScalarType>();
+
+            this.schema = schema;
             this.translator = schema.TypeTranslator;
+            this.LiteralValueValidator = new LiteralValueValidator();
         }
+
+        protected LiteralValueValidator LiteralValueValidator { get; set; }
 
         public override GraphQLArgument BeginVisitArgument(GraphQLArgument argument)
         {
-            var fieldName = this.fieldStack.Peek();
-            this.argumentType = this.translator.GetObjectTypeTranslatorFor(this.typeStack.Peek()).GetField(fieldName).Arguments
-                .SingleOrDefault(e => e.Key == argument.Name.Value).Value;
-            this.argumentTypes.Remove(argument.Name.Value);
+            this.argumentType = this.translator.GetType(this.GetField(this.typeStack.Peek(), this.fieldStack.Peek())
+                .Arguments.Single(e => e.Key == argument.Name.Value).Value.Type);
 
             return base.BeginVisitArgument(argument);
         }
@@ -43,20 +41,8 @@
         {
             this.fieldStack.Push(selection.Name.Value);
 
-            this.argumentTypes.Clear();
-            if (selection.Name?.Value != null)
-            {
-                var arguments = this.translator.GetObjectTypeTranslatorFor(this.typeStack.Peek()).GetField(selection.Name.Value).Arguments;
-                if (arguments != null)
-                {
-                    foreach (var argument in this.translator.GetObjectTypeTranslatorFor(this.typeStack.Peek()).GetField(selection.Name.Value).Arguments)
-                        this.argumentTypes.Add(argument.Key, argument.Value);
-                }
-            }
-
-            var obj = this.translator.GetObjectTypeTranslatorFor(this.typeStack.Peek()).GetField(selection.Name.Value).Type as GraphQLObjectType;
-            if (obj != null)
-                this.typeStack.Push(obj);
+            var systemType = this.GetField(this.typeStack.Peek(), this.fieldStack.Peek()).SystemType;
+            this.lastType = this.translator.GetType(systemType);
 
             return base.BeginVisitFieldSelection(selection);
         }
@@ -65,34 +51,53 @@
         {
             switch (definition.Operation)
             {
-                case OperationType.Query: this.typeStack.Push(this.Schema.QueryType); break;
+                case OperationType.Query: this.typeStack.Push(this.schema.QueryType); break;
                 default: throw new NotImplementedException();
             }
 
             definition = base.BeginVisitOperationDefinition(definition);
-            this.typeStack.Pop();
+
+            if (this.typeStack.Count > 0)
+                this.typeStack.Pop();
 
             return definition;
+        }
+
+        public override GraphQLSelectionSet BeginVisitSelectionSet(GraphQLSelectionSet selectionSet)
+        {
+            if (this.lastType is GraphQLComplexType || this.lastType is GraphQLInputObjectType)
+                this.typeStack.Push(this.lastType);
+
+            return base.BeginVisitSelectionSet(selectionSet);
         }
 
         public override GraphQLFieldSelection EndVisitFieldSelection(GraphQLFieldSelection selection)
         {
             this.fieldStack.Pop();
-            this.argumentTypes.Clear();
+
+            if (this.typeStack.Count > 0)
+                this.typeStack.Pop();
 
             return base.EndVisitFieldSelection(selection);
         }
 
-        public GraphQLScalarType GetArgumentDefinition()
+        public GraphQLBaseType GetArgumentDefinition()
         {
             return this.argumentType;
         }
 
-        public IEnumerable<GraphQLScalarType> GetUnvisitedArguments()
+        private GraphQLObjectTypeFieldInfo GetField(GraphQLBaseType type, string name)
         {
-            return this.argumentTypes
-                .Select(e => e.Value)
-                .ToList();
+            if (type is GraphQLCore.Type.GraphQLNonNullType)
+                return this.GetField(((GraphQLCore.Type.GraphQLNonNullType)type).UnderlyingNullableType, name);
+
+            if (type is GraphQLInputObjectType)
+                return ((GraphQLInputObjectType)type).GetFieldInfo(name);
+
+            if (type is GraphQLComplexType)
+                return ((GraphQLComplexType)type).GetFieldInfo(name);
+
+            return null;
         }
     }
 }

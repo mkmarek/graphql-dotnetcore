@@ -5,6 +5,7 @@
     public interface IVariableResolver
     {
         object GetValue(string variableName);
+
         object GetValue(GraphQLVariable value);
     }
 }

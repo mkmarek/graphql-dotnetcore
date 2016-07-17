@@ -9,6 +9,6 @@
         public bool IsResolver { get; set; }
         public LambdaExpression Lambda { get; set; }
         public string Name { get; set; }
-        public System.Type ReturnValueType { get; set; }
+        public System.Type SystemType { get; set; }
     }
 }

@@ -1,7 +1,7 @@
 ﻿namespace GraphQLCore.Tests.Type.Translation
 {
     using GraphQLCore.Type;
-    using GraphQLCore.Type.Scalars;
+    using GraphQLCore.Type.Scalar;
     using GraphQLCore.Type.Translation;
     using NSubstitute;
     using NUnit.Framework;
@@ -59,7 +59,7 @@
         [Test]
         public void GetType_IntNamedType_GetsValueFromKnownTypesByCorrectName()
         {
-            this.schemaObserver.GetOutputKnownTypes().Returns(new GraphQLNullableType[] { new GraphQLInt() });
+            this.schemaObserver.GetOutputKnownTypes().Returns(new GraphQLBaseType[] { new GraphQLInt() });
 
             var graphqlType = translator.GetType(GetGraphQLNamedType("Int"));
 
@@ -158,16 +158,6 @@
 
             Assert.IsInstanceOf<GraphQLNonNullType>(graphqlType);
             Assert.IsInstanceOf<TestScructObject>(((GraphQLNonNullType)graphqlType).UnderlyingNullableType);
-        }
-
-        [Test]
-        public void GetTypeObserverFor_ObjectType_ReturnsCorrectObserver()
-        {
-            this.schemaObserver.AddKnownType(new FurColorEnum());
-
-            var typeObserver = this.translator.GetObjectTypeTranslatorFor(typeof(FurColor));
-
-            Assert.IsNotNull(typeObserver);
         }
 
         [SetUp]

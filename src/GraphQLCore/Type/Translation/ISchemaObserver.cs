@@ -5,18 +5,20 @@
 
     public interface ISchemaObserver
     {
-        void AddKnownType(GraphQLNullableType type);
+        void AddKnownType(GraphQLBaseType type);
 
-        IEnumerable<GraphQLNullableType> GetInputKnownTypes();
+        GraphQLComplexType[] GetImplementingInterfaces(GraphQLComplexType type);
 
-        IEnumerable<GraphQLNullableType> GetOutputKnownTypes();
+        IEnumerable<GraphQLBaseType> GetInputKnownTypes();
 
-        GraphQLNullableType GetSchemaInputTypeFor(Type type);
+        IEnumerable<GraphQLBaseType> GetOutputKnownTypes();
 
-        GraphQLNullableType GetSchemaTypeFor(Type type);
+        GraphQLBaseType GetSchemaInputTypeFor(Type type);
 
-        Type GetTypeFor(GraphQLScalarType type);
+        GraphQLBaseType GetSchemaTypeFor(Type type);
 
-        GraphQLComplexType[] GetTypesImplementing(GraphQLNullableType objectType);
+        Type GetTypeFor(GraphQLBaseType type);
+
+        GraphQLComplexType[] GetTypesImplementing(GraphQLBaseType objectType);
     }
 }

@@ -1,6 +1,7 @@
 ﻿namespace GraphQLCore.Type.Translation
 {
     using Exceptions;
+    using Scalar;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -9,16 +10,33 @@
 
     public class SchemaObserver : ISchemaObserver
     {
+        private Dictionary<string, GraphQLBaseType> inputBindings;
+
+        private Dictionary<string, GraphQLBaseType> outputBindings;
+
         public SchemaObserver()
         {
-            this.outputBindings = new Dictionary<string, GraphQLNullableType>();
-            this.inputBindings = new Dictionary<string, GraphQLNullableType>();
+            this.outputBindings = new Dictionary<string, GraphQLBaseType>();
+            this.inputBindings = new Dictionary<string, GraphQLBaseType>();
+
+            var graphQLInt = new GraphQLInt();
+            var graphQLFloat = new GraphQLFloat();
+            var graphQLBoolean = new GraphQLBoolean();
+            var graphQLString = new GraphQLString();
+
+            this.outputBindings.Add(typeof(string).FullName, graphQLString);
+            this.inputBindings.Add(typeof(string).FullName, graphQLString);
+
+            this.outputBindings.Add(typeof(int).FullName, graphQLInt);
+            this.outputBindings.Add(typeof(float).FullName, graphQLFloat);
+            this.outputBindings.Add(typeof(bool).FullName, graphQLBoolean);
+
+            this.inputBindings.Add(typeof(int).FullName, graphQLInt);
+            this.inputBindings.Add(typeof(float).FullName, graphQLFloat);
+            this.inputBindings.Add(typeof(bool).FullName, graphQLBoolean);
         }
 
-        private Dictionary<string, GraphQLNullableType> inputBindings;
-        private Dictionary<string, GraphQLNullableType> outputBindings;
-
-        public void AddKnownType(GraphQLNullableType type)
+        public void AddKnownType(GraphQLBaseType type)
         {
             if (type is GraphQLInputObjectType)
             {
@@ -35,35 +53,52 @@
             }
         }
 
-        public IEnumerable<GraphQLNullableType> GetInputKnownTypes()
+        public GraphQLComplexType[] GetImplementingInterfaces(GraphQLComplexType type)
         {
-            return this.inputBindings.Select(e => e.Value).ToList();
+            var systemType = ReflectionUtilities.GetGenericArgumentsEagerly(type.GetType());
+            var interfacesTypes = ReflectionUtilities.GetAllImplementingInterfaces(systemType);
+
+            return interfacesTypes.Select(e => this.GetSchemaTypeFor(e))
+                .Select(e => e as GraphQLComplexType)
+                .Where(e => e != null)
+                .ToArray();
         }
 
-        public IEnumerable<GraphQLNullableType> GetOutputKnownTypes()
+        public IEnumerable<GraphQLBaseType> GetInputKnownTypes()
         {
-            return this.outputBindings.Select(e => e.Value).ToList();
+            return this.inputBindings.Select(e => e.Value).Distinct().ToList();
         }
 
-        public GraphQLNullableType GetSchemaInputTypeFor(Type type)
+        public IEnumerable<GraphQLBaseType> GetOutputKnownTypes()
         {
+            return this.outputBindings.Select(e => e.Value).Distinct().ToList();
+        }
+
+        public GraphQLBaseType GetSchemaInputTypeFor(Type type)
+        {
+            if (ReflectionUtilities.IsCollection(type))
+                return new GraphQLList(this.GetSchemaInputTypeFor(ReflectionUtilities.GetCollectionMemberType(type)));
+
             if (this.inputBindings.ContainsKey(type.FullName))
                 return this.inputBindings[type.FullName];
 
             throw new GraphQLException($"Unknown input type {type.FullName} have you added it to known types?");
         }
 
-        public GraphQLNullableType GetSchemaTypeFor(Type type)
+        public GraphQLBaseType GetSchemaTypeFor(Type type)
         {
+            if (ReflectionUtilities.IsCollection(type))
+                return new GraphQLList(this.GetSchemaTypeFor(ReflectionUtilities.GetCollectionMemberType(type)));
+
             return this.GetSchemaTypeFor(type, type);
         }
 
-        public Type GetTypeFor(GraphQLScalarType type)
+        public Type GetTypeFor(GraphQLBaseType type)
         {
             return ReflectionUtilities.GetGenericArgumentsEagerly(type.GetType());
         }
 
-        public GraphQLComplexType[] GetTypesImplementing(GraphQLNullableType objectType)
+        public GraphQLComplexType[] GetTypesImplementing(GraphQLBaseType objectType)
         {
             if (objectType is GraphQLInterfaceType)
             {
@@ -78,7 +113,7 @@
             return new GraphQLComplexType[] { };
         }
 
-        private void AddInputObjectKnownType(GraphQLNullableType type)
+        private void AddInputObjectKnownType(GraphQLBaseType type)
         {
             var reflectedType = type.GetType();
             var argument = ReflectionUtilities.GetGenericArgumentsEagerly(reflectedType);
@@ -89,7 +124,7 @@
                 this.inputBindings.Add(argument.FullName, type);
         }
 
-        private void AddOutputObjectKnownType(GraphQLNullableType type)
+        private void AddOutputObjectKnownType(GraphQLBaseType type)
         {
             var reflectedType = type.GetType();
             var argument = ReflectionUtilities.GetGenericArgumentsEagerly(reflectedType);
@@ -100,7 +135,7 @@
                 this.outputBindings.Add(argument.FullName, type);
         }
 
-        private GraphQLNullableType GetSchemaTypeFor(Type originalType, Type presumedSchemaType)
+        private GraphQLBaseType GetSchemaTypeFor(Type originalType, Type presumedSchemaType)
         {
             if (this.outputBindings.ContainsKey(presumedSchemaType.FullName))
                 return this.outputBindings[presumedSchemaType.FullName];

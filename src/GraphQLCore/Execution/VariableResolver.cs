@@ -36,13 +36,13 @@ namespace GraphQLCore.Execution
 
         public object GetValue(GraphQLVariable value) => this.GetValue(value.Name.Value);
 
-        private GraphQLScalarType GetTypeDefinition(GraphQLType typeDefinition)
+        private GraphQLBaseType GetTypeDefinition(GraphQLType typeDefinition)
         {
             if (typeDefinition is GraphQLNamedType)
                 return this.typeTranslator.GetType((GraphQLNamedType)typeDefinition);
 
             if (typeDefinition is Language.AST.GraphQLNonNullType)
-                return new Type.GraphQLNonNullType((GraphQLNullableType)this.GetTypeDefinition(((Language.AST.GraphQLNonNullType)typeDefinition).Type));
+                return new Type.GraphQLNonNullType((GraphQLBaseType)this.GetTypeDefinition(((Language.AST.GraphQLNonNullType)typeDefinition).Type));
 
             if (typeDefinition is GraphQLListType)
                 return new GraphQLList(this.GetTypeDefinition(((GraphQLListType)typeDefinition).Type));

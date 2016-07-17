@@ -34,7 +34,7 @@
                 IsResolver = true,
                 Lambda = resolver,
                 Arguments = this.GetArguments(resolver),
-                ReturnValueType = ReflectionUtilities.GetReturnValueFromLambdaExpression(resolver)
+                SystemType = ReflectionUtilities.GetReturnValueFromLambdaExpression(resolver)
             };
         }
 

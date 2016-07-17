@@ -2,14 +2,14 @@
 {
     using Data;
     using Models;
+    using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System;
 
     public class CharacterService
     {
-        private static readonly Characters characters = new Characters();
         private static readonly List<ICharacter> characterList = GetList().ToList();
+        private static readonly Characters characters = new Characters();
 
         public Droid GetDroidById(string id)
         {
@@ -19,6 +19,11 @@
         public Human GetHumanById(string id)
         {
             return characterList.SingleOrDefault(e => e.Id == id) as Human;
+        }
+
+        public IEnumerable<ICharacter> List(Episode episode)
+        {
+            return characterList.Where(e => e.AppearsIn.Contains(episode));
         }
 
         internal Droid CreateDroid(Droid droid)
@@ -34,11 +39,6 @@
             characterList.Add(model);
 
             return model;
-        }
-
-        public IEnumerable<ICharacter> List(Episode episode)
-        {
-            return characterList.Where(e => e.AppearsIn.Contains(episode));
         }
 
         private static IEnumerable<ICharacter> GetList()

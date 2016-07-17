@@ -4,14 +4,17 @@
     using System;
     using System.Collections.Generic;
     using System.Dynamic;
+    using System.Linq;
+    using System.Linq.Expressions;
     using Type;
+    using Type.Introspection;
 
     public class ExecutionContext : IDisposable
     {
         private GraphQLDocument ast;
         private Dictionary<string, GraphQLFragmentDefinition> fragments;
-        private GraphQLOperationDefinition operation;
         private GraphQLSchema graphQLSchema;
+        private GraphQLOperationDefinition operation;
         private dynamic variables;
 
         public ExecutionContext(GraphQLSchema graphQLSchema, GraphQLDocument ast)
@@ -43,20 +46,41 @@
             return this.ComposeResultForType(this.GetOperationRootType(), this.operation.SelectionSet);
         }
 
+        private void AppendIntrospectionInfo(
+            FieldScope scope, Dictionary<string, IList<GraphQLFieldSelection>> fields, dynamic resultObject)
+        {
+            var introspectedSchema = this.IntrospectSchemaIfRequested(scope, fields);
+            var introspectedField = this.IntrospectTypeIfRequested(scope, fields);
+
+            if (introspectedSchema != null)
+                resultObject.__schema = introspectedSchema;
+
+            if (introspectedField != null)
+                resultObject.__type = introspectedField;
+        }
+
         private dynamic ComposeResultForType(GraphQLObjectType type, GraphQLSelectionSet selectionSet)
         {
-            var variableResolver = new VariableResolver(this.variables, this.graphQLSchema.TypeTranslator, this.operation.VariableDefinitions);
-            var valueResolver = new ValueResolver(variableResolver, this.graphQLSchema.TypeTranslator);
-            var fieldCollector = new FieldCollector(this.fragments, valueResolver);
+            var variableResolver = new VariableResolver(
+                this.variables,
+                this.graphQLSchema.TypeTranslator,
+                this.operation.VariableDefinitions);
+
+            var fieldCollector = new FieldCollector(this.fragments);
 
             var scope = new FieldScope(
                 this.graphQLSchema.TypeTranslator,
-                valueResolver,
+                variableResolver,
                 fieldCollector,
                 type,
                 null);
 
-            return scope.GetObject(fieldCollector.CollectFields(type, selectionSet));
+            var fields = fieldCollector.CollectFields(type, selectionSet);
+            var resultObject = scope.GetObject(fields);
+
+            this.AppendIntrospectionInfo(scope, fields, resultObject);
+
+            return resultObject;
         }
 
         private GraphQLObjectType GetOperationRootType()
@@ -67,6 +91,44 @@
                 case OperationType.Mutation: return this.graphQLSchema.MutationType;
                 default: throw new Exception($"Can't execute type {this.operation.Operation}");
             }
+        }
+
+        private Expression<Func<string, IntrospectedType>> GetTypeIntrospectionLambda()
+        {
+            return (string name) => this.graphQLSchema.IntrospectType(name);
+        }
+
+        private object IntrospectSchemaIfRequested(
+                            FieldScope scope, IDictionary<string, IList<GraphQLFieldSelection>> fields)
+        {
+            if (fields.ContainsKey("__schema"))
+            {
+                var field = fields["__schema"].Single();
+                fields.Remove("__schema");
+
+                return scope.CompleteValue(this.graphQLSchema.IntrospectedSchema, field, field.Arguments.ToList());
+            }
+
+            return null;
+        }
+
+        private object IntrospectTypeIfRequested(
+            FieldScope scope, IDictionary<string, IList<GraphQLFieldSelection>> fields)
+        {
+            if (fields.ContainsKey("__type"))
+            {
+                var field = fields["__type"].Single();
+                fields.Remove("__type");
+
+                return scope.CompleteValue(
+                    scope.InvokeWithArguments(
+                        field.Arguments.ToList(),
+                        this.GetTypeIntrospectionLambda()),
+                    field,
+                    field.Arguments.ToList());
+            }
+
+            return null;
         }
 
         private void ResolveDefinition(ASTNode definition)
