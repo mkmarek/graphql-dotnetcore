@@ -185,23 +185,6 @@
 ").Replace(Environment.NewLine, "\n"), exception.Message);
         }
 
-        [Test]
-        public void Lex_MultilineInvalidCharacter_ThrowsExceptionWithCorrectMessage()
-        {
-            var exception = Assert.Throws<GraphQLSyntaxErrorException>(
-                new TestDelegate(() => new Lexer().Lex(new Source(@"
-
-                     ?
-
-"))));
-
-            Assert.AreEqual((@"Syntax Error GraphQL (4:22) Unexpected character " + "\"?\"" + @"
-3:
-4:                      ?
-                        ^
-5:
-").Replace(Environment.NewLine, "\n"), exception.Message);
-        }
 
         [Test]
         public void Lex_NonNumericCharacterInNumberExponent_ThrowsExceptionWithCorrectMessage()
