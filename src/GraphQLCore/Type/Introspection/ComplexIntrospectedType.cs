@@ -5,12 +5,12 @@ namespace GraphQLCore.Type.Introspection
 {
     public class ComplexIntrospectedType : IntrospectedType
     {
-        private ISchemaObserver schemaObserver;
+        private ISchemaRepository schemaRepository;
         private GraphQLComplexType type;
 
-        internal ComplexIntrospectedType(ISchemaObserver schemaObjerver, GraphQLComplexType type)
+        internal ComplexIntrospectedType(ISchemaRepository schemaRepository, GraphQLComplexType type)
         {
-            this.schemaObserver = schemaObjerver;
+            this.schemaRepository = schemaRepository;
             this.type = type;
         }
 
@@ -25,11 +25,11 @@ namespace GraphQLCore.Type.Introspection
                         Arguments = field.Arguments?.Select(argument => new IntrospectedInputValue()
                         {
                             Name = argument.Key,
-                            Type = this.GetInputTypeFrom(argument.Value.Type, this.schemaObserver)
-                                .Introspect(this.schemaObserver)
+                            Type = this.GetInputTypeFrom(argument.Value.Type, this.schemaRepository)
+                                .Introspect(this.schemaRepository)
                         }).ToArray(),
-                        Type = this.GetOutputTypeFrom(field.SystemType, this.schemaObserver)
-                            .Introspect(this.schemaObserver)
+                        Type = this.GetOutputTypeFrom(field.SystemType, this.schemaRepository)
+                            .Introspect(this.schemaRepository)
                     }).ToArray();
             }
         }
@@ -38,8 +38,8 @@ namespace GraphQLCore.Type.Introspection
         {
             get
             {
-                return this.schemaObserver.GetImplementingInterfaces(this.type)
-                    .Select(e => e.Introspect(this.schemaObserver))
+                return this.schemaRepository.GetImplementingInterfaces(this.type)
+                    .Select(e => e.Introspect(this.schemaRepository))
                     .ToArray();
             }
         }
@@ -48,8 +48,11 @@ namespace GraphQLCore.Type.Introspection
         {
             get
             {
-                return this.schemaObserver.GetTypesImplementing(this.type)
-                    .Select(e => e.Introspect(this.schemaObserver))
+                if (!(this.type is GraphQLInterfaceType))
+                    return null;
+
+                return this.schemaRepository.GetTypesImplementing((GraphQLInterfaceType)this.type)
+                    .Select(e => e.Introspect(this.schemaRepository))
                     .ToArray();
             }
         }

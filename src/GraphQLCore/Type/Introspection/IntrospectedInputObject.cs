@@ -6,13 +6,13 @@
 
     public class IntrospectedInputObject : IntrospectedType
     {
-        private ISchemaObserver schemaObserver;
+        private ISchemaRepository schemaRepository;
         private GraphQLInputObjectType type;
 
-        public IntrospectedInputObject(ISchemaObserver schemaObserver, GraphQLInputObjectType type)
+        public IntrospectedInputObject(ISchemaRepository schemaRepository, GraphQLInputObjectType type)
         {
             this.type = type;
-            this.schemaObserver = schemaObserver;
+            this.schemaRepository = schemaRepository;
         }
 
         public override IntrospectedInputValue[] InputFields
@@ -23,8 +23,8 @@
                     .Select(field => new IntrospectedInputValue()
                     {
                         Name = field.Name,
-                        Type = this.GetInputTypeFrom(field.SystemType, this.schemaObserver)
-                            .Introspect(this.schemaObserver)
+                        Type = this.GetInputTypeFrom(field.SystemType, this.schemaRepository)
+                            .Introspect(this.schemaRepository)
                     }).ToArray();
             }
         }

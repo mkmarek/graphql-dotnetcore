@@ -1,6 +1,7 @@
 ﻿namespace GraphQLCore.Type.Scalar
 {
     using Language.AST;
+    using Translation;
     using Utils;
 
     public class GraphQLBoolean : GraphQLScalarType
@@ -11,7 +12,7 @@
         {
         }
 
-        public override object GetFromAst(GraphQLValue astValue)
+        public override object GetFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
             if (astValue.Kind == ASTNodeKind.BooleanValue)
                 return ((GraphQLScalarValue)astValue).Value.ParseBoolOrGiveNull();

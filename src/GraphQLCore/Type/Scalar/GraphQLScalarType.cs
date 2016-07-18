@@ -9,7 +9,7 @@
         {
         }
 
-        public override IntrospectedType Introspect(ISchemaObserver schemaObserver)
+        public override IntrospectedType Introspect(ISchemaRepository schemaRepository)
         {
             var introspectedType = new IntrospectedType();
             introspectedType.Name = this.Name;

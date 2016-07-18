@@ -24,32 +24,32 @@ namespace GraphQLCore.Type.Introspection
 
         public virtual IntrospectedType[] PossibleTypes { get { return null; } }
 
-        protected GraphQLBaseType GetInputTypeFrom(System.Type type, ISchemaObserver schemaObserver)
+        protected GraphQLBaseType GetInputTypeFrom(System.Type type, ISchemaRepository schemaRepository)
         {
             if (ReflectionUtilities.IsCollection(type))
-                return new GraphQLList(this.GetInputTypeFrom(ReflectionUtilities.GetCollectionMemberType(type), schemaObserver));
+                return new GraphQLList(this.GetInputTypeFrom(ReflectionUtilities.GetCollectionMemberType(type), schemaRepository));
 
             if (ReflectionUtilities.IsNullable(type))
-                return schemaObserver.GetSchemaTypeFor(Nullable.GetUnderlyingType(type));
+                return schemaRepository.GetSchemaTypeFor(Nullable.GetUnderlyingType(type));
 
             if (ReflectionUtilities.IsValueType(type))
-                return new GraphQLNonNullType(schemaObserver.GetSchemaInputTypeFor(type));
+                return new GraphQLNonNullType(schemaRepository.GetSchemaInputTypeFor(type));
 
-            return schemaObserver.GetSchemaInputTypeFor(type);
+            return schemaRepository.GetSchemaInputTypeFor(type);
         }
 
-        protected GraphQLBaseType GetOutputTypeFrom(System.Type type, ISchemaObserver schemaObserver)
+        protected GraphQLBaseType GetOutputTypeFrom(System.Type type, ISchemaRepository schemaRepository)
         {
             if (ReflectionUtilities.IsCollection(type))
-                return new GraphQLList(this.GetOutputTypeFrom(ReflectionUtilities.GetCollectionMemberType(type), schemaObserver));
+                return new GraphQLList(this.GetOutputTypeFrom(ReflectionUtilities.GetCollectionMemberType(type), schemaRepository));
 
             if (ReflectionUtilities.IsNullable(type))
-                return schemaObserver.GetSchemaTypeFor(Nullable.GetUnderlyingType(type));
+                return schemaRepository.GetSchemaTypeFor(Nullable.GetUnderlyingType(type));
 
             if (ReflectionUtilities.IsValueType(type))
-                return new GraphQLNonNullType(schemaObserver.GetSchemaTypeFor(type));
+                return new GraphQLNonNullType(schemaRepository.GetSchemaTypeFor(type));
 
-            return schemaObserver.GetSchemaTypeFor(type);
+            return schemaRepository.GetSchemaTypeFor(type);
         }
     }
 }

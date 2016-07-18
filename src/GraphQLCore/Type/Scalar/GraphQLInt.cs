@@ -2,7 +2,7 @@
 {
     using Language.AST;
     using System;
-
+    using Translation;
     public class GraphQLInt : GraphQLScalarType
     {
         public GraphQLInt() : base(
@@ -11,7 +11,7 @@
         {
         }
 
-        public override object GetFromAst(GraphQLValue astValue)
+        public override object GetFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
             if (astValue.Kind == ASTNodeKind.IntValue)
             {

@@ -83,6 +83,14 @@
             Assert.AreEqual(false, result.isNull);
         }
 
+        [Test]
+        public void Execute_AstObjectArgument_InvokesResolverWithNullValue()
+        {
+            dynamic result = this.schema.Execute("{ withObjectArg(obj: { stringField: \"abc\" }) { StringField } }");
+
+            Assert.AreEqual("abc", result.withObjectArg.StringField);
+        }
+
         [SetUp]
         public void SetUp()
         {
@@ -94,6 +102,7 @@
             this.schema.AddKnownType(rootType);
             this.schema.AddKnownType(nestedTypeNonGeneric);
             this.schema.AddKnownType(nestedType);
+            this.schema.AddKnownType(new InputTestObjectType());
 
             this.schema.Query(rootType);
         }
@@ -116,6 +125,14 @@
             }
         }
 
+        private class InputTestObjectType : GraphQLInputObjectType<TestObject>
+        {
+            public InputTestObjectType() : base("InputTestObjectType", "")
+            {
+                this.Field("stringField", instance => instance.StringField);
+            }
+        }
+
         private class RootQueryType : GraphQLObjectType
         {
             public RootQueryType(GraphQLSchema schema) : base("RootQueryType", "")
@@ -126,6 +143,7 @@
                 this.Field("withFloat", (float value) => value);
                 this.Field("withList", (List<int> ids) => ids.Count());
                 this.Field("withIEnumerable", (IEnumerable<int> ids) => ids.Count());
+                this.Field("withObjectArg", (TestObject obj) => obj);
             }
         }
 

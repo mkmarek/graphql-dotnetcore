@@ -14,7 +14,7 @@ namespace GraphQLCore.Type
         public string Description { get; protected set; }
         public string Name { get; protected set; }
 
-        public abstract IntrospectedType Introspect(ISchemaObserver schemaObserver);
+        public abstract IntrospectedType Introspect(ISchemaRepository schemaRepository);
 
         public override string ToString()
         {

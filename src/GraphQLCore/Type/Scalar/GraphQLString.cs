@@ -1,7 +1,7 @@
 ﻿namespace GraphQLCore.Type.Scalar
 {
     using Language.AST;
-
+    using Translation;
     public class GraphQLString : GraphQLScalarType
     {
         public GraphQLString() : base(
@@ -12,7 +12,7 @@
         {
         }
 
-        public override object GetFromAst(GraphQLValue astValue)
+        public override object GetFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
             if (astValue.Kind == ASTNodeKind.StringValue)
                 return ((GraphQLScalarValue)astValue).Value;

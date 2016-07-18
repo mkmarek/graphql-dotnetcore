@@ -7,7 +7,7 @@
         GraphQLObjectType MutationType { get; }
         GraphQLObjectType QueryType { get; }
 
-        ITypeTranslator TypeTranslator { get; }
+        ISchemaRepository SchemaRepository { get; }
 
         dynamic Execute(string expression);
 

@@ -11,7 +11,7 @@
     public class VariableResolverTests
     {
         private GraphQLNamedType intNamedType;
-        private ITypeTranslator typeTranslator;
+        private ISchemaRepository schemaRepository;
         private VariableResolver variableResolver;
 
         [Test]
@@ -19,7 +19,7 @@
         {
             object value = this.variableResolver.GetValue("scalarIntVariable");
 
-            this.typeTranslator.Received().GetType(this.intNamedType);
+            this.schemaRepository.Received().GetSchemaInputTypeByName(this.intNamedType.Name.Value);
         }
 
         [SetUp]
@@ -29,8 +29,8 @@
             variables.scalarIntVariable = "1";
 
             this.intNamedType = GetIntNamedType();
-            this.typeTranslator = Substitute.For<ITypeTranslator>();
-            this.variableResolver = new VariableResolver(variables, this.typeTranslator, this.GetVariableDefinitions());
+            this.schemaRepository = Substitute.For<ISchemaRepository>();
+            this.variableResolver = new VariableResolver(variables, this.schemaRepository, this.GetVariableDefinitions());
         }
 
         private static GraphQLNamedType GetIntNamedType()

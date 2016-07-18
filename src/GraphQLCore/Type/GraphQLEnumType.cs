@@ -2,10 +2,11 @@
 {
     using Introspection;
     using Language.AST;
+    using Scalar;
     using System;
     using Translation;
 
-    public class GraphQLEnumType : GraphQLInputType
+    public class GraphQLEnumType : GraphQLScalarType
     {
         public GraphQLEnumType(string name, string description, Type enumType) : base(name, description)
         {
@@ -14,7 +15,7 @@
 
         public Type EnumType { get; set; }
 
-        public override object GetFromAst(GraphQLValue astValue)
+        public override object GetFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
             if (astValue.Kind != ASTNodeKind.EnumValue)
                 return null;
@@ -27,7 +28,7 @@
             return Enum.Parse(this.EnumType, value);
         }
 
-        public override IntrospectedType Introspect(ISchemaObserver schemaObserver)
+        public override IntrospectedType Introspect(ISchemaRepository schemaRepository)
         {
             var introspectedType = new IntrospectedType();
             introspectedType.Name = this.Name;

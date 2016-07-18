@@ -3,7 +3,9 @@
     using Exceptions;
     using Language.AST;
     using System;
+    using System.Linq;
     using System.Linq.Expressions;
+    using Translation;
     using Utils;
 
     public abstract class GraphQLInputObjectType<T> : GraphQLInputObjectType
@@ -26,9 +28,36 @@
             this.Fields.Add(fieldName, this.CreateFieldInfo(fieldName, accessor));
         }
 
-        public override object GetFromAst(GraphQLValue astValue)
+        public override object GetFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
-            return null;
+            var objectAstValue = (GraphQLObjectValue)astValue;
+            var result = new T();
+
+            foreach (var field in this.Fields)
+            {
+                var astField = GetFieldFromAstObjectValue(objectAstValue, field.Key);
+
+                if (astField == null)
+                    continue;
+
+                var graphQLType = schemaRepository.GetSchemaInputTypeFor(field.Value.SystemType);
+                var value = graphQLType.GetFromAst(astField.Value, schemaRepository);
+
+                this.AssignValueFromAstField(result, field.Value, value);
+            }
+
+            return result;
+        }
+
+        private static GraphQLObjectField GetFieldFromAstObjectValue(GraphQLObjectValue objectAstValue, string fieldName)
+        {
+            return objectAstValue.Fields.SingleOrDefault(e => e.Name.Value == fieldName);
+        }
+
+        private void AssignValueFromAstField(T result, GraphQLObjectTypeFieldInfo field, object value)
+        {
+            ReflectionUtilities.MakeSetterFromLambda(field.Lambda)
+                    .DynamicInvoke(result, value);
         }
 
         private bool IsInterfaceOrCollectionOfInterfaces(Type type)

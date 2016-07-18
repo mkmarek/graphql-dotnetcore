@@ -13,19 +13,19 @@
 
         public GraphQLBaseType UnderlyingNullableType { get; private set; }
 
-        public override object GetFromAst(GraphQLValue astValue)
+        public override object GetFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
             if (this.UnderlyingNullableType is GraphQLInputType)
-                return ((GraphQLInputType)this.UnderlyingNullableType).GetFromAst(astValue);
+                return ((GraphQLInputType)this.UnderlyingNullableType).GetFromAst(astValue, schemaRepository);
 
             return null;
         }
 
-        public override IntrospectedType Introspect(ISchemaObserver schemaObserver)
+        public override IntrospectedType Introspect(ISchemaRepository schemaRepository)
         {
             var introspectedType = new IntrospectedType();
             introspectedType.Kind = TypeKind.NON_NULL;
-            introspectedType.OfType = this.UnderlyingNullableType.Introspect(schemaObserver);
+            introspectedType.OfType = this.UnderlyingNullableType.Introspect(schemaRepository);
 
             return introspectedType;
         }

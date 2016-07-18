@@ -26,7 +26,7 @@
         }
 
         [Test]
-        public void Validate_ArgOnOptionalArg_ExpectsNoError()
+        public void ArgOnOptionalArg_ExpectsNoError()
         {
             var errors = Validate(@"
             {
@@ -40,7 +40,7 @@
         }
 
         [Test]
-        public void Validate_BigIntIntoInt_ExpectsSingleError()
+        public void BigIntIntoInt_ExpectsSingleError()
         {
             var errors = Validate(@"
             {
@@ -54,7 +54,7 @@
         }
 
         [Test]
-        public void Validate_BooleanIntoString_ExpectsSingleError()
+        public void BooleanIntoString_ExpectsSingleError()
         {
             var errors = Validate(@"
             {
@@ -68,7 +68,7 @@
         }
 
         [Test]
-        public void Validate_BoolIntoEnum_ExpectsSingleError()
+        public void BoolIntoEnum_ExpectsSingleError()
         {
             var errors = Validate(@"
             {
@@ -82,7 +82,7 @@
         }
 
         [Test]
-        public void Validate_BoolIntoFloat_ExpectsSingleError()
+        public void BoolIntoFloat_ExpectsSingleError()
         {
             var errors = Validate(@"
             {
@@ -96,7 +96,7 @@
         }
 
         [Test]
-        public void Validate_ComplexObjectOnlyrequiredValues_ExpectsNoError()
+        public void ComplexObjectOnlyrequiredValues_ExpectsNoError()
         {
             var errors = Validate(@"
             {
@@ -110,7 +110,7 @@
         }
 
         [Test]
-        public void Validate_ComplexObjectOptinalArgNoValue_ExpectsNoError()
+        public void ComplexObjectOptinalArgNoValue_ExpectsNoError()
         {
             var errors = Validate(@"
             {
@@ -124,7 +124,7 @@
         }
 
         [Test]
-        public void Validate_DifferentCaseEnum_ExpectsSingleError()
+        public void DifferentCaseEnum_ExpectsSingleError()
         {
             var errors = Validate(@"
             {
@@ -138,7 +138,7 @@
         }
 
         [Test]
-        public void Validate_EmptyListValue_ExpectsNoError()
+        public void EmptyListValue_ExpectsNoError()
         {
             var errors = Validate(@"
             {
@@ -152,7 +152,7 @@
         }
 
         [Test]
-        public void Validate_FloatIntoBool_ExpectsSingleError()
+        public void FloatIntoBool_ExpectsSingleError()
         {
             var errors = Validate(@"
             {
@@ -166,7 +166,7 @@
         }
 
         [Test]
-        public void Validate_FloatIntoEnum_ExpectsSingleError()
+        public void FloatIntoEnum_ExpectsSingleError()
         {
             var errors = Validate(@"
             {
@@ -180,7 +180,7 @@
         }
 
         [Test]
-        public void Validate_FloatIntoInt_ExpectsSingleError()
+        public void FloatIntoInt_ExpectsSingleError()
         {
             var errors = Validate(@"
             {
@@ -194,7 +194,7 @@
         }
 
         [Test]
-        public void Validate_FloatIntoString_ExpectsSingleError()
+        public void FloatIntoString_ExpectsSingleError()
         {
             var errors = Validate(@"
             {
@@ -208,7 +208,7 @@
         }
 
         [Test]
-        public void Validate_GoodBooleanValue_ExpectsNoError()
+        public void GoodBooleanValue_ExpectsNoError()
         {
             var errors = Validate(@"
             {
@@ -222,7 +222,7 @@
         }
 
         [Test]
-        public void Validate_GoodEnumValue_ExpectsNoError()
+        public void GoodEnumValue_ExpectsNoError()
         {
             var errors = Validate(@"
             {
@@ -236,7 +236,7 @@
         }
 
         [Test]
-        public void Validate_GoodFloatValue_ExpectsNoError()
+        public void GoodFloatValue_ExpectsNoError()
         {
             var errors = Validate(@"
             {
@@ -250,7 +250,7 @@
         }
 
         [Test]
-        public void Validate_GoodIntValue_ExpectsNoError()
+        public void GoodIntValue_ExpectsNoError()
         {
             var errors = Validate(@"
             {
@@ -264,7 +264,7 @@
         }
 
         [Test]
-        public void Validate_GoodListValue_ExpectsNoError()
+        public void GoodListValue_ExpectsNoError()
         {
             var errors = Validate(@"
             {
@@ -278,7 +278,7 @@
         }
 
         [Test]
-        public void Validate_GoodStringValue_ExpectsNoError()
+        public void GoodStringValue_ExpectsNoError()
         {
             var errors = Validate(@"
             {
@@ -292,7 +292,7 @@
         }
 
         [Test]
-        public void Validate_IncorrectItemType_ExpectsSingleError()
+        public void IncorrectItemType_ExpectsSingleError()
         {
             var errors = Validate(@"
             {
@@ -307,7 +307,7 @@
         }
 
         [Test]
-        public void Validate_IntIntoBool_ExpectsSingleError()
+        public void IntIntoBool_ExpectsSingleError()
         {
             var errors = Validate(@"
             {
@@ -321,7 +321,7 @@
         }
 
         [Test]
-        public void Validate_IntIntoEnum_ExpectsSingleError()
+        public void IntIntoEnum_ExpectsSingleError()
         {
             var errors = Validate(@"
             {
@@ -335,7 +335,7 @@
         }
 
         [Test]
-        public void Validate_IntIntoFloat_ExpectsNoError()
+        public void IntIntoFloat_ExpectsNoError()
         {
             var errors = Validate(@"
             {
@@ -349,7 +349,7 @@
         }
 
         [Test]
-        public void Validate_MultipleArgs_ExpectsNoError()
+        public void MultipleArgs_ExpectsNoError()
         {
             var errors = Validate(@"
             {
@@ -363,7 +363,7 @@
         }
 
         [Test]
-        public void Validate_MultipleArgsReversedOrder_ExpectsNoError()
+        public void MultipleArgsReversedOrder_ExpectsNoError()
         {
             var errors = Validate(@"
             {
@@ -377,7 +377,7 @@
         }
 
         [Test]
-        public void Validate_NoArgOnOptionalArg_ExpectsNoError()
+        public void NoArgOnOptionalArg_ExpectsNoError()
         {
             var errors = Validate(@"
             {
@@ -391,7 +391,7 @@
         }
 
         [Test]
-        public void Validate_NoArgsOnMultipleOptional_ExpectsNoError()
+        public void NoArgsOnMultipleOptional_ExpectsNoError()
         {
             var errors = Validate(@"
             {
@@ -405,7 +405,7 @@
         }
 
         [Test]
-        public void Validate_SimpleFloatIntoInt_ExpectsSingleError()
+        public void SimpleFloatIntoInt_ExpectsSingleError()
         {
             var errors = Validate(@"
             {
@@ -419,7 +419,7 @@
         }
 
         [Test]
-        public void Validate_StringIntoBool_ExpectsSingleError()
+        public void StringIntoBool_ExpectsSingleError()
         {
             var errors = Validate(@"
             {
@@ -433,7 +433,7 @@
         }
 
         [Test]
-        public void Validate_StringIntoEnum_ExpectsSingleError()
+        public void StringIntoEnum_ExpectsSingleError()
         {
             var errors = Validate(@"
             {
@@ -447,7 +447,7 @@
         }
 
         [Test]
-        public void Validate_StringIntoFloat_ExpectsSingleError()
+        public void StringIntoFloat_ExpectsSingleError()
         {
             var errors = Validate(@"
             {
@@ -461,7 +461,7 @@
         }
 
         [Test]
-        public void Validate_StringIntoInt_ExpectsSingleError()
+        public void StringIntoInt_ExpectsSingleError()
         {
             var errors = Validate(@"
             {
@@ -475,7 +475,7 @@
         }
 
         [Test]
-        public void Validate_UnknownEnumValue_ExpectsSingleError()
+        public void UnknownEnumValue_ExpectsSingleError()
         {
             var errors = Validate(@"
             {
@@ -489,7 +489,7 @@
         }
 
         [Test]
-        public void Validate_UnquotedIntoBool_ExpectsSingleError()
+        public void UnquotedIntoBool_ExpectsSingleError()
         {
             var errors = Validate(@"
             {
@@ -503,7 +503,7 @@
         }
 
         [Test]
-        public void Validate_UnquotedStringIntoFloat_ExpectsSingleError()
+        public void UnquotedStringIntoFloat_ExpectsSingleError()
         {
             var errors = Validate(@"
             {
@@ -517,7 +517,7 @@
         }
 
         [Test]
-        public void Validate_UnquotedStringIntoInt_ExpectsSingleError()
+        public void UnquotedStringIntoInt_ExpectsSingleError()
         {
             var errors = Validate(@"
             {
@@ -531,7 +531,7 @@
         }
 
         [Test]
-        public void Validate_UnquotedStringIntoString_ExpectsSingleError()
+        public void UnquotedStringIntoString_ExpectsSingleError()
         {
             var errors = Validate(@"
             {
@@ -543,6 +543,7 @@
 
             Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"stringArg\" has invalid value BAR"));
         }
+
 
         private static GraphQLDocument GetAst(string body)
         {

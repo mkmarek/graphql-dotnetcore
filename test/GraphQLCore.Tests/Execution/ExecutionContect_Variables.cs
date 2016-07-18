@@ -126,7 +126,7 @@
         [Test]
         public void Execute_WithObjectVariable_ParsesAndReturnsCorrectValues()
         {
-            var query = @"query getStringListArg($complicatedObjectArgVar: ComplicatedObjectType) {
+            var query = @"query getStringListArg($complicatedObjectArgVar: ComplicatedInputObjectType) {
                             complicatedArgs {
                                 complicatedObjectArgField(complicatedObjectArg: $complicatedObjectArgVar) {
                                     intField
@@ -154,7 +154,7 @@
         [Test]
         public void Execute_WithObjectVariable_ParsesAndReturnsCorrectValuesForNestedType()
         {
-            var query = @"query getStringListArg($complicatedObjectArgVar: ComplicatedObjectType) {
+            var query = @"query getStringListArg($complicatedObjectArgVar: ComplicatedInputObjectType) {
                             complicatedArgs {
                                 complicatedObjectArgField(complicatedObjectArg: $complicatedObjectArgVar) {
                                     nested {

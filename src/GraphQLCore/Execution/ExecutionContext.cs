@@ -63,13 +63,13 @@
         {
             var variableResolver = new VariableResolver(
                 this.variables,
-                this.graphQLSchema.TypeTranslator,
+                this.graphQLSchema.SchemaRepository,
                 this.operation.VariableDefinitions);
 
             var fieldCollector = new FieldCollector(this.fragments);
 
             var scope = new FieldScope(
-                this.graphQLSchema.TypeTranslator,
+                this.graphQLSchema.SchemaRepository,
                 variableResolver,
                 fieldCollector,
                 type,

@@ -14,7 +14,7 @@
         private Stack<string> fieldStack;
         private GraphQLBaseType lastType;
         private IGraphQLSchema schema;
-        private ITypeTranslator translator;
+        private ISchemaRepository schemaRepository;
         private Stack<GraphQLBaseType> typeStack;
 
         public ValidationASTVisitor(IGraphQLSchema schema)
@@ -23,15 +23,15 @@
             this.fieldStack = new Stack<string>();
 
             this.schema = schema;
-            this.translator = schema.TypeTranslator;
-            this.LiteralValueValidator = new LiteralValueValidator();
+            this.schemaRepository = schema.SchemaRepository;
+            this.LiteralValueValidator = new LiteralValueValidator(this.schemaRepository);
         }
 
         protected LiteralValueValidator LiteralValueValidator { get; set; }
 
         public override GraphQLArgument BeginVisitArgument(GraphQLArgument argument)
         {
-            this.argumentType = this.translator.GetType(this.GetField(this.typeStack.Peek(), this.fieldStack.Peek())
+            this.argumentType = this.schemaRepository.GetSchemaTypeFor(this.GetField(this.typeStack.Peek(), this.fieldStack.Peek())
                 .Arguments.Single(e => e.Key == argument.Name.Value).Value.Type);
 
             return base.BeginVisitArgument(argument);
@@ -42,7 +42,7 @@
             this.fieldStack.Push(selection.Name.Value);
 
             var systemType = this.GetField(this.typeStack.Peek(), this.fieldStack.Peek()).SystemType;
-            this.lastType = this.translator.GetType(systemType);
+            this.lastType = this.schemaRepository.GetSchemaTypeFor(systemType);
 
             return base.BeginVisitFieldSelection(selection);
         }

@@ -102,10 +102,10 @@
             var shouldSkip = GetSkipIfArgumentValue(directives);
             var shouldContinue = GetIncludeIfArgumentValue(directives);
 
-            if (shouldSkip != null && boolean.GetFromAst(shouldSkip).Equals(true))
+            if (shouldSkip != null && boolean.GetFromAst(shouldSkip, null).Equals(true))
                 return false;
 
-            if (shouldContinue != null && boolean.GetFromAst(shouldContinue).Equals(false))
+            if (shouldContinue != null && boolean.GetFromAst(shouldContinue, null).Equals(false))
                 return false;
 
             return true;

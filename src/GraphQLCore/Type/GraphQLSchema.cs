@@ -9,13 +9,12 @@
 
     public class GraphQLSchema : IGraphQLSchema
     {
-        private ISchemaObserver schemaObserver;
+        public ISchemaRepository SchemaRepository { get; private set; }
 
         public GraphQLSchema()
         {
-            this.schemaObserver = new SchemaObserver();
-            this.TypeTranslator = new TypeTranslator(this.schemaObserver);
-            this.IntrospectedSchema = new IntrospectedSchemaType(this.schemaObserver, this);
+            this.SchemaRepository = new SchemaRepository();
+            this.IntrospectedSchema = new IntrospectedSchemaType(this.SchemaRepository, this);
 
             this.RegisterIntrospectionTypes();
         }
@@ -23,11 +22,10 @@
         public IntrospectedSchemaType IntrospectedSchema { get; private set; }
         public GraphQLObjectType MutationType { get; private set; }
         public GraphQLObjectType QueryType { get; private set; }
-        public ITypeTranslator TypeTranslator { get; private set; }
 
         public void AddKnownType(GraphQLBaseType type)
         {
-            this.schemaObserver.AddKnownType(type);
+            this.SchemaRepository.AddKnownType(type);
         }
 
         public dynamic Execute(string expression)
@@ -69,12 +67,12 @@
 
         private void RegisterIntrospectionTypes()
         {
-            this.schemaObserver.AddKnownType(new IntrospectedTypeKindType());
-            this.schemaObserver.AddKnownType(new IntrospectedTypeType());
-            this.schemaObserver.AddKnownType(new IntrospectedFieldType());
-            this.schemaObserver.AddKnownType(new IntrospectedInputValueType());
-            this.schemaObserver.AddKnownType(new GraphQLEnumValue(null, null));
-            this.schemaObserver.AddKnownType(this.IntrospectedSchema);
+            this.SchemaRepository.AddKnownType(new IntrospectedTypeKindType());
+            this.SchemaRepository.AddKnownType(new IntrospectedTypeType());
+            this.SchemaRepository.AddKnownType(new IntrospectedFieldType());
+            this.SchemaRepository.AddKnownType(new IntrospectedInputValueType());
+            this.SchemaRepository.AddKnownType(new GraphQLEnumValue(null, null));
+            this.SchemaRepository.AddKnownType(this.IntrospectedSchema);
         }
 
         private void SetupIntrospectionFields(GraphQLObjectType objectType)

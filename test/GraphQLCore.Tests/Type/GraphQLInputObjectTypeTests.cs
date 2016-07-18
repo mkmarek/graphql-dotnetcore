@@ -1,7 +1,11 @@
 ﻿namespace GraphQLCore.Tests.Type
 {
     using Exceptions;
+    using GraphQLCore.Language.AST;
     using GraphQLCore.Type;
+    using GraphQLCore.Type.Scalar;
+    using GraphQLCore.Type.Translation;
+    using NSubstitute;
     using NUnit.Framework;
     using System.Collections.Generic;
     using System.Linq;
@@ -89,16 +93,40 @@
             Assert.AreEqual("Test", type.Name);
         }
 
-        [SetUp]
-        public void SetUp()
+        [Test]
+        public void GetFromAst_ReturnsCorrectType()
         {
-            this.type = new GraphQLTestInputModelType();
+            Assert.IsInstanceOf<TestModel>(this.type.GetFromAst(new GraphQLObjectValue(), null));
+        }
+
+        [Test]
+        public void GetFromAst_CanAssignScalarType()
+        {
+            var schemaRepository = Substitute.For<ISchemaRepository>();
+            schemaRepository.GetSchemaInputTypeFor(typeof(int)).ReturnsForAnyArgs(new GraphQLString());
+
+            this.type.Field("stringValue", e => e.StringValue);
+
+            Assert.AreEqual("Foo", ((TestModel)this.type.GetFromAst(new GraphQLObjectValue() {
+                Fields = new GraphQLObjectField[] {
+                    new GraphQLObjectField()
+                    {
+                        Name = new GraphQLName() { Value = "stringValue" },
+                        Value = new GraphQLScalarValue(ASTNodeKind.StringValue) { Value = "Foo" } }
+                }
+            }, schemaRepository)).StringValue);
         }
 
         [Test]
         public void ToString_ReturnsName()
         {
             Assert.AreEqual("Test", type.ToString());
+        }
+
+        [SetUp]
+        public void SetUp()
+        {
+            this.type = new GraphQLTestInputModelType();
         }
 
         public class GraphQLTestInputModelType : GraphQLInputObjectType<TestModel>
@@ -114,6 +142,7 @@
             public IEnumerable<string> NestedCollection { get; set; }
             public TestInterfaceModel[] NestedInterfaceCollection { get; set; }
             public int Test { get; set; }
+            public string StringValue { get; set; }
         }
     }
 }

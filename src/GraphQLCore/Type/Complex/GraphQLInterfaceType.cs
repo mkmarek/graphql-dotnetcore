@@ -18,9 +18,9 @@
             this.interfaceType = interfaceType;
         }
 
-        public override IntrospectedType Introspect(ISchemaObserver schemaObserver)
+        public override IntrospectedType Introspect(ISchemaRepository schemaRepository)
         {
-            var type = base.Introspect(schemaObserver);
+            var type = base.Introspect(schemaRepository);
 
             type.Kind = TypeKind.INTERFACE;
 

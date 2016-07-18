@@ -1,4 +1,6 @@
-﻿namespace GraphQLCore.Utils
+﻿using System.Globalization;
+
+namespace GraphQLCore.Utils
 {
     public static class TypeUtilitites
     {
@@ -16,7 +18,7 @@
         {
             float outValue;
 
-            if (float.TryParse(valueToParse, out outValue))
+            if (float.TryParse(valueToParse, NumberStyles.Float, CultureInfo.InvariantCulture, out outValue))
                 return outValue;
 
             return null;
@@ -26,7 +28,7 @@
         {
             int outValue;
 
-            if (int.TryParse(valueToParse, out outValue))
+            if (int.TryParse(valueToParse, NumberStyles.Integer, CultureInfo.InvariantCulture, out outValue))
                 return outValue;
 
             return null;

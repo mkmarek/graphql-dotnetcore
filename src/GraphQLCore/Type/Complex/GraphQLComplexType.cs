@@ -36,9 +36,9 @@
                 .ToArray();
         }
 
-        public override IntrospectedType Introspect(ISchemaObserver schemaObserver)
+        public override IntrospectedType Introspect(ISchemaRepository schemaRepository)
         {
-            var introspectedType = new ComplexIntrospectedType(schemaObserver, this);
+            var introspectedType = new ComplexIntrospectedType(schemaRepository, this);
             introspectedType.Name = this.Name;
             introspectedType.Description = this.Description;
             introspectedType.Kind = TypeKind.OBJECT;

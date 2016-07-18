@@ -5,16 +5,16 @@
     using Schemas;
 
     [TestFixture]
-    public class SchemaObserverTests
+    public class SchemaRepositoryTests
     {
-        private SchemaObserver schemaObserver;
+        private SchemaRepository schemaRepository;
 
         [Test]
         public void GetSchemaTypeFor_Class_ReturnsCorrectSchemaType()
         {
-            this.schemaObserver.AddKnownType(new ComplicatedObjectType());
+            this.schemaRepository.AddKnownType(new ComplicatedObjectType());
 
-            var objectType = this.schemaObserver.GetSchemaTypeFor(typeof(ComplicatedObject));
+            var objectType = this.schemaRepository.GetSchemaTypeFor(typeof(ComplicatedObject));
 
             Assert.IsInstanceOf<ComplicatedObjectType>(objectType);
         }
@@ -22,9 +22,9 @@
         [Test]
         public void GetSchemaTypeFor_Enum_ReturnsCorrectSchemaType()
         {
-            this.schemaObserver.AddKnownType(new FurColorEnum());
+            this.schemaRepository.AddKnownType(new FurColorEnum());
 
-            var objectType = this.schemaObserver.GetSchemaTypeFor(typeof(FurColor));
+            var objectType = this.schemaRepository.GetSchemaTypeFor(typeof(FurColor));
 
             Assert.IsInstanceOf<FurColorEnum>(objectType);
         }
@@ -32,7 +32,7 @@
         [SetUp]
         public void SetUp()
         {
-            this.schemaObserver = new SchemaObserver();
+            this.schemaRepository = new SchemaRepository();
         }
     }
 }

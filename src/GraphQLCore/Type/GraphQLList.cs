@@ -15,13 +15,13 @@
 
         public GraphQLBaseType MemberType { get; private set; }
 
-        public override object GetFromAst(GraphQLValue astValue)
+        public override object GetFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
             if (!(this.MemberType is GraphQLInputType))
                 return null;
 
             var inputType = this.MemberType as GraphQLInputType;
-            var singleValue = inputType.GetFromAst(astValue);
+            var singleValue = inputType.GetFromAst(astValue, schemaRepository);
 
             if (singleValue != null)
                 return singleValue;
@@ -30,18 +30,18 @@
             var list = ((GraphQLListValue)astValue).Values;
 
             foreach (var item in list)
-                output.Add(inputType.GetFromAst(item));
+                output.Add(inputType.GetFromAst(item, schemaRepository));
 
             return output;
         }
 
-        public override IntrospectedType Introspect(ISchemaObserver schemaObserver)
+        public override IntrospectedType Introspect(ISchemaRepository schemaRepository)
         {
             var introspectedType = new IntrospectedType();
             introspectedType.Name = this.Name;
             introspectedType.Description = this.Description;
             introspectedType.Kind = TypeKind.LIST;
-            introspectedType.OfType = this.MemberType.Introspect(schemaObserver);
+            introspectedType.OfType = this.MemberType.Introspect(schemaRepository);
 
             return introspectedType;
         }

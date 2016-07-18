@@ -2,6 +2,7 @@
 {
     using Language.AST;
     using System;
+    using Translation;
     using Utils;
 
     public class GraphQLFloat : GraphQLScalarType
@@ -14,7 +15,7 @@
         {
         }
 
-        public override object GetFromAst(GraphQLValue astValue)
+        public override object GetFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
             if (astValue.Kind == ASTNodeKind.FloatValue)
                 return ((GraphQLScalarValue)astValue).Value.ParseFloatOrGiveNull();

@@ -16,11 +16,11 @@
         private IFieldCollector fieldCollector;
         private object parent;
         private GraphQLObjectType type;
-        private ITypeTranslator typeTranslator;
+        private ISchemaRepository schemaRepository;
         private IVariableResolver variableResolver;
 
         public FieldScope(
-            ITypeTranslator typeTranslator,
+            ISchemaRepository schemaRepository,
             IVariableResolver variableResolver,
             IFieldCollector fieldCollector,
             GraphQLObjectType type,
@@ -31,7 +31,7 @@
             this.arguments = new List<GraphQLArgument>();
 
             this.fieldCollector = fieldCollector;
-            this.typeTranslator = typeTranslator;
+            this.schemaRepository = schemaRepository;
             this.variableResolver = variableResolver;
         }
 
@@ -46,7 +46,7 @@
             if (ReflectionUtilities.IsCollection(input.GetType()))
                 return this.CompleteCollectionType((IEnumerable)input, selection, arguments);
 
-            var schemaValue = this.typeTranslator.GetType(input.GetType());
+            var schemaValue = this.schemaRepository.GetSchemaTypeFor(input.GetType());
             if (schemaValue is GraphQLObjectType)
             {
                 return this.CompleteObjectType((GraphQLObjectType)schemaValue, selection, arguments, input);
@@ -61,12 +61,12 @@
         public object[] FetchArgumentValues(LambdaExpression expression, IList<GraphQLArgument> arguments)
         {
             return ReflectionUtilities.GetParameters(expression)
-                .Select(e => this.typeTranslator.TranslatePerDefinition(
-                    this.GetArgumentValue(arguments, e.Name, this.typeTranslator.GetType(e.Type)), e.Type))
+                .Select(e => ReflectionUtilities.ChangeValueType(
+                    this.GetArgumentValue(arguments, e.Name, this.schemaRepository.GetSchemaInputTypeFor(e.Type)), e.Type))
                 .ToArray();
         }
 
-        public object GetArgumentValue(IEnumerable<GraphQLArgument> arguments, string argumentName, GraphQLBaseType type)
+        public object GetArgumentValue(IEnumerable<GraphQLArgument> arguments, string argumentName, GraphQLInputType type)
         {
             var argument = arguments.SingleOrDefault(e => e.Name.Value == argumentName);
 
@@ -78,10 +78,7 @@
                 return this.variableResolver.GetValue((GraphQLVariable)argument.Value);
             }
 
-            if (type is GraphQLInputType)
-                return ((GraphQLInputType)type).GetFromAst(argument.Value);
-
-            return null;
+            return type.GetFromAst(argument.Value, this.schemaRepository);
         }
 
         public dynamic GetObject(Dictionary<string, IList<GraphQLFieldSelection>> fields)
@@ -128,7 +125,7 @@
             GraphQLObjectType input, GraphQLFieldSelection selection, IList<GraphQLArgument> arguments, object parentObject)
         {
             var scope = new FieldScope(
-                this.typeTranslator,
+                this.schemaRepository,
                 this.variableResolver,
                 this.fieldCollector,
                 input,

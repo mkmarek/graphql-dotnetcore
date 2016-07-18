@@ -5,11 +5,15 @@
     using System.Collections.Generic;
     using System.Linq;
     using Type;
+    using Type.Translation;
 
     public class LiteralValueValidator
     {
-        public LiteralValueValidator()
+        private ISchemaRepository schemaRepository;
+
+        public LiteralValueValidator(ISchemaRepository schemaRepository)
         {
+            this.schemaRepository = schemaRepository;
         }
 
         internal IEnumerable<GraphQLException> IsValid(GraphQLBaseType type, GraphQLValue astValue)
@@ -18,14 +22,14 @@
                 return this.ValidateListType(type, astValue);
 
             if (type is GraphQLInputType)
-                return ValidateInputType(type, astValue);
+                return this.ValidateInputType(type, astValue);
 
             return new GraphQLException[] { };
         }
 
-        private static IEnumerable<GraphQLException> ValidateInputType(GraphQLBaseType type, GraphQLValue astValue)
+        private IEnumerable<GraphQLException> ValidateInputType(GraphQLBaseType type, GraphQLValue astValue)
         {
-            var value = ((GraphQLInputType)type).GetFromAst(astValue);
+            var value = ((GraphQLInputType)type).GetFromAst(astValue, this.schemaRepository);
 
             if (value == null)
             {

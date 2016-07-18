@@ -52,6 +52,15 @@
             return null;
         }
 
+        public static Delegate MakeSetterFromLambda(LambdaExpression lambda)
+        {
+            var member = (MemberExpression)lambda.Body;
+            var param = Expression.Parameter(member.Type, "value");
+            var setter = Expression.Lambda(Expression.Assign(member, param), lambda.Parameters[0], param);
+
+            return setter.Compile();
+        }
+
         public static IEnumerable<TResult> ConvertEnumerable<TResult>(IEnumerable source)
         {
             foreach (var element in source)

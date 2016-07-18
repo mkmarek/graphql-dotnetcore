@@ -3,22 +3,24 @@
     using System;
     using System.Collections.Generic;
 
-    public interface ISchemaObserver
+    public interface ISchemaRepository
     {
         void AddKnownType(GraphQLBaseType type);
 
         GraphQLComplexType[] GetImplementingInterfaces(GraphQLComplexType type);
 
-        IEnumerable<GraphQLBaseType> GetInputKnownTypes();
+        IEnumerable<GraphQLInputType> GetInputKnownTypes();
 
         IEnumerable<GraphQLBaseType> GetOutputKnownTypes();
 
-        GraphQLBaseType GetSchemaInputTypeFor(Type type);
+        GraphQLInputType GetSchemaInputTypeFor(Type type);
 
         GraphQLBaseType GetSchemaTypeFor(Type type);
 
-        Type GetTypeFor(GraphQLBaseType type);
+        Type GetSystemTypeFor(GraphQLBaseType type);
 
-        GraphQLComplexType[] GetTypesImplementing(GraphQLBaseType objectType);
+        GraphQLComplexType[] GetTypesImplementing(GraphQLInterfaceType objectType);
+
+        GraphQLInputType GetSchemaInputTypeByName(string value);
     }
 }

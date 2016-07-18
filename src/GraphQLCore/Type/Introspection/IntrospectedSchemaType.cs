@@ -7,33 +7,33 @@
     public class IntrospectedSchemaType : GraphQLObjectType
     {
         private IGraphQLSchema schema;
-        private ISchemaObserver schemaObserver;
+        private ISchemaRepository schemaRepository;
 
         public IntrospectedSchemaType(
-            ISchemaObserver schemaObserver,
+            ISchemaRepository schemaRepository,
             IGraphQLSchema schema) : base(
             "__Schema",
             "A GraphQL Schema defines the capabilities of a GraphQL server. It " +
             "exposes all available types and directives on the server, as well as " +
             "the entry points for query, mutation, and subscription operations.")
         {
-            this.schemaObserver = schemaObserver;
+            this.schemaRepository = schemaRepository;
             this.schema = schema;
 
             this.Field("types", () => this.IntrospectAllSchemaTypes());
-            this.Field("queryType", () => this.schema.QueryType.Introspect(this.schemaObserver));
-            this.Field("mutationType", () => this.schema.MutationType.Introspect(this.schemaObserver));
+            this.Field("queryType", () => this.schema.QueryType.Introspect(this.schemaRepository));
+            this.Field("mutationType", () => this.schema.MutationType.Introspect(this.schemaRepository));
         }
 
         public IEnumerable<IntrospectedType> IntrospectAllSchemaTypes()
         {
             var result = new List<IntrospectedType>();
 
-            foreach (var type in this.schemaObserver.GetOutputKnownTypes())
-                result.Add(type.Introspect(this.schemaObserver));
+            foreach (var type in this.schemaRepository.GetOutputKnownTypes())
+                result.Add(type.Introspect(this.schemaRepository));
 
-            foreach (var type in this.schemaObserver.GetInputKnownTypes().Where(e => !result.Any(r => r.Name == e.Name)))
-                result.Add(type.Introspect(this.schemaObserver));
+            foreach (var type in this.schemaRepository.GetInputKnownTypes().Where(e => !result.Any(r => r.Name == e.Name)))
+                result.Add(type.Introspect(this.schemaRepository));
 
             return result
                 .Where(e => e.Name != null)

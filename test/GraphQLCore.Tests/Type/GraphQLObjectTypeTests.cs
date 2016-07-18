@@ -89,16 +89,16 @@
             Assert.AreEqual("Test", type.Name);
         }
 
-        [SetUp]
-        public void SetUp()
-        {
-            this.type = new GraphQLTestModelType();
-        }
-
         [Test]
         public void ToString_ReturnsName()
         {
             Assert.AreEqual("Test", type.ToString());
+        }
+
+        [SetUp]
+        public void SetUp()
+        {
+            this.type = new GraphQLTestModelType();
         }
 
         public class GraphQLTestModelType : GraphQLObjectType<TestModel>
