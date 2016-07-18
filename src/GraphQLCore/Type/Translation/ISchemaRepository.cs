@@ -17,7 +17,7 @@
 
         GraphQLBaseType GetSchemaTypeFor(Type type);
 
-        Type GetSystemTypeFor(GraphQLBaseType type);
+        Type GetInputSystemTypeFor(GraphQLBaseType type);
 
         GraphQLComplexType[] GetTypesImplementing(GraphQLInterfaceType objectType);
 

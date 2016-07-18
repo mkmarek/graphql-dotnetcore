@@ -25,7 +25,7 @@ namespace GraphQLCore.Execution
 
         public object CreateObjectFromDynamic(GraphQLInputObjectType inputObjectType, ExpandoObject inputObject)
         {
-            var systemType = this.schmaObserver.GetSystemTypeFor(inputObjectType);
+            var systemType = this.schmaObserver.GetInputSystemTypeFor(inputObjectType);
             var fields = inputObjectType.GetFieldsInfo().Where(e => !e.IsResolver);
             var inputObjectDictionary = (IDictionary<string, object>)inputObject;
 

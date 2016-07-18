@@ -8,8 +8,16 @@
 
     public class CharacterService
     {
-        private static readonly List<ICharacter> characterList = GetList().ToList();
-        private static readonly Characters characters = new Characters();
+        private List<ICharacter> characterList;
+        private Characters characters = new Characters();
+
+        public CharacterService()
+        {
+            this.characterList = new ICharacter[] {
+                characters.Artoo, characters.Han, characters.Leia, characters.Luke,
+                characters.Tarkin, characters.Threepio, characters.Vader
+            }.ToList();
+        }
 
         public Droid GetDroidById(string id)
         {
@@ -39,14 +47,6 @@
             characterList.Add(model);
 
             return model;
-        }
-
-        private static IEnumerable<ICharacter> GetList()
-        {
-            return new ICharacter[] {
-                characters.Artoo, characters.Han, characters.Leia, characters.Luke,
-                characters.Tarkin, characters.Threepio, characters.Vader
-            };
         }
     }
 }

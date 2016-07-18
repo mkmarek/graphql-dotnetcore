@@ -2,6 +2,7 @@
 {
     using GraphQLCore.Type;
     using NUnit.Framework;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -52,14 +53,6 @@
         }
 
         [Test]
-        public void Execute_ListViaArgument_PrintsCorrectList()
-        {
-            dynamic result = this.schema.Execute("{ withList(ids: [1,2,3]) }");
-
-            Assert.AreEqual(3, result.withList);
-        }
-
-        [Test]
         public void Execute_NestedEntityFetchedWithArguments_PrintsCorrectValues()
         {
             dynamic result = this.schema.Execute("{ nested(id: 42) { nested(id: 24) { text(str: \"string argument\") } } }");
@@ -89,6 +82,24 @@
             dynamic result = this.schema.Execute("{ withObjectArg(obj: { stringField: \"abc\" }) { StringField } }");
 
             Assert.AreEqual("abc", result.withObjectArg.StringField);
+        }
+
+        [Test]
+        public void Execute_WithList_SingleValue()
+        {
+            dynamic result = this.schema.Execute("{ withList(ids: 1) }");
+
+            Assert.AreEqual(1, ((IEnumerable<object>)result.withList).ElementAt(0));
+        }
+
+        [Test]
+        public void Execute_WithList_MultipleValues()
+        {
+            dynamic result = this.schema.Execute("{ withList(ids: [4 8 6]) }");
+
+            Assert.AreEqual(4, ((IEnumerable<object>)result.withList).ElementAt(0));
+            Assert.AreEqual(8, ((IEnumerable<object>)result.withList).ElementAt(1));
+            Assert.AreEqual(6, ((IEnumerable<object>)result.withList).ElementAt(2));
         }
 
         [SetUp]
@@ -141,7 +152,7 @@
                 this.Field("withArray", (int[] ids) => ids.Count());
                 this.Field("isNull", (int? nonMandatory) => !nonMandatory.HasValue);
                 this.Field("withFloat", (float value) => value);
-                this.Field("withList", (List<int> ids) => ids.Count());
+                this.Field("withList", (List<int> ids) => ids);
                 this.Field("withIEnumerable", (IEnumerable<int> ids) => ids.Count());
                 this.Field("withObjectArg", (TestObject obj) => obj);
             }

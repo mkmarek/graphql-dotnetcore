@@ -2,9 +2,11 @@
 {
     using Introspection;
     using Language.AST;
+    using System;
     using System.Collections;
     using System.Collections.Generic;
     using Translation;
+    using Utils;
 
     public class GraphQLList : GraphQLInputType
     {
@@ -23,10 +25,16 @@
             var inputType = this.MemberType as GraphQLInputType;
             var singleValue = inputType.GetFromAst(astValue, schemaRepository);
 
-            if (singleValue != null)
-                return singleValue;
+            IList output = (IList)Activator.CreateInstance(
+                ReflectionUtilities.CreateListTypeOf(
+                    schemaRepository.GetInputSystemTypeFor(inputType)));
 
-            IList output = new List<object>();
+            if (singleValue != null)
+            {
+                output.Add(singleValue);
+                return output;
+            }
+
             var list = ((GraphQLListValue)astValue).Values;
 
             foreach (var item in list)
