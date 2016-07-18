@@ -5,7 +5,7 @@ Library for creating GraphQL servers with .NET core.
 <img src="https://ci.appveyor.com/api/projects/status/8kqgx15riw51m05b?svg=true"/>
 [![Coverage Status](https://coveralls.io/repos/github/mkmarek/graphql-dotnetcore/badge.svg?branch=master)](https://coveralls.io/github/mkmarek/graphql-dotnetcore?branch=master)
 [![NuGet](https://img.shields.io/nuget/v/GraphQLCore.svg)](https://www.nuget.org/packages/GraphQLCore/)
-[![MyGet Pre Release](https://img.shields.io/myget/graphqlcore-ci/vpre/GraphQLCore.svg?maxAge=2592000)](https://www.myget.org/feed/graphqlcore-ci/package/nuget/GraphQLCore)
+[![MyGet Pre Release](https://img.shields.io/myget/graphqlcore-ci/vpre/GraphQLCore.svg)](https://www.myget.org/feed/graphqlcore-ci/package/nuget/GraphQLCore)
 
 ![](images/graphql-dotnetcore.png)
 
