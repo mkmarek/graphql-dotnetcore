@@ -1,5 +1,6 @@
 ﻿namespace GraphQLCore.Type
 {
+    using Complex;
     using Introspection;
     using System;
     using System.Collections.Generic;
@@ -12,17 +13,17 @@
     {
         public GraphQLInputObjectType(string name, string description) : base(name, description)
         {
-            this.Fields = new Dictionary<string, GraphQLObjectTypeFieldInfo>();
+            this.Fields = new Dictionary<string, GraphQLInputObjectTypeFieldInfo>();
         }
 
-        protected Dictionary<string, GraphQLObjectTypeFieldInfo> Fields { get; set; }
+        protected Dictionary<string, GraphQLInputObjectTypeFieldInfo> Fields { get; set; }
 
         public bool ContainsField(string fieldName)
         {
             return this.Fields.ContainsKey(fieldName);
         }
 
-        public GraphQLObjectTypeFieldInfo GetFieldInfo(string fieldName)
+        public GraphQLInputObjectTypeFieldInfo GetFieldInfo(string fieldName)
         {
             if (!this.ContainsField(fieldName))
                 return null;
@@ -30,7 +31,7 @@
             return this.Fields[fieldName];
         }
 
-        public GraphQLObjectTypeFieldInfo[] GetFieldsInfo()
+        public GraphQLInputObjectTypeFieldInfo[] GetFieldsInfo()
         {
             return this.Fields.Select(e => e.Value)
                 .ToArray();
@@ -45,19 +46,6 @@
             introspectedType.Kind = TypeKind.INPUT_OBJECT;
 
             return introspectedType;
-        }
-
-        protected GraphQLObjectTypeFieldInfo CreateFieldInfo<T, TProperty>(
-                    string fieldName, Expression<Func<T, TProperty>> accessor)
-        {
-            return new GraphQLObjectTypeFieldInfo()
-            {
-                Name = fieldName,
-                IsResolver = false,
-                Lambda = accessor,
-                Arguments = new Dictionary<string, GraphQLObjectTypeArgumentInfo>(),
-                SystemType = ReflectionUtilities.GetReturnValueFromLambdaExpression(accessor)
-            };
         }
     }
 }

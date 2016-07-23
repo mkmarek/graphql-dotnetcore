@@ -23,7 +23,7 @@
                     .Select(field => new IntrospectedInputValue()
                     {
                         Name = field.Name,
-                        Type = this.GetInputTypeFrom(field.SystemType, this.schemaRepository)
+                        Type = field.GetGraphQLType(this.schemaRepository)
                             .Introspect(this.schemaRepository)
                     }).ToArray();
             }

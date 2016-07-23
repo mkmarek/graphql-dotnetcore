@@ -1,5 +1,6 @@
 ﻿namespace GraphQLCore.Type
 {
+    using Complex;
     using Exceptions;
     using Language.AST;
     using System;
@@ -25,7 +26,7 @@
             if (this.IsInterfaceOrCollectionOfInterfaces(returnType))
                 throw new GraphQLException("Can't set accessor to interface based field");
 
-            this.Fields.Add(fieldName, this.CreateFieldInfo(fieldName, accessor));
+            this.Fields.Add(fieldName, GraphQLInputObjectTypeFieldInfo.CreateAccessorFieldInfo(fieldName, accessor));
         }
 
         public override object GetFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
@@ -56,7 +57,7 @@
             return objectAstValue.Fields.SingleOrDefault(e => e.Name.Value == fieldName);
         }
 
-        private void AssignValueToObjectField(T result, GraphQLObjectTypeFieldInfo field, object value)
+        private void AssignValueToObjectField(T result, GraphQLInputObjectTypeFieldInfo field, object value)
         {
             if (ReflectionUtilities.IsCollection(field.SystemType))
                 value = ReflectionUtilities.ChangeToCollection(value, field.SystemType);
@@ -66,7 +67,9 @@
         }
 
         private object GetValueFromField(
-                            ISchemaRepository schemaRepository, GraphQLObjectTypeFieldInfo field, GraphQLObjectField astField)
+            ISchemaRepository schemaRepository,
+            GraphQLFieldInfo field,
+            GraphQLObjectField astField)
         {
             var graphQLType = schemaRepository.GetSchemaInputTypeFor(field.SystemType);
             var value = graphQLType.GetFromAst(astField.Value, schemaRepository);

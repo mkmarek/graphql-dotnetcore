@@ -55,9 +55,9 @@
         [Test]
         public void Execute_NestedEntityFetchedWithArguments_PrintsCorrectValues()
         {
-            dynamic result = this.schema.Execute("{ nested(id: 42) { nested(id: 24) { text(str: \"string argument\") } } }");
+            dynamic result = this.schema.Execute("{ nested(id: 42) { nested(id: 24) { text(id: 12 str: \"string argument\") } } }");
 
-            Assert.AreEqual("24 is from the parent and string argument is the current type", result.nested.nested.text);
+            Assert.AreEqual("I received 12 with string argument", result.nested.nested.text);
         }
 
         [Test]
@@ -140,7 +140,7 @@
         {
             public NestedNonGenericQueryType() : base("NestedNonGenericQueryType", "")
             {
-                this.Field("text", (int id, string str) => $"{id} is from the parent and {str} is the current type");
+                this.Field("text", (int id, string str) => $"I received {id} with {str}");
             }
         }
 

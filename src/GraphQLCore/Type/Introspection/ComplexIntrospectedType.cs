@@ -25,10 +25,10 @@ namespace GraphQLCore.Type.Introspection
                         Arguments = field.Arguments?.Select(argument => new IntrospectedInputValue()
                         {
                             Name = argument.Key,
-                            Type = this.GetInputTypeFrom(argument.Value.Type, this.schemaRepository)
+                            Type = argument.Value.GetGraphQLType(this.schemaRepository)
                                 .Introspect(this.schemaRepository)
                         }).ToArray(),
-                        Type = this.GetOutputTypeFrom(field.SystemType, this.schemaRepository)
+                        Type = field.GetGraphQLType(this.schemaRepository)
                             .Introspect(this.schemaRepository)
                     }).ToArray();
             }

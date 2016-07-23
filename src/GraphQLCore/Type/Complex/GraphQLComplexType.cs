@@ -1,12 +1,12 @@
 ﻿namespace GraphQLCore.Type
 {
+    using Complex;
     using Introspection;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
     using Translation;
-    using Utils;
 
     public abstract class GraphQLComplexType : GraphQLBaseType
     {

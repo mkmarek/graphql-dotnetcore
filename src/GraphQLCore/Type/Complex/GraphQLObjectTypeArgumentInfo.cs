@@ -1,8 +1,15 @@
-﻿namespace GraphQLCore.Type
+﻿namespace GraphQLCore.Type.Complex
 {
-    public class GraphQLObjectTypeArgumentInfo
+    using Translation;
+
+    public class GraphQLObjectTypeArgumentInfo : GraphQLFieldInfo
     {
         public string Name { get; set; }
-        public System.Type Type { get; set; }
+        public override System.Type SystemType { get; set; }
+
+        protected override GraphQLBaseType GetSchemaType(System.Type type, ISchemaRepository schemaRepository)
+        {
+            return schemaRepository.GetSchemaInputTypeFor(type);
+        }
     }
 }

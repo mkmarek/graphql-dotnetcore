@@ -1,17 +1,27 @@
-﻿namespace GraphQLCore.Type
+﻿namespace GraphQLCore.Type.Complex
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
+    using Translation;
     using Utils;
 
-    public class GraphQLObjectTypeFieldInfo
+    public class GraphQLObjectTypeFieldInfo : GraphQLInputObjectTypeFieldInfo
     {
-        public IDictionary<string, GraphQLObjectTypeArgumentInfo> Arguments { get; set; }
         public bool IsResolver { get; set; }
-        public LambdaExpression Lambda { get; set; }
-        public string Name { get; set; }
-        public System.Type SystemType { get; set; }
+
+        public static new GraphQLObjectTypeFieldInfo CreateAccessorFieldInfo(string fieldName, LambdaExpression accessor)
+        {
+            return new GraphQLObjectTypeFieldInfo()
+            {
+                Name = fieldName,
+                IsResolver = false,
+                Arguments = new Dictionary<string, GraphQLObjectTypeArgumentInfo>(),
+                Lambda = accessor,
+                SystemType = ReflectionUtilities.GetReturnValueFromLambdaExpression(accessor)
+            };
+        }
 
         public static GraphQLObjectTypeFieldInfo CreateResolverFieldInfo(string fieldName, LambdaExpression resolver)
         {
@@ -25,16 +35,9 @@
             };
         }
 
-        public static GraphQLObjectTypeFieldInfo CreateAccessorFieldInfo(string fieldName, LambdaExpression accessor)
+        protected override GraphQLBaseType GetSchemaType(Type type, ISchemaRepository schemaRepository)
         {
-            return new GraphQLObjectTypeFieldInfo()
-            {
-                Name = fieldName,
-                IsResolver = false,
-                Lambda = accessor,
-                Arguments = new Dictionary<string, GraphQLObjectTypeArgumentInfo>(),
-                SystemType = ReflectionUtilities.GetReturnValueFromLambdaExpression(accessor)
-            };
+            return schemaRepository.GetSchemaTypeFor(type);
         }
 
         private static Dictionary<string, GraphQLObjectTypeArgumentInfo> GetArguments(LambdaExpression resolver)
@@ -42,7 +45,7 @@
             return resolver.Parameters.Select(e => new GraphQLObjectTypeArgumentInfo()
             {
                 Name = e.Name,
-                Type = e.Type
+                SystemType = e.Type
             }).ToDictionary(e => e.Name);
         }
     }

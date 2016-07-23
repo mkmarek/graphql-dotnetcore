@@ -74,7 +74,6 @@
 
             Assert.AreEqual("A", info.Single().Name);
             Assert.AreEqual(typeof(int), info.Single().SystemType);
-            Assert.AreEqual(false, info.Single().IsResolver);
         }
 
         [Test]

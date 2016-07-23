@@ -23,33 +23,5 @@ namespace GraphQLCore.Type.Introspection
         public IntrospectedType OfType { get; set; }
 
         public virtual IntrospectedType[] PossibleTypes { get { return null; } }
-
-        protected GraphQLBaseType GetInputTypeFrom(System.Type type, ISchemaRepository schemaRepository)
-        {
-            if (ReflectionUtilities.IsCollection(type))
-                return new GraphQLList(this.GetInputTypeFrom(ReflectionUtilities.GetCollectionMemberType(type), schemaRepository));
-
-            if (ReflectionUtilities.IsNullable(type))
-                return schemaRepository.GetSchemaTypeFor(Nullable.GetUnderlyingType(type));
-
-            if (ReflectionUtilities.IsValueType(type))
-                return new GraphQLNonNullType(schemaRepository.GetSchemaInputTypeFor(type));
-
-            return schemaRepository.GetSchemaInputTypeFor(type);
-        }
-
-        protected GraphQLBaseType GetOutputTypeFrom(System.Type type, ISchemaRepository schemaRepository)
-        {
-            if (ReflectionUtilities.IsCollection(type))
-                return new GraphQLList(this.GetOutputTypeFrom(ReflectionUtilities.GetCollectionMemberType(type), schemaRepository));
-
-            if (ReflectionUtilities.IsNullable(type))
-                return schemaRepository.GetSchemaTypeFor(Nullable.GetUnderlyingType(type));
-
-            if (ReflectionUtilities.IsValueType(type))
-                return new GraphQLNonNullType(schemaRepository.GetSchemaTypeFor(type));
-
-            return schemaRepository.GetSchemaTypeFor(type);
-        }
     }
 }

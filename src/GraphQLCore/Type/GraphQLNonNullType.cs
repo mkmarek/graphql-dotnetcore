@@ -29,5 +29,10 @@
 
             return introspectedType;
         }
+
+        public override string ToString()
+        {
+            return this.UnderlyingNullableType.ToString() + "!";
+        }
     }
 }

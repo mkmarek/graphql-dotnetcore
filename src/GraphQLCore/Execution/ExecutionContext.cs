@@ -58,16 +58,19 @@
             var errors = this.validationContext.Validate(this.ast, this.graphQLSchema, this.GetValidationRules());
 
             if (errors.Any())
+            {
                 throw new GraphQLValidationException(
                     "One or more validation errors were found. See the Errors property for more information",
                     errors);
+            }
         }
 
         private IValidationRule[] GetValidationRules()
         {
             return new IValidationRule[]
             {
-                new ArgumentsOfCorrectType()
+                new ArgumentsOfCorrectType(),
+                new ProvidedNonNullArguments()
             };
         }
 

@@ -6,32 +6,33 @@
     using System.Collections.Generic;
     using System.Linq;
     using Type;
+    using Type.Complex;
     using Type.Translation;
 
     public class ValidationASTVisitor : GraphQLAstVisitor
     {
         private GraphQLBaseType argumentType;
-        private Stack<GraphQLObjectTypeFieldInfo> fieldStack;
+        private Stack<GraphQLFieldInfo> fieldStack;
         private IGraphQLSchema schema;
-        private ISchemaRepository schemaRepository;
         private Stack<GraphQLBaseType> typeStack;
 
         public ValidationASTVisitor(IGraphQLSchema schema)
         {
             this.typeStack = new Stack<GraphQLBaseType>();
-            this.fieldStack = new Stack<GraphQLObjectTypeFieldInfo>();
+            this.fieldStack = new Stack<GraphQLFieldInfo>();
 
             this.schema = schema;
-            this.schemaRepository = schema.SchemaRepository;
-            this.LiteralValueValidator = new LiteralValueValidator(this.schemaRepository);
+            this.SchemaRepository = schema.SchemaRepository;
+            this.LiteralValueValidator = new LiteralValueValidator(this.SchemaRepository);
         }
 
         protected LiteralValueValidator LiteralValueValidator { get; set; }
+        protected ISchemaRepository SchemaRepository { get; private set; }
 
         public override GraphQLArgument BeginVisitArgument(GraphQLArgument argument)
         {
-            this.argumentType = this.schemaRepository.GetSchemaTypeFor(this.GetLastField()
-                .Arguments.Single(e => e.Key == argument.Name.Value).Value.Type);
+            this.argumentType = this.SchemaRepository.GetSchemaTypeFor(this.GetLastField()
+                .Arguments.Single(e => e.Key == argument.Name.Value).Value.SystemType);
 
             return base.BeginVisitArgument(argument);
         }
@@ -41,14 +42,14 @@
             var field = this.GetField(this.GetLastType(), selection.Name.Value);
 
             this.fieldStack.Push(field);
-            this.typeStack.Push(this.schemaRepository.GetSchemaTypeFor(field.SystemType));
+            this.typeStack.Push(this.SchemaRepository.GetSchemaTypeFor(field.SystemType));
 
             return base.BeginVisitFieldSelection(selection);
         }
 
         public override GraphQLInlineFragment BeginVisitInlineFragment(GraphQLInlineFragment inlineFragment)
         {
-            this.typeStack.Push(this.schemaRepository.GetSchemaOutputTypeByName(inlineFragment.TypeCondition.Name.Value));
+            this.typeStack.Push(this.SchemaRepository.GetSchemaOutputTypeByName(inlineFragment.TypeCondition.Name.Value));
 
             return base.BeginVisitInlineFragment(inlineFragment);
         }
@@ -89,21 +90,7 @@
             return this.argumentType;
         }
 
-        private GraphQLObjectTypeFieldInfo GetField(GraphQLBaseType type, string name)
-        {
-            if (type is GraphQLCore.Type.GraphQLNonNullType)
-                return this.GetField(((GraphQLCore.Type.GraphQLNonNullType)type).UnderlyingNullableType, name);
-
-            if (type is GraphQLInputObjectType)
-                return ((GraphQLInputObjectType)type).GetFieldInfo(name);
-
-            if (type is GraphQLComplexType)
-                return ((GraphQLComplexType)type).GetFieldInfo(name);
-
-            return null;
-        }
-
-        private GraphQLObjectTypeFieldInfo GetLastField()
+        public GraphQLFieldInfo GetLastField()
         {
             if (this.fieldStack.Count > 0)
                 return this.fieldStack.Peek();
@@ -111,7 +98,7 @@
             return null;
         }
 
-        private GraphQLBaseType GetLastType()
+        public GraphQLBaseType GetLastType()
         {
             if (this.typeStack.Count > 0)
             {
@@ -124,6 +111,20 @@
 
                 return type;
             }
+
+            return null;
+        }
+
+        private GraphQLFieldInfo GetField(GraphQLBaseType type, string name)
+        {
+            if (type is GraphQLCore.Type.GraphQLNonNullType)
+                return this.GetField(((GraphQLCore.Type.GraphQLNonNullType)type).UnderlyingNullableType, name);
+
+            if (type is GraphQLInputObjectType)
+                return ((GraphQLInputObjectType)type).GetFieldInfo(name);
+
+            if (type is GraphQLComplexType)
+                return ((GraphQLComplexType)type).GetFieldInfo(name);
 
             return null;
         }
