@@ -1,10 +1,12 @@
 ﻿namespace GraphQLCore.GraphiQLExample.Controllers
 {
+    using Exceptions;
     using Microsoft.AspNetCore.Mvc;
     using Models;
     using Newtonsoft.Json;
     using System;
     using System.Dynamic;
+    using System.Linq;
     using Type;
 
     [Route("api/[controller]")]
@@ -26,6 +28,15 @@
                     new
                     {
                         data = this.schema.Execute(input.Query, GetVariables(input))
+                    }
+                );
+            }
+            catch (GraphQLValidationException ex)
+            {
+                return this.Json(
+                    new
+                    {
+                        errors = ex.Errors.Select(e => new { message = e.Message })
                     }
                 );
             }
