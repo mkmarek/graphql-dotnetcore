@@ -143,6 +143,7 @@
                 case ASTNodeKind.ListValue: return this.BeginVisitListValue((GraphQLListValue)node);
                 case ASTNodeKind.ObjectValue: return this.BeginVisitObjectValue((GraphQLObjectValue)node);
                 case ASTNodeKind.ObjectField: return this.BeginVisitObjectField((GraphQLObjectField)node);
+                case ASTNodeKind.VariableDefinition: return this.BeginVisitVariableDefinition((GraphQLVariableDefinition)node);
             }
 
             return null;
@@ -152,6 +153,9 @@
         {
             if (definition.Name != null)
                 this.BeginVisitNode(definition.Name);
+
+            if (definition.VariableDefinitions != null)
+                this.BeginVisitVariableDefinitions(definition.VariableDefinitions);
 
             this.BeginVisitNode(definition.SelectionSet);
             return definition;
@@ -176,6 +180,20 @@
                 this.BeginVisitNode(variable.Name);
 
             return this.EndVisitVariable(variable);
+        }
+
+        public virtual GraphQLVariableDefinition BeginVisitVariableDefinition(GraphQLVariableDefinition node)
+        {
+            return node;
+        }
+
+        public virtual IEnumerable<GraphQLVariableDefinition> BeginVisitVariableDefinitions(
+            IEnumerable<GraphQLVariableDefinition> variableDefinitions)
+        {
+            foreach (var definition in variableDefinitions)
+                this.BeginVisitNode(definition);
+
+            return variableDefinitions;
         }
 
         public virtual GraphQLArgument EndVisitArgument(GraphQLArgument argument)

@@ -45,7 +45,19 @@
         }
     }
 
-    public class ComplicatedObject
+    public interface ComplicatedInteface
+    {
+        bool BooleanField { get; set; }
+        FurColor EnumField { get; set; }
+        float FloatField { get; set; }
+        int? IntField { get; set; }
+        ComplicatedObject Nested { get; set; }
+        int NonNullIntField { get; set; }
+        string StringField { get; set; }
+        string[] StringListField { get; set; }
+    }
+
+    public class ComplicatedObject : ComplicatedInteface
     {
         public bool BooleanField { get; set; }
         public FurColor EnumField { get; set; }
@@ -60,6 +72,21 @@
     public class ComplicatedObjectType : GraphQLObjectType<ComplicatedObject>
     {
         public ComplicatedObjectType() : base("ComplicatedObjectType", "")
+        {
+            this.Field("intField", e => e.IntField);
+            this.Field("nonNullIntField", e => e.NonNullIntField);
+            this.Field("stringField", e => e.StringField);
+            this.Field("booleanField", e => e.BooleanField);
+            this.Field("enumField", e => e.EnumField);
+            this.Field("floatField", e => e.FloatField);
+            this.Field("stringListField", e => e.StringListField);
+            this.Field("nested", e => e.Nested);
+        }
+    }
+
+    public class ComplicatedInterfaceType : GraphQLInterfaceType<ComplicatedInteface>
+    {
+        public ComplicatedInterfaceType() : base("ComplicatedInterfaceType", "")
         {
             this.Field("intField", e => e.IntField);
             this.Field("nonNullIntField", e => e.NonNullIntField);
@@ -97,6 +124,7 @@
 
             this.AddKnownType(queryRoot);
             this.AddKnownType(new FurColorEnum());
+            this.AddKnownType(new ComplicatedInterfaceType());
             this.AddKnownType(new ComplicatedInputObjectType());
             this.AddKnownType(new ComplicatedObjectType());
             this.AddKnownType(new ComplicatedArgs());

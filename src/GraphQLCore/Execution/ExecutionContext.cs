@@ -70,7 +70,8 @@
             return new IValidationRule[]
             {
                 new ArgumentsOfCorrectType(),
-                new ProvidedNonNullArguments()
+                new ProvidedNonNullArguments(),
+                new VariablesAreInputTypes()
             };
         }
 
