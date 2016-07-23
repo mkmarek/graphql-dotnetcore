@@ -3,6 +3,7 @@ using GraphQLCore.Type;
 using GraphQLCore.Type.Translation;
 using GraphQLCore.Utils;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
@@ -12,20 +13,20 @@ namespace GraphQLCore.Execution
 {
     public class VariableResolver : IVariableResolver
     {
-        private ISchemaRepository schmaObserver;
+        private ISchemaRepository schemaRepository;
         private IEnumerable<GraphQLVariableDefinition> variableDefinitions;
         private Dictionary<string, object> variables;
 
-        public VariableResolver(dynamic variables, ISchemaRepository schmaObserver, IEnumerable<GraphQLVariableDefinition> variableDefinitions)
+        public VariableResolver(dynamic variables, ISchemaRepository schemaRepository, IEnumerable<GraphQLVariableDefinition> variableDefinitions)
         {
             this.variables = ((ExpandoObject)variables).ToDictionary(e => e.Key, e => e.Value);
             this.variableDefinitions = variableDefinitions;
-            this.schmaObserver = schmaObserver;
+            this.schemaRepository = schemaRepository;
         }
 
         public object CreateObjectFromDynamic(GraphQLInputObjectType inputObjectType, ExpandoObject inputObject)
         {
-            var systemType = this.schmaObserver.GetInputSystemTypeFor(inputObjectType);
+            var systemType = this.schemaRepository.GetInputSystemTypeFor(inputObjectType);
             var fields = inputObjectType.GetFieldsInfo().Where(e => !e.IsResolver);
             var inputObjectDictionary = (IDictionary<string, object>)inputObject;
 
@@ -59,15 +60,24 @@ namespace GraphQLCore.Execution
 
         public object TranslatePerDefinition(object inputObject, GraphQLBaseType typeDefinition)
         {
-            if (inputObject is ExpandoObject && typeDefinition is GraphQLInputObjectType)
+            if (typeDefinition is GraphQLInputObjectType)
                 return this.CreateObjectFromDynamic((GraphQLInputObjectType)typeDefinition, (ExpandoObject)inputObject);
+
+            if (typeDefinition is GraphQLList)
+                return this.CreateList((IEnumerable)inputObject, (GraphQLList)typeDefinition);
 
             return inputObject;
         }
 
+        private IEnumerable<object> CreateList(IEnumerable inputObject, GraphQLList typeDefinition)
+        {
+            foreach (var item in inputObject)
+                yield return this.TranslatePerDefinition(item, typeDefinition.MemberType);
+        }
+
         public object TranslatePerDefinition(object inputObject, System.Type type)
         {
-            var typeDefinition = this.schmaObserver.GetSchemaInputTypeFor(type);
+            var typeDefinition = this.schemaRepository.GetSchemaInputTypeFor(type);
 
             if (inputObject is ExpandoObject && typeDefinition is GraphQLInputObjectType)
                 return this.CreateObjectFromDynamic((GraphQLInputObjectType)typeDefinition, (ExpandoObject)inputObject);
@@ -87,7 +97,7 @@ namespace GraphQLCore.Execution
         private GraphQLBaseType GetTypeDefinition(GraphQLType typeDefinition)
         {
             if (typeDefinition is GraphQLNamedType)
-                return this.schmaObserver.GetSchemaInputTypeByName(((GraphQLNamedType)typeDefinition).Name.Value);
+                return this.schemaRepository.GetSchemaInputTypeByName(((GraphQLNamedType)typeDefinition).Name.Value);
 
             if (typeDefinition is Language.AST.GraphQLNonNullType)
                 return new Type.GraphQLNonNullType(this.GetTypeDefinition(((Language.AST.GraphQLNonNullType)typeDefinition).Type));

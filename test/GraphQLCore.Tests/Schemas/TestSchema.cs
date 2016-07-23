@@ -25,6 +25,7 @@
             this.Field("nonNullIntListArgField", (int[] nonNullIntListArg) => nonNullIntListArg);
             this.Field("intListArgField", (int?[] intListArg) => intListArg);
             this.Field("complicatedObjectArgField", (ComplicatedObject complicatedObjectArg) => complicatedObjectArg);
+            this.Field("complicatedObjectListArgField", (ComplicatedObject[] complicatedObjectListArg) => complicatedObjectListArg);
         }
     }
 

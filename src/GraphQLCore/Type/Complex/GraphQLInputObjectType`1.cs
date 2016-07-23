@@ -43,13 +43,21 @@
                 if (astField == null)
                     continue;
 
-                var graphQLType = schemaRepository.GetSchemaInputTypeFor(field.Value.SystemType);
-                var value = graphQLType.GetFromAst(astField.Value, schemaRepository);
+                object value = this.GetValueFromField(schemaRepository, field.Value, astField);
 
-                this.AssignValueFromAstField(result, field.Value, value);
+                this.AssignValueToObjectField(result, field.Value, value);
             }
 
             return result;
+        }
+
+        private object GetValueFromField(
+            ISchemaRepository schemaRepository, GraphQLObjectTypeFieldInfo field, GraphQLObjectField astField)
+        {
+            var graphQLType = schemaRepository.GetSchemaInputTypeFor(field.SystemType);
+            var value = graphQLType.GetFromAst(astField.Value, schemaRepository);
+
+            return value;
         }
 
         private static GraphQLObjectField GetFieldFromAstObjectValue(GraphQLObjectValue objectAstValue, string fieldName)
@@ -57,7 +65,7 @@
             return objectAstValue.Fields.SingleOrDefault(e => e.Name.Value == fieldName);
         }
 
-        private void AssignValueFromAstField(T result, GraphQLObjectTypeFieldInfo field, object value)
+        private void AssignValueToObjectField(T result, GraphQLObjectTypeFieldInfo field, object value)
         {
             if (ReflectionUtilities.IsCollection(field.SystemType))
                 value = ReflectionUtilities.ChangeToCollection(value, field.SystemType);

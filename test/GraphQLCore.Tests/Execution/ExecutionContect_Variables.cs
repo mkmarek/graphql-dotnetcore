@@ -3,7 +3,9 @@
     using GraphQLCore.Type;
     using NUnit.Framework;
     using Schemas;
+    using System.Collections.Generic;
     using System.Dynamic;
+    using System.Linq;
 
     [TestFixture]
     public class ExecutionContect_Variables
@@ -209,6 +211,42 @@
             Assert.AreEqual("sample", result.complicatedArgs.stringArgField);
         }
 
+        [Test]
+        public void Execute_WithObjectListVariable_ParsesAndReturnsCorrectValues()
+        {
+            var query = @"query getStringListArg($complicatedObjectListArgVar: [ComplicatedInputObjectType]) {
+                            complicatedArgs {
+                                complicatedObjectListArgField(complicatedObjectListArg: $complicatedObjectListArgVar) {
+                                    intField
+                                }
+                            }
+                        }";
+
+            var result = this.schema.Execute(query, variables);
+
+            Assert.AreEqual(1, ((IEnumerable<dynamic>)result.complicatedArgs.complicatedObjectListArgField).ElementAt(0).intField);
+        }
+
+        [Test]
+        public void Execute_WithObjectListVariableWithListField_ParsesAndReturnsCorrectValues()
+        {
+            var query = @"query getStringListArg($complicatedObjectListArgVar: [ComplicatedInputObjectType]) {
+                            complicatedArgs {
+                                complicatedObjectListArgField(complicatedObjectListArg: $complicatedObjectListArgVar) {
+                                    stringListField
+                                }
+                            }
+                        }";
+
+            var result = this.schema.Execute(query, variables);
+            var stringListField = (IEnumerable<object>)((IEnumerable<dynamic>)result.complicatedArgs.complicatedObjectListArgField)
+                .ElementAt(0).stringListField;
+
+            Assert.AreEqual("a", stringListField.ElementAt(0));
+            Assert.AreEqual("b", stringListField.ElementAt(1));
+            Assert.AreEqual("c", stringListField.ElementAt(2));
+        }
+
         [SetUp]
         public void SetUp()
         {
@@ -223,6 +261,7 @@
             this.variables.nonNullIntListArgVar = new int[] { 1, 2, 3 };
             this.variables.intListArgVar = new int?[] { 1, null, 3 };
             this.variables.complicatedObjectArgVar = CreateComplicatedDynamicObject();
+            this.variables.complicatedObjectListArgVar = new object[] { CreateComplicatedDynamicObject() };
             this.variables.complicatedObjectArgVar.nested = CreateComplicatedDynamicObject();
 
             this.schema = new TestSchema();
