@@ -30,6 +30,9 @@
 
         public override object GetFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
+            if (!(astValue is GraphQLObjectValue))
+                return null;
+
             var objectAstValue = (GraphQLObjectValue)astValue;
             var result = new T();
 
@@ -56,6 +59,9 @@
 
         private void AssignValueFromAstField(T result, GraphQLObjectTypeFieldInfo field, object value)
         {
+            if (ReflectionUtilities.IsCollection(field.SystemType))
+                value = ReflectionUtilities.ChangeToCollection(value, field.SystemType);
+
             ReflectionUtilities.MakeSetterFromLambda(field.Lambda)
                     .DynamicInvoke(result, value);
         }

@@ -69,7 +69,7 @@
         }
 
         [Test]
-        public void Execute_ValueInNonMandatoryValue_InvokesResolverWithNullValue()
+        public void Execute_ValueInNonMandatoryValue_InvokesResolverWitCorrecthNullValue()
         {
             dynamic result = this.schema.Execute("{ isNull(nonMandatory: 1) }");
 
@@ -77,7 +77,7 @@
         }
 
         [Test]
-        public void Execute_AstObjectArgument_InvokesResolverWithNullValue()
+        public void Execute_AstObjectArgument_ReturnsCorrectValue()
         {
             dynamic result = this.schema.Execute("{ withObjectArg(obj: { stringField: \"abc\" }) { StringField } }");
 
@@ -100,6 +100,24 @@
             Assert.AreEqual(4, ((IEnumerable<object>)result.withList).ElementAt(0));
             Assert.AreEqual(8, ((IEnumerable<object>)result.withList).ElementAt(1));
             Assert.AreEqual(6, ((IEnumerable<object>)result.withList).ElementAt(2));
+        }
+
+        [Test]
+        public void Execute_AstObjectListArgument_CorrectlyTranslatesIntoOutput()
+        {
+            dynamic result = this.schema.Execute("{ withObjectListArg(obj: [{ stringField: \"abc\" }, { stringField: \"efg\" }]) { StringField } }");
+
+            Assert.AreEqual("abc", ((IEnumerable<dynamic>)result.withObjectListArg).ElementAt(0).StringField);
+            Assert.AreEqual("efg", ((IEnumerable<dynamic>)result.withObjectListArg).ElementAt(1).StringField);
+        }
+
+        [Test]
+        public void Execute_AstObjectListArgumentWithListProperty_CorrectlyTranslatesIntoOutput()
+        {
+            dynamic result = this.schema.Execute("{ withObjectListArg(obj: { stringArray: [\"abc\", \"efg\"] }) { StringArray } }");
+
+            Assert.AreEqual("abc", ((IEnumerable<dynamic>)((IEnumerable<dynamic>)result.withObjectListArg).ElementAt(0).StringArray).ElementAt(0));
+            Assert.AreEqual("efg", ((IEnumerable<dynamic>)((IEnumerable<dynamic>)result.withObjectListArg).ElementAt(0).StringArray).ElementAt(1));
         }
 
         [SetUp]
@@ -132,6 +150,7 @@
             {
                 this.Field(instance => instance.Id);
                 this.Field(instance => instance.StringField);
+                this.Field(instance => instance.StringArray);
                 this.Field("nested", () => nestedTypeNonGeneric);
             }
         }
@@ -141,6 +160,7 @@
             public InputTestObjectType() : base("InputTestObjectType", "")
             {
                 this.Field("stringField", instance => instance.StringField);
+                this.Field("stringArray", instance => instance.StringArray);
             }
         }
 
@@ -155,6 +175,7 @@
                 this.Field("withList", (List<int> ids) => ids);
                 this.Field("withIEnumerable", (IEnumerable<int> ids) => ids.Count());
                 this.Field("withObjectArg", (TestObject obj) => obj);
+                this.Field("withObjectListArg", (IEnumerable<TestObject> obj) => obj);
             }
         }
 
@@ -162,6 +183,7 @@
         {
             public int Id { get; set; }
             public string StringField { get; set; }
+            public string[] StringArray { get; set; }
         }
     }
 }
