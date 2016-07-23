@@ -18,6 +18,9 @@
 
         internal IEnumerable<GraphQLException> IsValid(GraphQLBaseType type, GraphQLValue astValue)
         {
+            if (astValue is GraphQLVariable)
+                return new GraphQLException[] { };
+
             if (type is GraphQLList)
                 return this.ValidateListType(type, astValue);
 

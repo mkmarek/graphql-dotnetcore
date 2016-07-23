@@ -69,12 +69,6 @@ namespace GraphQLCore.Execution
             return inputObject;
         }
 
-        private IEnumerable<object> CreateList(IEnumerable inputObject, GraphQLList typeDefinition)
-        {
-            foreach (var item in inputObject)
-                yield return this.TranslatePerDefinition(item, typeDefinition.MemberType);
-        }
-
         public object TranslatePerDefinition(object inputObject, System.Type type)
         {
             var typeDefinition = this.schemaRepository.GetSchemaInputTypeFor(type);
@@ -92,6 +86,12 @@ namespace GraphQLCore.Execution
                 ReflectionUtilities.GetReturnValueFromLambdaExpression(expression));
 
             ReflectionUtilities.MakeSetterFromLambda(expression).DynamicInvoke(resultObject, variableProp);
+        }
+
+        private IEnumerable<object> CreateList(IEnumerable inputObject, GraphQLList typeDefinition)
+        {
+            foreach (var item in inputObject)
+                yield return this.TranslatePerDefinition(item, typeDefinition.MemberType);
         }
 
         private GraphQLBaseType GetTypeDefinition(GraphQLType typeDefinition)

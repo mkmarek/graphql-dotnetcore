@@ -96,6 +96,13 @@
                 .SingleOrDefault();
         }
 
+        public GraphQLBaseType GetSchemaOutputTypeByName(string name)
+        {
+            return this.GetOutputKnownTypes()
+                .Where(e => e.Name == name)
+                .SingleOrDefault();
+        }
+
         public GraphQLBaseType GetSchemaTypeFor(Type type)
         {
             if (ReflectionUtilities.IsCollection(type))

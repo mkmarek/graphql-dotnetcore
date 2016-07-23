@@ -28,23 +28,7 @@
 
         private GraphQLObjectTypeFieldInfo CreateResolverFieldInfo(string fieldName, LambdaExpression resolver)
         {
-            return new GraphQLObjectTypeFieldInfo()
-            {
-                Name = fieldName,
-                IsResolver = true,
-                Lambda = resolver,
-                Arguments = this.GetArguments(resolver),
-                SystemType = ReflectionUtilities.GetReturnValueFromLambdaExpression(resolver)
-            };
-        }
-
-        private Dictionary<string, GraphQLObjectTypeArgumentInfo> GetArguments(LambdaExpression resolver)
-        {
-            return resolver.Parameters.Select(e => new GraphQLObjectTypeArgumentInfo()
-            {
-                Name = e.Name,
-                Type = e.Type
-            }).ToDictionary(e => e.Name);
+            return GraphQLObjectTypeFieldInfo.CreateResolverFieldInfo(fieldName, resolver);
         }
     }
 }

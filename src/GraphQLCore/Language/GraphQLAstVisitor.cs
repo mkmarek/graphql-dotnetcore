@@ -1,9 +1,8 @@
-﻿using GraphQLCore.Language.AST;
-using System;
-using System.Collections.Generic;
-
-namespace GraphQLCore.Language
+﻿namespace GraphQLCore.Language
 {
+    using AST;
+    using System.Collections.Generic;
+
     public class GraphQLAstVisitor
     {
         public virtual GraphQLName BeginVisitAlias(GraphQLName alias)
@@ -127,7 +126,7 @@ namespace GraphQLCore.Language
             {
                 case ASTNodeKind.OperationDefinition: return this.BeginVisitOperationDefinition((GraphQLOperationDefinition)node);
                 case ASTNodeKind.SelectionSet: return this.BeginVisitSelectionSet((GraphQLSelectionSet)node);
-                case ASTNodeKind.Field: return this.BeginVisitFieldSelection((GraphQLFieldSelection)node);
+                case ASTNodeKind.Field: return this.BeginVisitNonIntrospectionFieldSelection((GraphQLFieldSelection)node);
                 case ASTNodeKind.Name: return this.BeginVisitName((GraphQLName)node);
                 case ASTNodeKind.Argument: return this.BeginVisitArgument((GraphQLArgument)node);
                 case ASTNodeKind.FragmentSpread: return this.BeginVisitFragmentSpread((GraphQLFragmentSpread)node);
@@ -146,7 +145,7 @@ namespace GraphQLCore.Language
                 case ASTNodeKind.ObjectField: return this.BeginVisitObjectField((GraphQLObjectField)node);
             }
 
-            throw new NotImplementedException();
+            return null;
         }
 
         public virtual GraphQLOperationDefinition BeginVisitOperationDefinition(GraphQLOperationDefinition definition)
@@ -206,6 +205,15 @@ namespace GraphQLCore.Language
                 this.BeginVisitNode(value);
 
             return this.EndVisitListValue(node);
+        }
+
+        private ASTNode BeginVisitNonIntrospectionFieldSelection(GraphQLFieldSelection selection)
+        {
+            // ignore introspection types for now
+            if (selection.Name.Value == "__type" || selection.Name.Value == "__schema")
+                return null;
+
+            return this.BeginVisitFieldSelection(selection);
         }
 
         private ASTNode BeginVisitObjectField(GraphQLObjectField node)

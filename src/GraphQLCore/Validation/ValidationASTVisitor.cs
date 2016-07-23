@@ -11,8 +11,7 @@
     public class ValidationASTVisitor : GraphQLAstVisitor
     {
         private GraphQLBaseType argumentType;
-        private Stack<string> fieldStack;
-        private GraphQLBaseType lastType;
+        private Stack<GraphQLObjectTypeFieldInfo> fieldStack;
         private IGraphQLSchema schema;
         private ISchemaRepository schemaRepository;
         private Stack<GraphQLBaseType> typeStack;
@@ -20,7 +19,7 @@
         public ValidationASTVisitor(IGraphQLSchema schema)
         {
             this.typeStack = new Stack<GraphQLBaseType>();
-            this.fieldStack = new Stack<string>();
+            this.fieldStack = new Stack<GraphQLObjectTypeFieldInfo>();
 
             this.schema = schema;
             this.schemaRepository = schema.SchemaRepository;
@@ -31,7 +30,7 @@
 
         public override GraphQLArgument BeginVisitArgument(GraphQLArgument argument)
         {
-            this.argumentType = this.schemaRepository.GetSchemaTypeFor(this.GetField(this.typeStack.Peek(), this.fieldStack.Peek())
+            this.argumentType = this.schemaRepository.GetSchemaTypeFor(this.GetLastField()
                 .Arguments.Single(e => e.Key == argument.Name.Value).Value.Type);
 
             return base.BeginVisitArgument(argument);
@@ -39,12 +38,19 @@
 
         public override GraphQLFieldSelection BeginVisitFieldSelection(GraphQLFieldSelection selection)
         {
-            this.fieldStack.Push(selection.Name.Value);
+            var field = this.GetField(this.GetLastType(), selection.Name.Value);
 
-            var systemType = this.GetField(this.typeStack.Peek(), this.fieldStack.Peek()).SystemType;
-            this.lastType = this.schemaRepository.GetSchemaTypeFor(systemType);
+            this.fieldStack.Push(field);
+            this.typeStack.Push(this.schemaRepository.GetSchemaTypeFor(field.SystemType));
 
             return base.BeginVisitFieldSelection(selection);
+        }
+
+        public override GraphQLInlineFragment BeginVisitInlineFragment(GraphQLInlineFragment inlineFragment)
+        {
+            this.typeStack.Push(this.schemaRepository.GetSchemaOutputTypeByName(inlineFragment.TypeCondition.Name.Value));
+
+            return base.BeginVisitInlineFragment(inlineFragment);
         }
 
         public override GraphQLOperationDefinition BeginVisitOperationDefinition(GraphQLOperationDefinition definition)
@@ -65,9 +71,6 @@
 
         public override GraphQLSelectionSet BeginVisitSelectionSet(GraphQLSelectionSet selectionSet)
         {
-            if (this.lastType is GraphQLComplexType || this.lastType is GraphQLInputObjectType)
-                this.typeStack.Push(this.lastType);
-
             return base.BeginVisitSelectionSet(selectionSet);
         }
 
@@ -96,6 +99,31 @@
 
             if (type is GraphQLComplexType)
                 return ((GraphQLComplexType)type).GetFieldInfo(name);
+
+            return null;
+        }
+
+        private GraphQLObjectTypeFieldInfo GetLastField()
+        {
+            if (this.fieldStack.Count > 0)
+                return this.fieldStack.Peek();
+
+            return null;
+        }
+
+        private GraphQLBaseType GetLastType()
+        {
+            if (this.typeStack.Count > 0)
+            {
+                var type = this.typeStack.Peek();
+
+                if (type is GraphQLList)
+                {
+                    return ((GraphQLList)type).MemberType;
+                }
+
+                return type;
+            }
 
             return null;
         }

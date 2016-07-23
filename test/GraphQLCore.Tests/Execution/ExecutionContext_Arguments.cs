@@ -151,7 +151,7 @@
                 this.Field(instance => instance.Id);
                 this.Field(instance => instance.StringField);
                 this.Field(instance => instance.StringArray);
-                this.Field("nested", () => nestedTypeNonGeneric);
+                this.Field("nested", (int id) => nestedTypeNonGeneric);
             }
         }
 

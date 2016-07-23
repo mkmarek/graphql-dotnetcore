@@ -48,14 +48,7 @@
 
         protected GraphQLObjectTypeFieldInfo CreateFieldInfo<T, TProperty>(string fieldName, Expression<Func<T, TProperty>> accessor)
         {
-            return new GraphQLObjectTypeFieldInfo()
-            {
-                Name = fieldName,
-                IsResolver = false,
-                Lambda = accessor,
-                Arguments = new Dictionary<string, GraphQLObjectTypeArgumentInfo>(),
-                SystemType = ReflectionUtilities.GetReturnValueFromLambdaExpression(accessor)
-            };
+            return GraphQLObjectTypeFieldInfo.CreateAccessorFieldInfo(fieldName, accessor);
         }
     }
 }

@@ -51,15 +51,6 @@
             return result;
         }
 
-        private object GetValueFromField(
-            ISchemaRepository schemaRepository, GraphQLObjectTypeFieldInfo field, GraphQLObjectField astField)
-        {
-            var graphQLType = schemaRepository.GetSchemaInputTypeFor(field.SystemType);
-            var value = graphQLType.GetFromAst(astField.Value, schemaRepository);
-
-            return value;
-        }
-
         private static GraphQLObjectField GetFieldFromAstObjectValue(GraphQLObjectValue objectAstValue, string fieldName)
         {
             return objectAstValue.Fields.SingleOrDefault(e => e.Name.Value == fieldName);
@@ -72,6 +63,15 @@
 
             ReflectionUtilities.MakeSetterFromLambda(field.Lambda)
                     .DynamicInvoke(result, value);
+        }
+
+        private object GetValueFromField(
+                            ISchemaRepository schemaRepository, GraphQLObjectTypeFieldInfo field, GraphQLObjectField astField)
+        {
+            var graphQLType = schemaRepository.GetSchemaInputTypeFor(field.SystemType);
+            var value = graphQLType.GetFromAst(astField.Value, schemaRepository);
+
+            return value;
         }
 
         private bool IsInterfaceOrCollectionOfInterfaces(Type type)

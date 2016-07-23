@@ -168,6 +168,8 @@
             var nestedType = new NestedQueryType(this.schema);
             var rootType = new RootQueryType(nestedType, this.schema);
 
+            this.schema.AddKnownType(nestedType);
+            this.schema.AddKnownType(rootType);
             this.schema.Query(rootType);
         }
 

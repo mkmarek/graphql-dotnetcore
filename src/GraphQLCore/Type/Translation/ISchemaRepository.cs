@@ -22,5 +22,6 @@
         GraphQLComplexType[] GetTypesImplementing(GraphQLInterfaceType objectType);
 
         GraphQLInputType GetSchemaInputTypeByName(string value);
+        GraphQLBaseType GetSchemaOutputTypeByName(string value);
     }
 }

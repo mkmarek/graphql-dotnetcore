@@ -1,5 +1,6 @@
 ﻿namespace GraphQLCore.Execution
 {
+    using Exceptions;
     using Language.AST;
     using System;
     using System.Collections.Generic;
@@ -8,10 +9,13 @@
     using System.Linq.Expressions;
     using Type;
     using Type.Introspection;
+    using Validation;
+    using Validation.Rules;
 
     public class ExecutionContext : IDisposable
     {
         private GraphQLDocument ast;
+        private ValidationContext validationContext;
         private Dictionary<string, GraphQLFragmentDefinition> fragments;
         private GraphQLSchema graphQLSchema;
         private GraphQLOperationDefinition operation;
@@ -23,6 +27,7 @@
             this.ast = ast;
             this.fragments = new Dictionary<string, GraphQLFragmentDefinition>();
             this.variables = new ExpandoObject();
+            this.validationContext = new ValidationContext();
         }
 
         public ExecutionContext(GraphQLSchema graphQLSchema, GraphQLDocument ast, dynamic variables)
@@ -37,13 +42,31 @@
 
         public dynamic Execute()
         {
+            this.ValidateAstAndThrowErrorWhenFaulty();
+
             foreach (var definition in this.ast.Definitions)
                 this.ResolveDefinition(definition);
 
             if (this.operation == null)
-                throw new Exception("Must provide an operation.");
+                throw new GraphQLException("Must provide an operation.");
 
             return this.ComposeResultForType(this.GetOperationRootType(), this.operation.SelectionSet);
+        }
+
+        private void ValidateAstAndThrowErrorWhenFaulty()
+        {
+            var errors = this.validationContext.Validate(this.ast, this.graphQLSchema, this.GetValidationRules());
+
+            if (errors.Any())
+                throw errors.First();
+        }
+
+        private IValidationRule[] GetValidationRules()
+        {
+            return new IValidationRule[]
+            {
+                new ArgumentsOfCorrectType()
+            };
         }
 
         private void AppendIntrospectionInfo(
