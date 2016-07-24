@@ -14,7 +14,7 @@
     "Microsoft.Extensions.Logging.Console": "1.0.0",
     "Microsoft.Extensions.Logging.Debug": "1.0.0",
     "Microsoft.AspNetCore.StaticFiles": "1.0.0",
-    "GraphQLCore": "1.0.0-alpha"
+    "GraphQLCore": "1.0.0-alpha-*"
   },
 
   "tools": {

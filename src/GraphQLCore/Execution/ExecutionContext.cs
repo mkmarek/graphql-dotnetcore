@@ -42,12 +42,19 @@
 
         public dynamic Execute()
         {
+            return this.Execute(null);
+        }
+
+        public dynamic Execute(string operationToExecute)
+        {
             this.ValidateAstAndThrowErrorWhenFaulty();
 
             foreach (var definition in this.ast.Definitions)
-                this.ResolveDefinition(definition);
+                this.ResolveDefinition(definition, operationToExecute);
 
-            if (this.operation == null)
+            if (this.operation == null && !string.IsNullOrWhiteSpace(operationToExecute))
+                throw new GraphQLException($"Unknown operation named \"{operationToExecute}\".");
+            if (this.operation == null && string.IsNullOrWhiteSpace(operationToExecute))
                 throw new GraphQLException("Must provide an operation.");
 
             return this.ComposeResultForType(this.GetOperationRootType(), this.operation.SelectionSet);
@@ -160,12 +167,12 @@
             return null;
         }
 
-        private void ResolveDefinition(ASTNode definition)
+        private void ResolveDefinition(ASTNode definition, string operationToExecute)
         {
             switch (definition.Kind)
             {
                 case ASTNodeKind.OperationDefinition:
-                    this.ResolveOperationDefinition(definition as GraphQLOperationDefinition); break;
+                    this.ResolveOperationDefinition(definition as GraphQLOperationDefinition, operationToExecute); break;
                 case ASTNodeKind.FragmentDefinition:
                     this.ResolveFragmentDefinition(definition as GraphQLFragmentDefinition); break;
                 default: throw new Exception($"GraphQL cannot execute a request containing a {definition.Kind}.");
@@ -177,12 +184,14 @@
             this.fragments.Add(graphQLFragmentDefinition.Name.Value, graphQLFragmentDefinition);
         }
 
-        private void ResolveOperationDefinition(GraphQLOperationDefinition graphQLOperationDefinition)
+        private void ResolveOperationDefinition(GraphQLOperationDefinition graphQLOperationDefinition, string operationToExecute)
         {
-            if (this.operation != null)
-                throw new Exception("Must provide operation name if query contains multiple operations.");
+            if (this.operation != null && string.IsNullOrWhiteSpace(operationToExecute))
+                throw new GraphQLException("Must provide operation name if query contains multiple operations.");
 
-            if (this.operation == null)
+            if (!string.IsNullOrWhiteSpace(operationToExecute) && graphQLOperationDefinition.Name.Value == operationToExecute)
+                this.operation = graphQLOperationDefinition;
+            else if (string.IsNullOrWhiteSpace(operationToExecute) && this.operation == null)
                 this.operation = graphQLOperationDefinition;
         }
     }

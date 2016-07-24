@@ -13,6 +13,8 @@
 
         dynamic Execute(string query, dynamic variables);
 
+        dynamic Execute(string query, dynamic variables, string operationToExecute);
+
         void Query(GraphQLObjectType root);
     }
 }

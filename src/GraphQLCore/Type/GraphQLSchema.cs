@@ -6,6 +6,8 @@
     using Language.AST;
     using System.Linq;
     using Translation;
+    using System;
+    using System.Dynamic;
 
     public class GraphQLSchema : IGraphQLSchema
     {
@@ -21,6 +23,7 @@
 
         public IntrospectedSchemaType IntrospectedSchema { get; private set; }
         public GraphQLObjectType MutationType { get; private set; }
+
         public GraphQLObjectType QueryType { get; private set; }
 
         public void AddKnownType(GraphQLBaseType type)
@@ -44,9 +47,22 @@
             }
         }
 
+        public dynamic Execute(string expression, dynamic variables, string operationToExecute)
+        {
+            using (var context = new ExecutionContext(this, this.GetAst(expression), variables))
+            {
+                return context.Execute(operationToExecute);
+            }
+        }
+
         public void Mutation(GraphQLObjectType root)
         {
             this.MutationType = root;
+        }
+
+        public object Execute(object multipleOperationQuery)
+        {
+            throw new NotImplementedException();
         }
 
         public void Query(GraphQLObjectType root)

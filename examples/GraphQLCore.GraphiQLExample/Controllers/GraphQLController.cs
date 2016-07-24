@@ -27,7 +27,7 @@
                 return this.Json(
                     new
                     {
-                        data = this.schema.Execute(input.Query, GetVariables(input))
+                        data = this.schema.Execute(input.Query, GetVariables(input), input.OperationName)
                     }
                 );
             }
