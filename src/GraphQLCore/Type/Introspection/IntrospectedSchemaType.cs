@@ -21,8 +21,18 @@
             this.schema = schema;
 
             this.Field("types", () => this.IntrospectAllSchemaTypes());
-            this.Field("queryType", () => this.schema.QueryType.Introspect(this.schemaRepository));
-            this.Field("mutationType", () => this.schema.MutationType.Introspect(this.schemaRepository));
+            this.Field("queryType", () => this.IntrospectQueryType());
+            this.Field("mutationType", () => this.IntrospectMudationType());
+        }
+
+        private IntrospectedType IntrospectMudationType()
+        {
+            return this.schema.MutationType?.Introspect(this.schemaRepository);
+        }
+
+        private IntrospectedType IntrospectQueryType()
+        {
+            return this.schema.QueryType?.Introspect(this.schemaRepository);
         }
 
         public IEnumerable<IntrospectedType> IntrospectAllSchemaTypes()

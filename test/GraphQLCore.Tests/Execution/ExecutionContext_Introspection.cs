@@ -322,9 +322,9 @@
             this.schema = new GraphQLSchema();
 
             var type2 = new T2(this.schema);
-            var type1 = new T1(type2, this.schema);
+            var type1 = new T1();
             var t2interface = new T2Interface(this.schema);
-            var rootType = new RootQueryType(type1, t2interface, this.schema);
+            var rootType = new RootQueryType(type1);
 
             this.schema.AddKnownType(type1);
             this.schema.AddKnownType(type2);
@@ -365,6 +365,17 @@
             dynamic type = GetType("T2Interface");
 
             Assert.AreEqual("T2", ((IEnumerable<dynamic>)type.possibleTypes).SingleOrDefault().name);
+        }
+
+        [Test]
+        public void NoMutationDefined_ShouldReturnNullInIntrospection()
+        {
+            var emptySchema = new GraphQLSchema();
+            emptySchema.Query(new T1());
+
+            var result = emptySchema.Execute("{ __schema { mutationType { name } } }");
+
+            Assert.IsNull(result.__schema.mutationType);
         }
 
         private dynamic GetField(string fieldName)
@@ -493,7 +504,7 @@
 
         private class RootQueryType : GraphQLObjectType
         {
-            public RootQueryType(T1 type1, T2Interface type2Interface, GraphQLSchema schema) : base("RootQueryType", "")
+            public RootQueryType(T1 type1) : base("RootQueryType", "")
             {
                 this.Field("type1", () => type1);
                 this.Field("type2i", () => (ITestType)new TestType());
@@ -511,7 +522,7 @@
 
         private class T1 : GraphQLObjectType
         {
-            public T1(T2 type2, GraphQLSchema schema) : base("T1", "")
+            public T1() : base("T1", "")
             {
                 this.Field("a", () => "1");
                 this.Field("b", () => 2);
