@@ -91,6 +91,19 @@
             return base.EndVisitFieldSelection(selection);
         }
 
+        public override GraphQLFragmentDefinition BeginVisitFragmentDefinition(GraphQLFragmentDefinition node)
+        {
+            var fragmentType = this.SchemaRepository.GetSchemaOutputTypeByName(node.TypeCondition.Name.Value);
+
+            if (fragmentType != null)
+            {
+                this.typeStack.Push(fragmentType);
+                return base.BeginVisitFragmentDefinition(node);
+            }
+
+            return node;
+        }
+
         public GraphQLBaseType GetArgumentDefinition()
         {
             return this.argumentType;

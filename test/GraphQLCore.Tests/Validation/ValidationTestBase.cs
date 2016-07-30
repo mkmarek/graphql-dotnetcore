@@ -32,6 +32,7 @@
                 this.validationTestSchema,
                 new IValidationRule[] 
                 {
+                    new PossibleFragmentSpreads(),
                     new VariablesAreInputTypes(),
                     new ProvidedNonNullArguments(),
                     new ScalarLeafs(),

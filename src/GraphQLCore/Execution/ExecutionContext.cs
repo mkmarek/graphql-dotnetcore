@@ -76,6 +76,7 @@
         {
             return new IValidationRule[]
             {
+                new PossibleFragmentSpreads(),
                 new ScalarLeafs(),
                 new ArgumentsOfCorrectType(),
                 new ProvidedNonNullArguments(),

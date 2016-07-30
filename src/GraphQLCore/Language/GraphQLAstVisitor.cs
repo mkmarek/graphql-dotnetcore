@@ -5,6 +5,13 @@
 
     public class GraphQLAstVisitor
     {
+        protected IDictionary<string, GraphQLFragmentDefinition> Fragments { get; private set; }
+
+        public GraphQLAstVisitor()
+        {
+            this.Fragments = new Dictionary<string, GraphQLFragmentDefinition>();
+        }
+
         public virtual GraphQLName BeginVisitAlias(GraphQLName alias)
         {
             return alias;
@@ -82,6 +89,10 @@
         public virtual GraphQLFragmentDefinition BeginVisitFragmentDefinition(GraphQLFragmentDefinition node)
         {
             this.BeginVisitNode(node.TypeCondition);
+
+            if (node.SelectionSet != null)
+                this.BeginVisitNode(node.SelectionSet);
+
             return node;
         }
 
@@ -214,7 +225,18 @@
         public virtual void Visit(GraphQLDocument ast)
         {
             foreach (var definition in ast.Definitions)
+            {
+                if (definition.Kind == ASTNodeKind.FragmentDefinition)
+                {
+                    var fragment = (GraphQLFragmentDefinition)definition;
+                    this.Fragments.Add(fragment.Name.Value, fragment);
+                }
+            }
+
+            foreach (var definition in ast.Definitions)
+            {
                 this.BeginVisitNode(definition);
+            }
         }
 
         private ASTNode BeginVisitListValue(GraphQLListValue node)

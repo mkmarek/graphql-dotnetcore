@@ -45,12 +45,21 @@
         }
     }
 
-    public interface ComplicatedInteface
+    public interface ComplicatedParentInteface
+    {
+        int? IntField { get; set; }
+    }
+
+    public interface SimpleInterface
+    {
+        bool BooleanField { get; set; }
+    }
+
+    public interface ComplicatedInteface : ComplicatedParentInteface
     {
         bool BooleanField { get; set; }
         FurColor EnumField { get; set; }
         float FloatField { get; set; }
-        int? IntField { get; set; }
         ComplicatedObject Nested { get; set; }
         int NonNullIntField { get; set; }
         string StringField { get; set; }
@@ -69,6 +78,11 @@
         public string[] StringListField { get; set; }
     }
 
+    public class SimpleObject : SimpleInterface
+    {
+        public bool BooleanField { get; set; }
+    }
+
     public class ComplicatedObjectType : GraphQLObjectType<ComplicatedObject>
     {
         public ComplicatedObjectType() : base("ComplicatedObjectType", "")
@@ -81,6 +95,30 @@
             this.Field("floatField", e => e.FloatField);
             this.Field("stringListField", e => e.StringListField);
             this.Field("nested", e => e.Nested);
+        }
+    }
+
+    public class SimpleObjectType : GraphQLObjectType<SimpleObject>
+    {
+        public SimpleObjectType() : base("SimpleObjectType", "")
+        {
+            this.Field("booleanField", e => e.BooleanField);
+        }
+    }
+
+    public class SimpleInterfaceType : GraphQLInterfaceType<SimpleInterface>
+    {
+        public SimpleInterfaceType() : base("SimpleInterfaceType", "")
+        {
+            this.Field("booleanField", e => e.BooleanField);
+        }
+    }
+
+    public class ComplicatedParentInterfaceType : GraphQLInterfaceType<ComplicatedParentInteface>
+    {
+        public ComplicatedParentInterfaceType() : base("ComplicatedParentInterfaceType", "")
+        {
+            this.Field("intField", e => e.IntField);
         }
     }
 
@@ -124,8 +162,11 @@
             var queryRoot = new QueryRoot();
 
             this.AddKnownType(queryRoot);
+            this.AddKnownType(new SimpleInterfaceType());
             this.AddKnownType(new FurColorEnum());
+            this.AddKnownType(new SimpleObjectType());
             this.AddKnownType(new ComplicatedInterfaceType());
+            this.AddKnownType(new ComplicatedParentInterfaceType());
             this.AddKnownType(new ComplicatedInputObjectType());
             this.AddKnownType(new ComplicatedObjectType());
             this.AddKnownType(new ComplicatedArgs());

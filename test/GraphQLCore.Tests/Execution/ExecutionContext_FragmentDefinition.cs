@@ -30,24 +30,6 @@
         }
 
         [Test]
-        public void Execute_FragmentDefinitionDifferentType_ShouldntResolveFragment()
-        {
-            dynamic result = this.schema.Execute(@"
-            query fetch {
-                ... frag
-            }
-
-            fragment frag on NestedQueryType {
-                a
-                b
-            }
-            ");
-
-            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string x = result.a; }));
-            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string x = result.b; }));
-        }
-
-        [Test]
         public void Execute_FragmentInFragment_ShouldResolveAndExecuteFragments()
         {
             dynamic result = this.schema.Execute(@"
@@ -87,22 +69,6 @@
 
             Assert.AreEqual("1", result.nested.a);
             Assert.AreEqual("2", result.nested.b);
-        }
-
-        [Test]
-        public void Execute_InlineFragmentDifferentType_ShouldntResolveFragment()
-        {
-            dynamic result = this.schema.Execute(@"
-            query fetch {
-                ... on NestedQueryType {
-                    a
-                    b
-                }
-            }
-            ");
-
-            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string x = result.a; }));
-            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string x = result.b; }));
         }
 
         [Test]
