@@ -31,5 +31,28 @@
                 complicatedObjectArgFieldddddddError.Message.StartsWith(
                     "Unknown type \"ComplicatedObjectTypeee\" Did you mean \"ComplicatedObjectType\""));
         }
+
+        [Test]
+        public void IgnoresTypeDefinitions()
+        {
+            var errors = this.Validate(@"
+                type NotInTheSchema {
+                    field: FooBar
+                }
+                interface FooBar {
+                    field: NotInTheSchema
+                }
+                union U = A | B
+                input Blob {
+                    field: UnknownType
+                }
+                query Foo($var: NotInTheSchema) {
+                    user(id: $var) {
+                        id
+                    }
+                }");
+
+            Assert.AreEqual("Unknown type \"NotInTheSchema\"", errors.Single().Message);
+        }
     }
 }
