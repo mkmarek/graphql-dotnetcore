@@ -19,6 +19,9 @@
             var type = this.GetLastType();
             var field = this.GetLastField();
 
+            if (type == null || field == null)
+                return selection;
+
             if (type.IsLeafType && selection?.SelectionSet != null)
             {
                 this.Errors.Add(new GraphQLException(

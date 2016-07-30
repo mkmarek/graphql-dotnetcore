@@ -89,6 +89,7 @@
         public virtual GraphQLFragmentDefinition BeginVisitFragmentDefinition(GraphQLFragmentDefinition node)
         {
             this.BeginVisitNode(node.TypeCondition);
+            this.BeginVisitNode(node.Name);
 
             if (node.SelectionSet != null)
                 this.BeginVisitNode(node.SelectionSet);
@@ -195,6 +196,8 @@
 
         public virtual GraphQLVariableDefinition BeginVisitVariableDefinition(GraphQLVariableDefinition node)
         {
+            this.BeginVisitNode(node.Type);
+
             return node;
         }
 
