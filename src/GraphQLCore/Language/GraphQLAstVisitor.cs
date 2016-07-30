@@ -78,6 +78,9 @@
             if (selection.SelectionSet != null)
                 this.BeginVisitNode(selection.SelectionSet);
 
+            if (selection.Directives != null)
+                this.BeginVisitDirectives(selection.Directives);
+
             return this.EndVisitFieldSelection(selection);
         }
 
