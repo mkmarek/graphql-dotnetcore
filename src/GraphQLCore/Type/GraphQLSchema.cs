@@ -59,18 +59,12 @@
             this.MutationType = root;
         }
 
-        public object Execute(object multipleOperationQuery)
-        {
-            throw new NotImplementedException();
-        }
-
         public void Query(GraphQLObjectType root)
         {
             this.QueryType = root;
-            this.SetupIntrospectionFields(root);
         }
 
-        internal IntrospectedType IntrospectType(string name)
+        public IntrospectedType IntrospectType(string name)
         {
             return this.IntrospectedSchema.IntrospectAllSchemaTypes().Where(e => e.Name == name).FirstOrDefault();
         }
@@ -88,10 +82,6 @@
             this.SchemaRepository.AddKnownType(new IntrospectedInputValueType());
             this.SchemaRepository.AddKnownType(new GraphQLEnumValue(null, null));
             this.SchemaRepository.AddKnownType(this.IntrospectedSchema);
-        }
-
-        private void SetupIntrospectionFields(GraphQLObjectType objectType)
-        {
         }
     }
 }

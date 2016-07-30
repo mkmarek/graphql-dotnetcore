@@ -227,10 +227,6 @@
 
         private ASTNode BeginVisitNonIntrospectionFieldSelection(GraphQLFieldSelection selection)
         {
-            // ignore introspection types for now
-            if (selection.Name.Value == "__type" || selection.Name.Value == "__schema")
-                return null;
-
             return this.BeginVisitFieldSelection(selection);
         }
 

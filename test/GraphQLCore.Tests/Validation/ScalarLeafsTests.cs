@@ -81,5 +81,18 @@
                 "type \"String\" has no subfields.",
                 error.Message);
         }
+
+        [Test]
+        public void IntrospectedObjectTypeMissingSelection()
+        {
+            var errors = this.Validate("query directIntrospectionQuerytWithoutSubFields { __schema }");
+
+            var error = errors.Single();
+
+            Assert.AreEqual(
+                "Field \"__schema\" of type \"__Schema\" must have a selection of subfields. " +
+                "Did you mean \"__schema { ... }\"?",
+                error.Message);
+        }
     }
 }

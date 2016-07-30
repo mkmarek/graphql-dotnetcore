@@ -5,8 +5,10 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Linq.Expressions;
     using Type;
     using Type.Complex;
+    using Type.Introspection;
     using Type.Translation;
 
     public class ValidationASTVisitor : GraphQLAstVisitor
@@ -64,6 +66,7 @@
             switch (definition.Operation)
             {
                 case OperationType.Query: this.typeStack.Push(this.schema.QueryType); break;
+                case OperationType.Mutation: this.typeStack.Push(this.schema.MutationType); break;
                 default: throw new NotImplementedException();
             }
 
@@ -118,18 +121,46 @@
             return null;
         }
 
-        private GraphQLFieldInfo GetField(GraphQLBaseType type, string name)
+        private GraphQLFieldInfo GetField(GraphQLBaseType type, string fieldName)
         {
+            if (this.IsQueryRootType(type))
+            {
+                if (fieldName == "__schema")
+                    return this.GetIntrospectedSchemaField();
+
+                if (fieldName == "__type")
+                    return this.GetIntrospectedTypeField();
+            }
+
             if (type is GraphQLCore.Type.GraphQLNonNullType)
-                return this.GetField(((GraphQLCore.Type.GraphQLNonNullType)type).UnderlyingNullableType, name);
+                return this.GetField(((GraphQLCore.Type.GraphQLNonNullType)type).UnderlyingNullableType, fieldName);
 
             if (type is GraphQLInputObjectType)
-                return ((GraphQLInputObjectType)type).GetFieldInfo(name);
+                return ((GraphQLInputObjectType)type).GetFieldInfo(fieldName);
 
             if (type is GraphQLComplexType)
-                return ((GraphQLComplexType)type).GetFieldInfo(name);
+                return ((GraphQLComplexType)type).GetFieldInfo(fieldName);
 
             return null;
+        }
+
+        private GraphQLFieldInfo GetIntrospectedTypeField()
+        {
+            return GraphQLObjectTypeFieldInfo.CreateResolverFieldInfo(
+                "__type",
+                (Expression<Func<string, IntrospectedType>>)((string name) => this.schema.IntrospectType(name)));
+        }
+
+        private GraphQLFieldInfo GetIntrospectedSchemaField()
+        {
+            return GraphQLObjectTypeFieldInfo.CreateResolverFieldInfo(
+                "__schema",
+                (Expression<Func<IntrospectedSchemaType>>)(() => this.schema.IntrospectedSchema));
+        }
+
+        private bool IsQueryRootType(GraphQLBaseType type)
+        {
+            return type == this.schema.QueryType;
         }
     }
 }
