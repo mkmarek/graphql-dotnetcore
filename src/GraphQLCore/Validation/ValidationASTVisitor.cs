@@ -33,8 +33,11 @@
 
         public override GraphQLArgument BeginVisitArgument(GraphQLArgument argument)
         {
-            this.argumentType = this.SchemaRepository.GetSchemaTypeFor(this.GetLastField()
-                .Arguments.Single(e => e.Key == argument.Name.Value).Value.SystemType);
+            var systemType = this.GetLastField()
+                .Arguments.SingleOrDefault(e => e.Key == argument.Name.Value).Value?.SystemType;
+
+            if (systemType != null)
+                this.argumentType = this.SchemaRepository.GetSchemaTypeFor(systemType);
 
             return base.BeginVisitArgument(argument);
         }
