@@ -4,6 +4,14 @@
     using Translation;
     public abstract class GraphQLInputType : GraphQLBaseType
     {
+        public override bool IsLeafType
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         public GraphQLInputType(string name, string description) : base(name, description)
         {
         }

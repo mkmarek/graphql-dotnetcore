@@ -4,10 +4,9 @@
     using Introspection;
     using Language;
     using Language.AST;
+    using System;
     using System.Linq;
     using Translation;
-    using System;
-    using System.Dynamic;
 
     public class GraphQLSchema : IGraphQLSchema
     {

@@ -25,16 +25,6 @@
             this.Field("mutationType", () => this.IntrospectMudationType());
         }
 
-        private IntrospectedType IntrospectMudationType()
-        {
-            return this.schema.MutationType?.Introspect(this.schemaRepository);
-        }
-
-        private IntrospectedType IntrospectQueryType()
-        {
-            return this.schema.QueryType?.Introspect(this.schemaRepository);
-        }
-
         public IEnumerable<IntrospectedType> IntrospectAllSchemaTypes()
         {
             var result = new List<IntrospectedType>();
@@ -49,6 +39,16 @@
                 .Where(e => e.Name != null)
                 .OrderBy(e => e.Name)
                 .ToList();
+        }
+
+        private IntrospectedType IntrospectMudationType()
+        {
+            return this.schema.MutationType?.Introspect(this.schemaRepository);
+        }
+
+        private IntrospectedType IntrospectQueryType()
+        {
+            return this.schema.QueryType?.Introspect(this.schemaRepository);
         }
     }
 }

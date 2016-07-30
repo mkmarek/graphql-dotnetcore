@@ -10,6 +10,14 @@
 
     public abstract class GraphQLComplexType : GraphQLBaseType
     {
+        public override bool IsLeafType
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         public GraphQLComplexType(string name, string description) : base(name, description)
         {
             this.Fields = new Dictionary<string, GraphQLObjectTypeFieldInfo>();

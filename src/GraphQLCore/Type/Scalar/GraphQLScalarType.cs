@@ -5,6 +5,14 @@
 
     public abstract class GraphQLScalarType : GraphQLInputType
     {
+        public override bool IsLeafType
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         public GraphQLScalarType(string name, string description) : base(name, description)
         {
         }

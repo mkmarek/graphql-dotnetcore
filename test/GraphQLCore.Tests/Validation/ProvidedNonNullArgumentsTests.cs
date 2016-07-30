@@ -10,21 +10,8 @@
     using System.Linq;
 
     [TestFixture]
-    public class ProvidedNonNullArgumentsTests
+    public class ProvidedNonNullArgumentsTests : ValidationTestBase
     {
-        private ProvidedNonNullArguments providedNonNullArguments;
-        private ValidationContext validationContext;
-        private TestSchema validationTestSchema;
-
-        [SetUp]
-        public void SetUp()
-        {
-            this.providedNonNullArguments = new ProvidedNonNullArguments();
-            this.validationTestSchema = new TestSchema();
-
-            this.validationContext = new ValidationContext();
-        }
-
         [Test]
         public void MissingOneNonNullableArgument()
         {
@@ -74,25 +61,10 @@
             }
             ");
 
-            Assert.AreEqual(1, errors.Count());
-
             var error1 = errors.ElementAt(0);
 
             Assert.AreEqual("Field \"nonNullIntMultipleArgsField\" argument \"arg2\" of type \"Int!\" is required but not provided.",
                 error1.Message);
-        }
-
-        private static GraphQLDocument GetAst(string body)
-        {
-            return new Parser(new Lexer()).Parse(new Source(body));
-        }
-
-        private GraphQLException[] Validate(string body)
-        {
-            return validationContext.Validate(
-                GetAst(body),
-                this.validationTestSchema,
-                new IValidationRule[] { this.providedNonNullArguments });
         }
     }
 }

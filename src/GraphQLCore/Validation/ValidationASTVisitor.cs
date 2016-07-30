@@ -41,10 +41,15 @@
         {
             var field = this.GetField(this.GetLastType(), selection.Name.Value);
 
-            this.fieldStack.Push(field);
-            this.typeStack.Push(this.SchemaRepository.GetSchemaTypeFor(field.SystemType));
+            if (field != null)
+            {
+                this.fieldStack.Push(field);
+                this.typeStack.Push(this.SchemaRepository.GetSchemaTypeFor(field.SystemType));
 
-            return base.BeginVisitFieldSelection(selection);
+                return base.BeginVisitFieldSelection(selection);
+            }
+
+            return selection;
         }
 
         public override GraphQLInlineFragment BeginVisitInlineFragment(GraphQLInlineFragment inlineFragment)
@@ -78,9 +83,7 @@
         public override GraphQLFieldSelection EndVisitFieldSelection(GraphQLFieldSelection selection)
         {
             this.fieldStack.Pop();
-
-            if (this.typeStack.Count > 0)
-                this.typeStack.Pop();
+            this.typeStack.Pop();
 
             return base.EndVisitFieldSelection(selection);
         }

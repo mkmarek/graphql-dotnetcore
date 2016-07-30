@@ -10,21 +10,8 @@
     using System.Linq;
 
     [TestFixture]
-    public class ArgumentsOfCorrectTypeTests
+    public class ArgumentsOfCorrectTypeTests : ValidationTestBase
     {
-        private ArgumentsOfCorrectType argumentsOfCorrectType;
-        private ValidationContext validationContext;
-        private TestSchema validationTestSchema;
-
-        [SetUp]
-        public void SetUp()
-        {
-            this.argumentsOfCorrectType = new ArgumentsOfCorrectType();
-            this.validationTestSchema = new TestSchema();
-
-            this.validationContext = new ValidationContext();
-        }
-
         [Test]
         public void ArgOnOptionalArg_ExpectsNoError()
         {
@@ -101,7 +88,9 @@
             var errors = Validate(@"
             {
                 complicatedArgs {
-                    complicatedObjectArgField(complicatedObjectArg: { nonNullIntField: 1, booleanField: true, enumField :TAN, floatField: 1.2 })
+                    complicatedObjectArgField(complicatedObjectArg: { nonNullIntField: 1, booleanField: true, enumField :TAN, floatField: 1.2 }) {
+                        nonNullIntField
+                    }
                 }
             }
             ");
@@ -115,7 +104,9 @@
             var errors = Validate(@"
             {
                 complicatedArgs {
-                    complicatedObjectArgField
+                    complicatedObjectArgField {
+                       nonNullIntField
+                    }
                 }
             }
             ");
@@ -542,20 +533,6 @@
             ");
 
             Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"stringArg\" has invalid value BAR"));
-        }
-
-
-        private static GraphQLDocument GetAst(string body)
-        {
-            return new Parser(new Lexer()).Parse(new Source(body));
-        }
-
-        private GraphQLException[] Validate(string body)
-        {
-            return validationContext.Validate(
-                GetAst(body),
-                this.validationTestSchema,
-                new IValidationRule[] { this.argumentsOfCorrectType });
         }
     }
 }

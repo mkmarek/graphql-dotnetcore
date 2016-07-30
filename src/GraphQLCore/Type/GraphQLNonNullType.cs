@@ -6,6 +6,14 @@
 
     public class GraphQLNonNullType : GraphQLInputType
     {
+        public override bool IsLeafType
+        {
+            get
+            {
+                return this.UnderlyingNullableType.IsLeafType;
+            }
+        }
+
         public GraphQLNonNullType(GraphQLBaseType nullableType) : base(null, null)
         {
             this.UnderlyingNullableType = nullableType;

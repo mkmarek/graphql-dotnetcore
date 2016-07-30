@@ -10,6 +10,14 @@
 
     public class GraphQLList : GraphQLInputType
     {
+        public override bool IsLeafType
+        {
+            get
+            {
+                return this.MemberType.IsLeafType;
+            }
+        }
+
         public GraphQLList(GraphQLBaseType memberType) : base(null, null)
         {
             this.MemberType = memberType;

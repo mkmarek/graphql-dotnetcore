@@ -1,8 +1,8 @@
-﻿using GraphQLCore.Type.Introspection;
-using GraphQLCore.Type.Translation;
-
-namespace GraphQLCore.Type
+﻿namespace GraphQLCore.Type
 {
+    using Introspection;
+    using Translation;
+
     public abstract class GraphQLBaseType
     {
         public GraphQLBaseType(string name, string description)
@@ -20,5 +20,7 @@ namespace GraphQLCore.Type
         {
             return this.Name;
         }
+
+        public abstract bool IsLeafType { get; }
     }
 }
