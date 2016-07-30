@@ -76,6 +76,7 @@
         {
             return new IValidationRule[]
             {
+                new ScalarLeafs(),
                 new ArgumentsOfCorrectType(),
                 new ProvidedNonNullArguments(),
                 new VariablesAreInputTypes()
