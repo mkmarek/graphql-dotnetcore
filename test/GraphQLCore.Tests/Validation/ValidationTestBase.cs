@@ -30,8 +30,9 @@
             return validationContext.Validate(
                 GetAst(body),
                 this.validationTestSchema,
-                new IValidationRule[] 
+                new IValidationRule[]
                 {
+                    new UniqueVariableNames(),
                     new UniqueOperationNames(),
                     new KnownTypeNames(),
                     new PossibleFragmentSpreads(),

@@ -76,6 +76,7 @@
         {
             return new IValidationRule[]
             {
+                new UniqueVariableNames(),
                 new UniqueOperationNames(),
                 new KnownTypeNames(),
                 new PossibleFragmentSpreads(),
