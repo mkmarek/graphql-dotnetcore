@@ -70,6 +70,7 @@
             {
                 case OperationType.Query: this.typeStack.Push(this.schema.QueryType); break;
                 case OperationType.Mutation: this.typeStack.Push(this.schema.MutationType); break;
+                case OperationType.Subscription: break;
                 default: throw new NotImplementedException();
             }
 

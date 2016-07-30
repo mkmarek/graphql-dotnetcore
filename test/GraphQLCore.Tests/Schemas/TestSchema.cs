@@ -150,6 +150,7 @@
         {
             var complicatedArgs = new ComplicatedArgs();
 
+            this.Field("foo", () => "bar");
             this.Field("interfaceObject", () => (ComplicatedInteface)new ComplicatedObject());
             this.Field("complicatedArgs", () => complicatedArgs);
         }

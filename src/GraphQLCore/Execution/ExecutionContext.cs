@@ -76,6 +76,7 @@
         {
             return new IValidationRule[]
             {
+                new UniqueOperationNames(),
                 new KnownTypeNames(),
                 new PossibleFragmentSpreads(),
                 new ScalarLeafs(),
