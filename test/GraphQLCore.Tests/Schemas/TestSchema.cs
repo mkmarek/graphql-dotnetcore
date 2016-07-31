@@ -122,6 +122,29 @@
         }
     }
 
+    public class SampleInputObject
+    {
+        public int Id { get; set; }
+        public bool? Field { get; set; }
+        public string Field1 { get; set; }
+        public string Field2 { get; set; }
+        public string Field3 { get; set; }
+        public SampleInputObject Deep { get; set; }
+    }
+
+    public class SampleInputObjectType : GraphQLInputObjectType<SampleInputObject>
+    {
+        public SampleInputObjectType() : base("SampleInputObjectType", "SampleInputObjectType")
+        {
+            this.Field("id", e => e.Id);
+            this.Field("f", e => e.Field);
+            this.Field("f1", e => e.Field1);
+            this.Field("f2", e => e.Field2);
+            this.Field("f3", e => e.Field3);
+            this.Field("deep", e => e.Deep);
+        }
+    }
+
     public class ComplicatedInterfaceType : GraphQLInterfaceType<ComplicatedInteface>
     {
         public ComplicatedInterfaceType() : base("ComplicatedInterfaceType", "")
@@ -152,6 +175,7 @@
 
             this.Field("foo", (int? a, int? b, int? c) => "bar");
             this.Field("bar", (int? a) => "foo");
+            this.Field("field", (SampleInputObject arg, SampleInputObject arg1, SampleInputObject arg2) => true);
             this.Field("interfaceObject", () => (ComplicatedInteface)new ComplicatedObject());
             this.Field("complicatedArgs", () => complicatedArgs);
         }
@@ -164,6 +188,7 @@
             var queryRoot = new QueryRoot();
 
             this.AddKnownType(queryRoot);
+            this.AddKnownType(new SampleInputObjectType());
             this.AddKnownType(new SimpleInterfaceType());
             this.AddKnownType(new FurColorEnum());
             this.AddKnownType(new SimpleObjectType());

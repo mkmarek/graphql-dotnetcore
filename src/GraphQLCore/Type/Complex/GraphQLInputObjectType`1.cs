@@ -54,7 +54,7 @@
 
         private static GraphQLObjectField GetFieldFromAstObjectValue(GraphQLObjectValue objectAstValue, string fieldName)
         {
-            return objectAstValue.Fields.SingleOrDefault(e => e.Name.Value == fieldName);
+            return objectAstValue.Fields.FirstOrDefault(e => e.Name.Value == fieldName);
         }
 
         private void AssignValueToObjectField(T result, GraphQLInputObjectTypeFieldInfo field, object value)

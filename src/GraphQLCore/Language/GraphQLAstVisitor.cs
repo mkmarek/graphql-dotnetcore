@@ -245,6 +245,33 @@
             }
         }
 
+        public virtual GraphQLObjectField BeginVisitObjectField(GraphQLObjectField node)
+        {
+            this.BeginVisitNode(node.Name);
+
+            this.BeginVisitNode(node.Value);
+
+            return node;
+        }
+
+        public virtual GraphQLObjectValue BeginVisitObjectValue(GraphQLObjectValue node)
+        {
+            foreach (var field in node.Fields)
+                this.BeginVisitNode(field);
+
+            return this.EndVisitObjectValue(node);
+        }
+
+        public virtual GraphQLObjectValue EndVisitObjectValue(GraphQLObjectValue node)
+        {
+            return node;
+        }
+
+        public virtual GraphQLListValue EndVisitListValue(GraphQLListValue node)
+        {
+            return node;
+        }
+
         private ASTNode BeginVisitListValue(GraphQLListValue node)
         {
             foreach (var value in node.Values)
@@ -256,28 +283,6 @@
         private ASTNode BeginVisitNonIntrospectionFieldSelection(GraphQLFieldSelection selection)
         {
             return this.BeginVisitFieldSelection(selection);
-        }
-
-        private ASTNode BeginVisitObjectField(GraphQLObjectField node)
-        {
-            this.BeginVisitNode(node.Name);
-
-            this.BeginVisitNode(node.Value);
-
-            return node;
-        }
-
-        private ASTNode BeginVisitObjectValue(GraphQLObjectValue node)
-        {
-            foreach (var field in node.Fields)
-                return this.BeginVisitNode(field);
-
-            return node;
-        }
-
-        private ASTNode EndVisitListValue(GraphQLListValue node)
-        {
-            return node;
         }
     }
 }
