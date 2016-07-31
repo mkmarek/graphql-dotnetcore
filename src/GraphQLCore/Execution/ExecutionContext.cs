@@ -76,6 +76,7 @@
         {
             return new IValidationRule[]
             {
+                new LoneAnonymousOperation(),
                 new UniqueInputFieldNames(),
                 new UniqueArguments(),
                 new UniqueVariableNames(),
