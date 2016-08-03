@@ -47,22 +47,33 @@
         public void AddKnownType(GraphQLBaseType type)
         {
             if (type is GraphQLInputType)
-            {
-                this.AddInputObjectKnownType((GraphQLInputType)type);
-            }
+                this.AddInputType((GraphQLInputType)type);
 
-            if (type is GraphQLComplexType || type is GraphQLScalarType)
-            {
-                this.AddOutputObjectKnownType(type);
-            }
+            if (!(type is GraphQLInputType) || type is GraphQLScalarType)
+                this.AddOutputType(type);
+        }
+
+        private void AddOutputType(GraphQLBaseType type)
+        {
+            if (type is ISystemTypeBound)
+                this.outputBindings.Add(((ISystemTypeBound)type).SystemType, type);
+            else
+                this.outputBindings.Add(type.GetType(), type);
+        }
+
+        private void AddInputType(GraphQLInputType type)
+        {
+            if (type is ISystemTypeBound)
+                this.inputBindings.Add(((ISystemTypeBound)type).SystemType, type);
+            else
+                this.inputBindings.Add(type.GetType(), type);
         }
 
         public GraphQLComplexType[] GetImplementingInterfaces(GraphQLComplexType type)
         {
-            var systemType = ReflectionUtilities.GetGenericArgumentsEagerly(type.GetType());
-            var interfacesTypes = ReflectionUtilities.GetAllImplementingInterfaces(systemType);
+            var interfacesTypes = ReflectionUtilities.GetAllImplementingInterfaces(type.SystemType);
 
-            return interfacesTypes.Select(e => this.GetSchemaTypeFor(e))
+            return interfacesTypes.Select(e => this.GetSchemaTypeForWithNoError(e))
                 .Select(e => e as GraphQLComplexType)
                 .Where(e => e != null)
                 .ToArray();
@@ -76,6 +87,14 @@
         public IEnumerable<GraphQLBaseType> GetOutputKnownTypes()
         {
             return this.outputBindings.Select(e => e.Value).Distinct().ToList();
+        }
+
+        public IEnumerable<GraphQLComplexType> GetOutputKnownComplexTypes()
+        {
+            return this.GetOutputKnownTypes()
+                .Where(e => e is GraphQLComplexType)
+                .Cast<GraphQLComplexType>()
+                .ToArray();
         }
 
         public GraphQLInputType GetSchemaInputTypeFor(Type type)
@@ -105,10 +124,12 @@
 
         public GraphQLBaseType GetSchemaTypeFor(Type type)
         {
-            if (ReflectionUtilities.IsCollection(type))
-                return new GraphQLList(this.GetSchemaTypeFor(ReflectionUtilities.GetCollectionMemberType(type)));
+            var schemaType = this.GetSchemaTypeForWithNoError(type);
 
-            return this.GetSchemaTypeFor(type, type);
+            if (schemaType == null)
+                throw new GraphQLException($"Unknown type {type} have you added it to known types?");
+
+            return schemaType;
         }
 
         public Type GetInputSystemTypeFor(GraphQLBaseType type)
@@ -123,40 +144,11 @@
 
         public GraphQLComplexType[] GetTypesImplementing(GraphQLInterfaceType objectType)
         {
-            if (objectType is GraphQLInterfaceType)
-            {
-                var type = ReflectionUtilities.GetGenericArgumentsEagerly(objectType.GetType());
-
-                return this.GetOutputKnownTypes()
-                    .Where(e => ReflectionUtilities.GetAllImplementingInterfaces(
-                        ReflectionUtilities.GetGenericArgumentsEagerly(e.GetType())).Contains(type))
+            return this.GetOutputKnownComplexTypes()
+                    .Where(e => ReflectionUtilities.GetAllImplementingInterfaces(e.SystemType)
+                        .Contains(objectType.SystemType))
                     .Select(e => e as GraphQLComplexType)
                     .ToArray();
-            }
-
-            return new GraphQLComplexType[] { };
-        }
-
-        private void AddInputObjectKnownType(GraphQLInputType type)
-        {
-            var reflectedType = type.GetType();
-            var argument = ReflectionUtilities.GetGenericArgumentsEagerly(reflectedType);
-
-            if (argument == null)
-                this.inputBindings.Add(reflectedType, type);
-            else
-                this.inputBindings.Add(argument, type);
-        }
-
-        private void AddOutputObjectKnownType(GraphQLBaseType type)
-        {
-            var reflectedType = type.GetType();
-            var argument = ReflectionUtilities.GetGenericArgumentsEagerly(reflectedType);
-
-            if (argument == null)
-                this.outputBindings.Add(reflectedType, type);
-            else
-                this.outputBindings.Add(argument, type);
         }
 
         private GraphQLBaseType GetSchemaTypeFor(Type originalType, Type presumedSchemaType)
@@ -168,7 +160,15 @@
             if (presumedSchemaType != null)
                 return this.GetSchemaTypeFor(originalType, presumedSchemaType);
 
-            throw new GraphQLException($"Unknown type {originalType} have you added it to known types?");
+            return null;
+        }
+
+        private GraphQLBaseType GetSchemaTypeForWithNoError(Type type)
+        {
+            if (ReflectionUtilities.IsCollection(type))
+                return new GraphQLList(this.GetSchemaTypeFor(ReflectionUtilities.GetCollectionMemberType(type)));
+
+            return this.GetSchemaTypeFor(type, type);
         }
     }
 }

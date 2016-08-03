@@ -8,7 +8,7 @@
     using System.Linq.Expressions;
     using Translation;
 
-    public abstract class GraphQLComplexType : GraphQLBaseType
+    public abstract class GraphQLComplexType : GraphQLBaseType, ISystemTypeBound
     {
         public override bool IsLeafType
         {
@@ -17,6 +17,8 @@
                 return false;
             }
         }
+
+        public abstract Type SystemType { get; protected set; }
 
         public GraphQLComplexType(string name, string description) : base(name, description)
         {

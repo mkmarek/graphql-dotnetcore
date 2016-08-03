@@ -12,8 +12,11 @@
     public abstract class GraphQLInputObjectType<T> : GraphQLInputObjectType
         where T : class, new()
     {
+        public override Type SystemType { get; protected set; }
+
         public GraphQLInputObjectType(string name, string description) : base(name, description)
         {
+            this.SystemType = typeof(T);
         }
 
         public void Field<TProperty>(string fieldName, Expression<Func<T, TProperty>> accessor)

@@ -7,8 +7,11 @@
     public abstract class GraphQLInterfaceType<T> : GraphQLInterfaceType
         where T : class
     {
+        public override Type SystemType { get; protected set; }
+
         public GraphQLInterfaceType(string name, string description) : base(name, description, typeof(T))
         {
+            this.SystemType = typeof(T);
         }
 
         public void Field<TProperty>(string fieldName, Expression<Func<T, TProperty>> accessor)

@@ -9,8 +9,10 @@
     using Translation;
     using Utils;
 
-    public abstract class GraphQLInputObjectType : GraphQLInputType
+    public abstract class GraphQLInputObjectType : GraphQLInputType, ISystemTypeBound
     {
+        public abstract Type SystemType { get; protected set; }
+
         public GraphQLInputObjectType(string name, string description) : base(name, description)
         {
             this.Fields = new Dictionary<string, GraphQLInputObjectTypeFieldInfo>();

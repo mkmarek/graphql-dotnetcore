@@ -9,6 +9,7 @@
     {
         public GraphQLObjectType(string name, string description) : base(name, description)
         {
+            this.SystemType = typeof(T);
         }
 
         public void Field<TFieldType>(string fieldName, Expression<Func<T, TFieldType>> accessor)

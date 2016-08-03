@@ -7,9 +7,12 @@
 
     public abstract class GraphQLObjectType : GraphQLComplexType
     {
+        public override System.Type SystemType { get; protected set; }
+
         public GraphQLObjectType(string name, string description) : base(name, description)
         {
             this.Fields = new Dictionary<string, GraphQLObjectTypeFieldInfo>();
+            this.SystemType = this.GetType();
         }
 
         public void Field<TFieldType>(string fieldName, LambdaExpression fieldLambda)

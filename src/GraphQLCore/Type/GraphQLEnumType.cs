@@ -6,14 +6,14 @@
     using System;
     using Translation;
 
-    public class GraphQLEnumType : GraphQLScalarType
+    public class GraphQLEnumType : GraphQLScalarType, ISystemTypeBound
     {
         public GraphQLEnumType(string name, string description, Type enumType) : base(name, description)
         {
-            this.EnumType = enumType;
+            this.SystemType = enumType;
         }
 
-        public Type EnumType { get; set; }
+        public Type SystemType { get; protected set; }
 
         public override object GetFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
@@ -22,10 +22,10 @@
 
             string value = ((GraphQLScalarValue)astValue).Value;
 
-            if (!Enum.IsDefined(this.EnumType, value))
+            if (!Enum.IsDefined(this.SystemType, value))
                 return null;
 
-            return Enum.Parse(this.EnumType, value);
+            return Enum.Parse(this.SystemType, value);
         }
 
         public override IntrospectedType Introspect(ISchemaRepository schemaRepository)
@@ -34,7 +34,7 @@
             introspectedType.Name = this.Name;
             introspectedType.Description = this.Description;
             introspectedType.Kind = TypeKind.ENUM;
-            introspectedType.EnumValues = GraphQLEnumValue.GetEnumValuesFor(this.EnumType);
+            introspectedType.EnumValues = GraphQLEnumValue.GetEnumValuesFor(this.SystemType);
 
             return introspectedType;
         }

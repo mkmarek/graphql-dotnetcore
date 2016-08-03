@@ -75,26 +75,12 @@
             return cast.Invoke(null, new object[] { source });
         }
 
-        public static Type GetCollectionMemberType(System.Type collectionType)
+        public static Type GetCollectionMemberType(Type collectionType)
         {
             if (collectionType.IsArray)
                 return collectionType.GetElementType();
 
             return collectionType.GenericTypeArguments.Single();
-        }
-
-        public static Type GetGenericArgumentsEagerly(Type type)
-        {
-            var argument = type.GenericTypeArguments.FirstOrDefault();
-
-            if (argument != null)
-                return argument;
-
-            var baseType = type.GetTypeInfo().BaseType;
-            if (baseType != null)
-                return GetGenericArgumentsEagerly(baseType);
-
-            return argument;
         }
 
         public static ParameterExpression[] GetParameters(LambdaExpression resolver) => resolver.Parameters.ToArray();
@@ -116,7 +102,7 @@
             return propInfo;
         }
 
-        public static System.Type GetReturnValueFromLambdaExpression(LambdaExpression expression)
+        public static Type GetReturnValueFromLambdaExpression(LambdaExpression expression)
         {
             return expression.Type.GenericTypeArguments.LastOrDefault();
         }
