@@ -15,15 +15,16 @@
     {
         private GraphQLBaseType argumentType;
         private Stack<GraphQLFieldInfo> fieldStack;
-        private IGraphQLSchema schema;
         private Stack<GraphQLBaseType> typeStack;
+
+        protected IGraphQLSchema Schema { get; private set; }
 
         public ValidationASTVisitor(IGraphQLSchema schema)
         {
             this.typeStack = new Stack<GraphQLBaseType>();
             this.fieldStack = new Stack<GraphQLFieldInfo>();
 
-            this.schema = schema;
+            this.Schema = schema;
             this.SchemaRepository = schema.SchemaRepository;
             this.LiteralValueValidator = new LiteralValueValidator(this.SchemaRepository);
         }
@@ -67,8 +68,8 @@
         {
             switch (definition.Operation)
             {
-                case OperationType.Query: this.typeStack.Push(this.schema.QueryType); break;
-                case OperationType.Mutation: this.typeStack.Push(this.schema.MutationType); break;
+                case OperationType.Query: this.typeStack.Push(this.Schema.QueryType); break;
+                case OperationType.Mutation: this.typeStack.Push(this.Schema.MutationType); break;
                 case OperationType.Subscription: break;
                 default: throw new NotImplementedException();
             }
@@ -164,19 +165,19 @@
         {
             return GraphQLObjectTypeFieldInfo.CreateResolverFieldInfo(
                 "__type",
-                (Expression<Func<string, IntrospectedType>>)((string name) => this.schema.IntrospectType(name)));
+                (Expression<Func<string, IntrospectedType>>)((string name) => this.Schema.IntrospectType(name)));
         }
 
         private GraphQLFieldInfo GetIntrospectedSchemaField()
         {
             return GraphQLObjectTypeFieldInfo.CreateResolverFieldInfo(
                 "__schema",
-                (Expression<Func<IntrospectedSchemaType>>)(() => this.schema.IntrospectedSchema));
+                (Expression<Func<IntrospectedSchemaType>>)(() => this.Schema.IntrospectedSchema));
         }
 
         private bool IsQueryRootType(GraphQLBaseType type)
         {
-            return type == this.schema.QueryType;
+            return type == this.Schema.QueryType;
         }
     }
 }

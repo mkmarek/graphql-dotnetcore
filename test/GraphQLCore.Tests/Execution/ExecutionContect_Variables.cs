@@ -30,7 +30,7 @@
         [Test]
         public void Execute_WithEnumVariable_AcceptsAsEnumArgument()
         {
-            var query = @"query getEnumArg($enumArgVar: FurColor) {
+            var query = @"query getEnumArg($enumArgVar: FurColor!) {
                             complicatedArgs {
                                 enumArgField(enumArg: $enumArgVar)
                             }
@@ -44,7 +44,7 @@
         [Test]
         public void Execute_WithEnumVariableAsString_AcceptsAsEnumArgument()
         {
-            var query = @"query getEnumArg($enumArgVarAsString: FurColor) {
+            var query = @"query getEnumArg($enumArgVarAsString: FurColor!) {
                             complicatedArgs {
                                 enumArgField(enumArg: $enumArgVarAsString)
                             }
@@ -58,7 +58,7 @@
         [Test]
         public void Execute_WithFloatVariable_AcceptsAsFloatArgument()
         {
-            var query = @"query getFloatArg($floatArgVar: Float) {
+            var query = @"query getFloatArg($floatArgVar: Float!) {
                             complicatedArgs {
                                 floatArgField(floatArg: $floatArgVar)
                             }
@@ -114,7 +114,7 @@
         [Test]
         public void Execute_WithNonNullIntVariable_AcceptsAsIntArgument()
         {
-            var query = @"query getNonNullIntArg($intArgVar: Int) {
+            var query = @"query getNonNullIntArg($intArgVar: Int!) {
                             complicatedArgs {
                                 nonNullIntArgField(nonNullIntArg: $intArgVar)
                             }

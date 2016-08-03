@@ -173,6 +173,12 @@
                 this.BeginVisitVariableDefinitions(definition.VariableDefinitions);
 
             this.BeginVisitNode(definition.SelectionSet);
+
+            return this.EndVisitOperationDefinition(definition);
+        }
+
+        public virtual GraphQLOperationDefinition EndVisitOperationDefinition(GraphQLOperationDefinition definition)
+        {
             return definition;
         }
 

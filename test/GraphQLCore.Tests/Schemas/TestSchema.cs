@@ -19,7 +19,7 @@
             this.Field("nonNullIntArgField", (int nonNullIntArg) => nonNullIntArg);
             this.Field("nonNullIntMultipleArgsField", (int arg1, int arg2) => arg1 + arg2);
             this.Field("stringArgField", (string stringArg) => stringArg);
-            this.Field("booleanArgField", (bool booleanArg) => booleanArg);
+            this.Field("booleanArgField", (bool? booleanArg) => booleanArg);
             this.Field("enumArgField", (FurColor enumArg) => enumArg);
             this.Field("floatArgField", (float floatArg) => floatArg);
             this.Field("stringListArgField", (string[] stringListArg) => stringListArg);

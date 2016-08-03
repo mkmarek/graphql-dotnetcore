@@ -53,22 +53,6 @@
                 this.AddOutputType(type);
         }
 
-        private void AddOutputType(GraphQLBaseType type)
-        {
-            if (type is ISystemTypeBound)
-                this.outputBindings.Add(((ISystemTypeBound)type).SystemType, type);
-            else
-                this.outputBindings.Add(type.GetType(), type);
-        }
-
-        private void AddInputType(GraphQLInputType type)
-        {
-            if (type is ISystemTypeBound)
-                this.inputBindings.Add(((ISystemTypeBound)type).SystemType, type);
-            else
-                this.inputBindings.Add(type.GetType(), type);
-        }
-
         public GraphQLComplexType[] GetImplementingInterfaces(GraphQLComplexType type)
         {
             var interfacesTypes = ReflectionUtilities.GetAllImplementingInterfaces(type.SystemType);
@@ -84,9 +68,14 @@
             return this.inputBindings.Select(e => e.Value).Distinct().ToList();
         }
 
-        public IEnumerable<GraphQLBaseType> GetOutputKnownTypes()
+        public Type GetInputSystemTypeFor(GraphQLBaseType type)
         {
-            return this.outputBindings.Select(e => e.Value).Distinct().ToList();
+            var reflectedType = this.inputBindings
+                .Where(e => e.Value == type)
+                .Select(e => e.Key)
+                .FirstOrDefault();
+
+            return reflectedType;
         }
 
         public IEnumerable<GraphQLComplexType> GetOutputKnownComplexTypes()
@@ -95,6 +84,18 @@
                 .Where(e => e is GraphQLComplexType)
                 .Cast<GraphQLComplexType>()
                 .ToArray();
+        }
+
+        public IEnumerable<GraphQLBaseType> GetOutputKnownTypes()
+        {
+            return this.outputBindings.Select(e => e.Value).Distinct().ToList();
+        }
+
+        public GraphQLInputType GetSchemaInputTypeByName(string name)
+        {
+            return this.GetInputKnownTypes()
+                .Where(e => e.Name == name)
+                .SingleOrDefault();
         }
 
         public GraphQLInputType GetSchemaInputTypeFor(Type type)
@@ -106,13 +107,6 @@
                 return this.inputBindings[type];
 
             throw new GraphQLException($"Unknown input type {type} have you added it to known types?");
-        }
-
-        public GraphQLInputType GetSchemaInputTypeByName(string name)
-        {
-            return this.GetInputKnownTypes()
-                .Where(e => e.Name == name)
-                .SingleOrDefault();
         }
 
         public GraphQLBaseType GetSchemaOutputTypeByName(string name)
@@ -132,16 +126,6 @@
             return schemaType;
         }
 
-        public Type GetInputSystemTypeFor(GraphQLBaseType type)
-        {
-            var reflectedType = this.inputBindings
-                .Where(e => e.Value == type)
-                .Select(e => e.Key)
-                .FirstOrDefault();
-
-            return reflectedType;
-        }
-
         public GraphQLComplexType[] GetTypesImplementing(GraphQLInterfaceType objectType)
         {
             return this.GetOutputKnownComplexTypes()
@@ -149,6 +133,22 @@
                         .Contains(objectType.SystemType))
                     .Select(e => e as GraphQLComplexType)
                     .ToArray();
+        }
+
+        private void AddInputType(GraphQLInputType type)
+        {
+            if (type is ISystemTypeBound)
+                this.inputBindings.Add(((ISystemTypeBound)type).SystemType, type);
+            else
+                this.inputBindings.Add(type.GetType(), type);
+        }
+
+        private void AddOutputType(GraphQLBaseType type)
+        {
+            if (type is ISystemTypeBound)
+                this.outputBindings.Add(((ISystemTypeBound)type).SystemType, type);
+            else
+                this.outputBindings.Add(type.GetType(), type);
         }
 
         private GraphQLBaseType GetSchemaTypeFor(Type originalType, Type presumedSchemaType)
