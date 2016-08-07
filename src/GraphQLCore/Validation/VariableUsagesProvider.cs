@@ -57,7 +57,8 @@
                 if (definition.Kind == ASTNodeKind.FragmentDefinition)
                 {
                     var fragment = (GraphQLFragmentDefinition)definition;
-                    fragments.Add(fragment.Name.Value, fragment);
+                    if (!fragments.ContainsKey(fragment.Name.Value))
+                        fragments.Add(fragment.Name.Value, fragment);
                 }
             }
 
