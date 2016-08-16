@@ -39,6 +39,13 @@
             if (input.GetType() == target)
                 return input;
 
+            if (input is long && target == typeof(int))
+            {
+                int result;
+                if (int.TryParse(input.ToString(), out result))
+                    return result;
+            }
+
             var underlyingNullableType = Nullable.GetUnderlyingType(target);
             if (underlyingNullableType != null)
                 return ChangeValueType(input, underlyingNullableType);
