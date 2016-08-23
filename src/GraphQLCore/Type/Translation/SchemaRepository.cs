@@ -24,6 +24,7 @@ namespace GraphQLCore.Type.Translation
             this.inputBindings = new Dictionary<Type, GraphQLInputType>();
 
             var graphQLInt = new GraphQLInt();
+            var graphQLLong = new GraphQLLong();
             var graphQLFloat = new GraphQLFloat();
             var graphQLBoolean = new GraphQLBoolean();
             var graphQLString = new GraphQLString();
@@ -32,18 +33,22 @@ namespace GraphQLCore.Type.Translation
             this.inputBindings.Add(typeof(string), graphQLString);
 
             this.outputBindings.Add(typeof(int), graphQLInt);
+            this.outputBindings.Add(typeof(long), graphQLLong);
             this.outputBindings.Add(typeof(float), graphQLFloat);
             this.outputBindings.Add(typeof(bool), graphQLBoolean);
 
             this.inputBindings.Add(typeof(int), graphQLInt);
+            this.inputBindings.Add(typeof(long), graphQLLong);
             this.inputBindings.Add(typeof(float), graphQLFloat);
             this.inputBindings.Add(typeof(bool), graphQLBoolean);
 
             this.outputBindings.Add(typeof(int?), graphQLInt);
+            this.outputBindings.Add(typeof(long?), graphQLLong);
             this.outputBindings.Add(typeof(float?), graphQLFloat);
             this.outputBindings.Add(typeof(bool?), graphQLBoolean);
 
             this.inputBindings.Add(typeof(int?), graphQLInt);
+            this.inputBindings.Add(typeof(long?), graphQLLong);
             this.inputBindings.Add(typeof(float?), graphQLFloat);
             this.inputBindings.Add(typeof(bool?), graphQLBoolean);
         }
