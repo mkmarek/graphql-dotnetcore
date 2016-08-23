@@ -13,7 +13,7 @@
         private GraphQLNamedType intNamedType;
         private ISchemaRepository schemaRepository;
         private VariableResolver variableResolver;
-
+        
         [Test]
         public void GetValue_ScalarIntVariable_CallsTypeTranslatorWithCorrectType()
         {

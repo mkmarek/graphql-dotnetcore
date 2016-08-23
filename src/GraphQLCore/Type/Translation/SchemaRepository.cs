@@ -1,4 +1,6 @@
-﻿namespace GraphQLCore.Type.Translation
+﻿using GraphQLCore.Execution;
+
+namespace GraphQLCore.Type.Translation
 {
     using Exceptions;
     using Scalar;
@@ -13,6 +15,8 @@
         private Dictionary<Type, GraphQLInputType> inputBindings;
 
         private Dictionary<Type, GraphQLBaseType> outputBindings;
+
+        public IVariableResolver VariableResolver { get; set; }
 
         public SchemaRepository()
         {
@@ -43,6 +47,7 @@
             this.inputBindings.Add(typeof(float?), graphQLFloat);
             this.inputBindings.Add(typeof(bool?), graphQLBoolean);
         }
+
 
         public void AddKnownType(GraphQLBaseType type)
         {

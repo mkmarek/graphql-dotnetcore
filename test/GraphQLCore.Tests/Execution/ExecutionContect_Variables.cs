@@ -8,10 +8,32 @@
     using System.Linq;
 
     [TestFixture]
-    public class ExecutionContect_Variables
+    public class ExecutionContext_Variables
     {
         public IGraphQLSchema schema;
         private dynamic variables;
+
+        [Test]
+        public void ExecuteMutation_WithBodyVariables_InsertsBodyVariablesCorrectly()
+        {
+            var query = @"mutation getBodyArgs($stringArgVar: String, $intArgVar: Int!) {
+                            
+                                insertInputObject(inputObject: 
+                                {
+                                    stringField: $stringArgVar
+                                    intField: $intArgVar
+                                })
+                                {
+                                    stringField
+                                    intField
+                                }
+                        }";
+
+            var result = this.schema.Execute(query, variables);
+
+            Assert.AreEqual("sample", result.insertInputObject.stringField);
+            Assert.AreEqual(3, result.insertInputObject.intField);
+        }
 
         [Test]
         public void Execute_WithBooleanVariable_AcceptsAsBooleanArgument()
