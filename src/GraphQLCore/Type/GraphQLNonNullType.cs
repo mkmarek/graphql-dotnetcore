@@ -17,6 +17,9 @@
         public GraphQLNonNullType(GraphQLBaseType nullableType) : base(null, null)
         {
             this.UnderlyingNullableType = nullableType;
+
+            if (nullableType != null)
+                this.Name = nullableType.ToString();
         }
 
         public GraphQLBaseType UnderlyingNullableType { get; private set; }

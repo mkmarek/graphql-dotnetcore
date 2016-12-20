@@ -76,6 +76,7 @@
         {
             return new IValidationRule[]
             {
+                new DefaultValuesOfCorrectType(),
                 new VariablesInAllowedPositions(),
                 new LoneAnonymousOperation(),
                 new UniqueInputFieldNames(),

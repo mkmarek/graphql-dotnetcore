@@ -916,7 +916,7 @@
             return isCurrentTokenMatching;
         }
 
-        private object SkipEqualsAndParseValueLiteral()
+        private GraphQLValue SkipEqualsAndParseValueLiteral()
         {
             return this.Skip(TokenKind.EQUALS) ? this.ParseValueLiteral(true) : null;
         }

@@ -2,7 +2,7 @@
 {
     public class GraphQLVariableDefinition : ASTNode
     {
-        public object DefaultValue { get; set; }
+        public GraphQLValue DefaultValue { get; set; }
 
         public override ASTNodeKind Kind
         {
