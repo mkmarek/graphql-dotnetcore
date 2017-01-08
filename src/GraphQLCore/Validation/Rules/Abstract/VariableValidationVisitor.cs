@@ -46,7 +46,14 @@
                 return this.GetInputTypeFromNamedType((GraphQLNamedType)type);
 
             if (type is Language.AST.GraphQLNonNullType)
-                return new GraphQLCore.Type.GraphQLNonNullType(this.GetInputType(((Language.AST.GraphQLNonNullType)type).Type));
+            {
+                var inputType = this.GetInputType(((Language.AST.GraphQLNonNullType)type).Type);
+
+                if (inputType == null)
+                    return null;
+
+                return new GraphQLCore.Type.GraphQLNonNullType(inputType);
+            }
 
             if (type is GraphQLListType)
                 return new GraphQLList(this.GetInputType(((GraphQLListType)type).Type));

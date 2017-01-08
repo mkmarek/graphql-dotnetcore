@@ -38,7 +38,7 @@
             {
                 return new GraphQLException[]
                 {
-                    new GraphQLException($"Expected type \"{type.Name}\", found {astValue}")
+                    new GraphQLException($"Expected type \"{type.Name}\", found {astValue}.")
                 };
             }
 

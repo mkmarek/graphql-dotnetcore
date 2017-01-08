@@ -293,7 +293,7 @@
             }
             ");
 
-            Assert.AreEqual("Argument \"stringListArg\" has invalid value [\"one\", 2] In element #1: Expected type \"String\", found 2",
+            Assert.AreEqual("Argument \"stringListArg\" has invalid value [\"one\", 2] In element #1: Expected type \"String\", found 2.",
                 errors.Single().Message);
         }
 
