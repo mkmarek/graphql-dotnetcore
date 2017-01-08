@@ -22,6 +22,7 @@ namespace GraphQLCore.Execution
             this.variables = ((ExpandoObject)variables).ToDictionary(e => e.Key, e => e.Value);
             this.variableDefinitions = variableDefinitions;
             this.schemaRepository = schemaRepository;
+            this.schemaRepository.VariableResolver = this;
         }
 
         public object CreateObjectFromDynamic(GraphQLInputObjectType inputObjectType, ExpandoObject inputObject)

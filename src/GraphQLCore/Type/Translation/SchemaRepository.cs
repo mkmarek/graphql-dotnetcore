@@ -1,4 +1,6 @@
-﻿namespace GraphQLCore.Type.Translation
+﻿using GraphQLCore.Execution;
+
+namespace GraphQLCore.Type.Translation
 {
     using Exceptions;
     using Scalar;
@@ -14,12 +16,15 @@
 
         private Dictionary<Type, GraphQLBaseType> outputBindings;
 
+        public IVariableResolver VariableResolver { get; set; }
+
         public SchemaRepository()
         {
             this.outputBindings = new Dictionary<Type, GraphQLBaseType>();
             this.inputBindings = new Dictionary<Type, GraphQLInputType>();
 
             var graphQLInt = new GraphQLInt();
+            var graphQLLong = new GraphQLLong();
             var graphQLFloat = new GraphQLFloat();
             var graphQLBoolean = new GraphQLBoolean();
             var graphQLString = new GraphQLString();
@@ -28,21 +33,26 @@
             this.inputBindings.Add(typeof(string), graphQLString);
 
             this.outputBindings.Add(typeof(int), graphQLInt);
+            this.outputBindings.Add(typeof(long), graphQLLong);
             this.outputBindings.Add(typeof(float), graphQLFloat);
             this.outputBindings.Add(typeof(bool), graphQLBoolean);
 
             this.inputBindings.Add(typeof(int), graphQLInt);
+            this.inputBindings.Add(typeof(long), graphQLLong);
             this.inputBindings.Add(typeof(float), graphQLFloat);
             this.inputBindings.Add(typeof(bool), graphQLBoolean);
 
             this.outputBindings.Add(typeof(int?), graphQLInt);
+            this.outputBindings.Add(typeof(long?), graphQLLong);
             this.outputBindings.Add(typeof(float?), graphQLFloat);
             this.outputBindings.Add(typeof(bool?), graphQLBoolean);
 
             this.inputBindings.Add(typeof(int?), graphQLInt);
+            this.inputBindings.Add(typeof(long?), graphQLLong);
             this.inputBindings.Add(typeof(float?), graphQLFloat);
             this.inputBindings.Add(typeof(bool?), graphQLBoolean);
         }
+
 
         public void AddKnownType(GraphQLBaseType type)
         {

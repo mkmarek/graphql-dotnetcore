@@ -13,6 +13,7 @@
         private string singleOperationQuery;
         private string multipleOperationQuery;
 
+
         [Test]
         public void SingleOperationNoOperationNameProvided_PicksSingleOne()
         {

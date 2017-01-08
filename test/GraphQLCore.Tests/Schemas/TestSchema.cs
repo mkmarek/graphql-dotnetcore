@@ -28,6 +28,7 @@
             this.Field("intListArgField", (int?[] intListArg) => intListArg);
             this.Field("complicatedObjectArgField", (ComplicatedObject complicatedObjectArg) => complicatedObjectArg);
             this.Field("complicatedObjectListArgField", (ComplicatedObject[] complicatedObjectListArg) => complicatedObjectListArg);
+            this.Field("insertInputObject", (ComplicatedObject inputObject) => inputObject);
         }
     }
 
@@ -180,6 +181,15 @@
             this.Field("field", (SampleInputObject arg, SampleInputObject arg1, SampleInputObject arg2) => true);
             this.Field("interfaceObject", () => (ComplicatedInteface)new ComplicatedObject());
             this.Field("complicatedArgs", () => complicatedArgs);
+            this.Field("insertInputObject", (ComplicatedObject inputObject) => inputObject);
+        }
+    }
+
+    public class MutationRoot : GraphQLObjectType
+    {
+        public MutationRoot() : base("MutationRoot", "")
+        {
+            this.Field("insertInputObject", (ComplicatedObject inputObject) => inputObject);
         }
     }
 
@@ -188,6 +198,7 @@
         public TestSchema()
         {
             var queryRoot = new QueryRoot();
+            var mutationRoot = new MutationRoot();
 
             this.AddKnownType(queryRoot);
             this.AddKnownType(new SampleInputObjectType());
@@ -200,6 +211,7 @@
             this.AddKnownType(new ComplicatedObjectType());
             this.AddKnownType(new ComplicatedArgs());
             this.Query(queryRoot);
+            this.Mutation(mutationRoot);
         }
     }
 }

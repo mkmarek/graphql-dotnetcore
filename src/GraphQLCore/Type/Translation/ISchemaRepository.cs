@@ -1,10 +1,14 @@
-﻿namespace GraphQLCore.Type.Translation
+﻿using GraphQLCore.Execution;
+
+namespace GraphQLCore.Type.Translation
 {
     using System;
     using System.Collections.Generic;
 
     public interface ISchemaRepository
     {
+        IVariableResolver VariableResolver { get; set; }
+
         void AddKnownType(GraphQLBaseType type);
 
         GraphQLComplexType[] GetImplementingInterfaces(GraphQLComplexType type);

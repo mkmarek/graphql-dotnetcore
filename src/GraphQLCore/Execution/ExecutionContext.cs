@@ -47,10 +47,12 @@
 
         public dynamic Execute(string operationToExecute)
         {
-            this.ValidateAstAndThrowErrorWhenFaulty();
-
             foreach (var definition in this.ast.Definitions)
                 this.ResolveDefinition(definition, operationToExecute);
+
+            this.CreateVariableResolver();
+
+            this.ValidateAstAndThrowErrorWhenFaulty();
 
             if (this.operation == null && !string.IsNullOrWhiteSpace(operationToExecute))
                 throw new GraphQLException($"Unknown operation named \"{operationToExecute}\".");
@@ -107,10 +109,7 @@
 
         private dynamic ComposeResultForType(GraphQLObjectType type, GraphQLSelectionSet selectionSet)
         {
-            var variableResolver = new VariableResolver(
-                this.variables,
-                this.graphQLSchema.SchemaRepository,
-                this.operation.VariableDefinitions);
+            var variableResolver = this.CreateVariableResolver();
 
             var fieldCollector = new FieldCollector(this.fragments);
 
@@ -127,6 +126,14 @@
             this.AppendIntrospectionInfo(scope, fields, resultObject);
 
             return resultObject;
+        }
+
+        private VariableResolver CreateVariableResolver()
+        {
+            return new VariableResolver(
+                            this.variables,
+                            this.graphQLSchema.SchemaRepository,
+                            this.operation?.VariableDefinitions);
         }
 
         private GraphQLObjectType GetOperationRootType()
