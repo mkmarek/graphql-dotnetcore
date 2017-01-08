@@ -1,9 +1,9 @@
 ﻿namespace GraphQLCore.Tests.Validation
 {
-    using GraphQLCore.Exceptions;
+    using Exceptions;
     using GraphQLCore.Language;
     using GraphQLCore.Language.AST;
-    using GraphQLCore.Tests.Schemas;
+    using Schemas;
     using GraphQLCore.Validation;
     using GraphQLCore.Validation.Rules;
     using NUnit.Framework;
@@ -39,6 +39,7 @@
                     new UniqueArguments(),
                     new UniqueVariableNames(),
                     new UniqueOperationNames(),
+                    new UniqueFragmentNames(),
                     new KnownTypeNames(),
                     new PossibleFragmentSpreads(),
                     new VariablesAreInputTypes(),
