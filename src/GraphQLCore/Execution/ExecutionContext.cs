@@ -78,6 +78,7 @@
         {
             return new IValidationRule[]
             {
+                new NoUndefinedVariables(),
                 new DefaultValuesOfCorrectType(),
                 new VariablesInAllowedPositions(),
                 new LoneAnonymousOperation(),
