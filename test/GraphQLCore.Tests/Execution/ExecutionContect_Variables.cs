@@ -269,6 +269,22 @@
             Assert.AreEqual("c", stringListField.ElementAt(2));
         }
 
+        [Test]
+        public void Execute_WithNonNullObjectVariable_ParsesAndReturnsCorrectValue()
+        {
+            var query = @"mutation getStringListArg($complicatedObjectArgVar: ComplicatedInputObjectType!) {
+                            insertInputObject(inputObject: $complicatedObjectArgVar) {
+                                stringField
+                            }
+                        }";
+
+            var result = this.schema.Execute(query, variables);
+            var stringField = result.insertInputObject.stringField;
+
+            Assert.AreEqual("sample", stringField);
+        }
+        //ComplicatedInputObjectType
+
         [SetUp]
         public void SetUp()
         {

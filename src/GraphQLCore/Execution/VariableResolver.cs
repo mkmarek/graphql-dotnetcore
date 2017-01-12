@@ -61,6 +61,9 @@ namespace GraphQLCore.Execution
 
         public object TranslatePerDefinition(object inputObject, GraphQLBaseType typeDefinition)
         {
+            if (typeDefinition is Type.GraphQLNonNullType)
+                return this.TranslatePerDefinition(inputObject, ((Type.GraphQLNonNullType)typeDefinition).UnderlyingNullableType);
+
             if (typeDefinition is GraphQLInputObjectType)
                 return this.CreateObjectFromDynamic((GraphQLInputObjectType)typeDefinition, (ExpandoObject)inputObject);
 
