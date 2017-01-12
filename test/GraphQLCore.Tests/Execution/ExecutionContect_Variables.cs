@@ -272,18 +272,36 @@
         [Test]
         public void Execute_WithNonNullObjectVariable_ParsesAndReturnsCorrectValue()
         {
-            var query = @"mutation getStringListArg($complicatedObjectArgVar: ComplicatedInputObjectType!) {
-                            insertInputObject(inputObject: $complicatedObjectArgVar) {
-                                stringField
-                            }
-                        }";
+            var query = @"
+            mutation getStringListArg($complicatedObjectArgVar: ComplicatedInputObjectType!) {
+                insertInputObject(inputObject: $complicatedObjectArgVar) {
+                    stringField
+                }
+            }";
 
             var result = this.schema.Execute(query, variables);
             var stringField = result.insertInputObject.stringField;
 
             Assert.AreEqual("sample", stringField);
         }
-        //ComplicatedInputObjectType
+
+        [Test]
+        public void Execute_WithListVariableInObjectArgs_ParsesAndReturnsCorrectValue()
+        {
+            var query = @"
+            query getStringListField($stringListArgVar: [String]) {
+                insertInputObject(inputObject: {
+                    stringListField: $stringListArgVar
+                }) {
+                    stringListField
+                }
+            }";
+
+            var result = this.schema.Execute(query, variables);
+            var stringListField = result.insertInputObject.stringListField;
+
+            Assert.AreEqual(new string[] { "a", "b", "c" }, stringListField);
+        }
 
         [SetUp]
         public void SetUp()
