@@ -27,6 +27,9 @@
 
         public override object GetFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
+            if (astValue.Kind == ASTNodeKind.Variable)
+                return null;
+
             if (!(this.MemberType is GraphQLInputType))
                 return null;
 
