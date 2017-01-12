@@ -34,6 +34,12 @@
 
         public GraphQLObjectTypeFieldInfo GetFieldInfo(string fieldName)
         {
+            if (fieldName == "__typename")
+            {
+                Expression<Func<string>> lambda = () => this.Name;
+                return GraphQLObjectTypeFieldInfo.CreateResolverFieldInfo("__typename", lambda);
+            }
+
             if (!this.ContainsField(fieldName))
                 return null;
 

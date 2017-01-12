@@ -83,6 +83,51 @@
             Assert.AreEqual("a", result.nested.anotherNested.stuff);
         }
 
+        [Test]
+        public void Execute_ObjectField_ReturnsCorrectTypeName()
+        {
+            dynamic result = this.schema.Execute(@"
+            {
+                acessorBasedProp {
+                    __typename
+                }
+            }");
+
+            Assert.AreEqual("CustomObject", result.acessorBasedProp.__typename);
+        }
+
+        [Test]
+        public void Execute_InterfaceField_ReturnsCorrectTypeName()
+        {
+            dynamic result = this.schema.Execute(@"
+            {
+                testTypes {
+                    __typename
+                }
+            }");
+
+            Assert.AreEqual(2, result.testTypes.Count);
+            Assert.AreEqual("CustomObject", result.testTypes[0].__typename);
+            Assert.AreEqual("AnotherCustomObject", result.testTypes[1].__typename);
+        }
+
+        [Test]
+        public void Execute_Introspection_DoesNotReturnTypeNameField()
+        {
+            dynamic result = this.schema.Execute(@"
+            {
+                __type(name: ""CustomObject"") {
+                    fields {
+                        name
+                    }
+                }
+            }");
+
+            var fieldNames = result.__type.fields;
+
+            Assert.IsFalse(fieldNames.Contains("__typename"));
+        }
+
         [SetUp]
         public void SetUp()
         {
@@ -102,12 +147,25 @@
             typeWithAccessor.Field("Hello", e => e.Hello);
             typeWithAccessor.Field("Test", e => e.Test);
 
+            var anotherTypeWithAccessor = new AnotherCustomObject();
+            anotherTypeWithAccessor.Field("Hello", e => e.Hello);
+            anotherTypeWithAccessor.Field("World", e => e.World);
+
+            var customInterface = new CustomInterface();
+            customInterface.Field("hello", e => e.Hello);
+
             rootType.Field("acessorBasedProp", () => new TestType() { Hello = "world", Test = "stuff" });
+            rootType.Field("testTypes", () => new ITestInterface[] {
+                new TestType { Hello = "world", Test = "stuff" },
+                new AnotherTestType { Hello = "world", World = "hello" }
+            });
 
             this.schema.AddKnownType(rootType);
             this.schema.AddKnownType(anotherSestedType);
             this.schema.AddKnownType(nestedType);
             this.schema.AddKnownType(typeWithAccessor);
+            this.schema.AddKnownType(anotherTypeWithAccessor);
+            this.schema.AddKnownType(customInterface);
             this.schema.Query(rootType);
         }
 
@@ -121,6 +179,20 @@
         public class CustomObject : GraphQLObjectType<TestType>
         {
             public CustomObject() : base("CustomObject", "")
+            {
+            }
+        }
+
+        public class AnotherCustomObject : GraphQLObjectType<AnotherTestType>
+        {
+            public AnotherCustomObject() : base("AnotherCustomObject", "")
+            {
+            }
+        }
+
+        public class CustomInterface : GraphQLInterfaceType<ITestInterface>
+        {
+            public CustomInterface() : base("CustomInterface", "")
             {
             }
         }
@@ -141,10 +213,21 @@
             }
         }
 
-        public class TestType
+        public class TestType : ITestInterface
         {
             public string Hello { get; set; }
             public string Test { get; set; }
         }
+
+        public class AnotherTestType : ITestInterface
+        {
+            public string Hello { get; set; }
+            public string World { get; set; }
+        }
+
+        public interface ITestInterface
+        {
+            string Hello { get; set; }
+        } 
     }
 }
