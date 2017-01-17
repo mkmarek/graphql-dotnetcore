@@ -75,6 +75,9 @@ namespace GraphQLCore.Execution
 
         public object TranslatePerDefinition(object inputObject, System.Type type)
         {
+            if (inputObject == null)
+                return null;
+
             var typeDefinition = this.schemaRepository.GetSchemaInputTypeFor(type);
 
             if (inputObject is ExpandoObject && typeDefinition is GraphQLInputObjectType)
