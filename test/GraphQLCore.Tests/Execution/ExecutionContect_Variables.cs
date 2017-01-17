@@ -303,9 +303,30 @@
             Assert.AreEqual(new string[] { "a", "b", "c" }, stringListField);
         }
 
+        [Test]
+        public void Execute_WithComplexObjectWithArrayProperty_ParsesAndReturnsCorrectValue()
+        {
+            var query = @"
+            query getStringListField($complicatedObjectArgWithArrayVar: ComplicatedInputObjectType!) {
+                insertInputObject(inputObject: $complicatedObjectArgWithArrayVar) {
+                    complicatedObjectArray {
+                        stringField
+                    }
+                }
+            }";
+
+            var result = this.schema.Execute(query, variables);
+            var array = (IEnumerable<dynamic>)result.insertInputObject.complicatedObjectArray;
+
+            Assert.AreEqual("sample", array.ElementAt(0).stringField);
+            Assert.AreEqual("sample", array.ElementAt(1).stringField);
+        }
+
         [SetUp]
         public void SetUp()
         {
+
+
             this.variables = new ExpandoObject();
             this.variables.intArgVar = 3;
             this.variables.stringArgVar = "sample";
@@ -319,8 +340,24 @@
             this.variables.complicatedObjectArgVar = CreateComplicatedDynamicObject();
             this.variables.complicatedObjectListArgVar = new object[] { CreateComplicatedDynamicObject() };
             this.variables.complicatedObjectArgVar.nested = CreateComplicatedDynamicObject();
+            this.variables.complicatedObjectArgWithArrayVar = CreateComplicatedDynamicObjectWithArray();
 
             this.schema = new TestSchema();
+        }
+
+        private static dynamic CreateComplicatedDynamicObjectWithArray()
+        {
+            dynamic complicatedObjectArgVar = new ExpandoObject();
+            complicatedObjectArgVar.intField = 1;
+            complicatedObjectArgVar.nonNullIntField = 1;
+            complicatedObjectArgVar.stringField = "sample";
+            complicatedObjectArgVar.booleanField = true;
+            complicatedObjectArgVar.enumField = FurColor.BROWN;
+            complicatedObjectArgVar.floatField = 1.6f;
+            complicatedObjectArgVar.stringListField = new string[] { "a", "b", "c" };
+            complicatedObjectArgVar.complicatedObjectArray = new List<ExpandoObject>() { CreateComplicatedDynamicObject(), CreateComplicatedDynamicObject() };
+
+            return complicatedObjectArgVar;
         }
 
         private static dynamic CreateComplicatedDynamicObject()

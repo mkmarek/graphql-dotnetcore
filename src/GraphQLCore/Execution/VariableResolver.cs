@@ -80,6 +80,9 @@ namespace GraphQLCore.Execution
             if (inputObject is ExpandoObject && typeDefinition is GraphQLInputObjectType)
                 return this.CreateObjectFromDynamic((GraphQLInputObjectType)typeDefinition, (ExpandoObject)inputObject);
 
+            if (ReflectionUtilities.IsCollection(inputObject.GetType()) && typeDefinition is GraphQLList)
+                return ReflectionUtilities.ChangeValueType(this.CreateList((IEnumerable)inputObject, (GraphQLList)typeDefinition), type);
+
             return ReflectionUtilities.ChangeValueType(inputObject, type);
         }
 

@@ -44,6 +44,7 @@
             this.Field("floatField", e => e.FloatField);
             this.Field("stringListField", e => e.StringListField);
             this.Field("nested", e => e.Nested);
+            this.Field("complicatedObjectArray", e => e.ComplicatedObjectArray);
         }
     }
 
@@ -78,6 +79,7 @@
         public int NonNullIntField { get; set; }
         public string StringField { get; set; }
         public string[] StringListField { get; set; }
+        public ComplicatedObject[] ComplicatedObjectArray { get; set; }
     }
 
     public class SimpleObject : SimpleInterface
@@ -97,6 +99,7 @@
             this.Field("floatField", e => e.FloatField);
             this.Field("stringListField", e => e.StringListField);
             this.Field("nested", e => e.Nested);
+            this.Field("complicatedObjectArray", e => e.ComplicatedObjectArray);
         }
     }
 
