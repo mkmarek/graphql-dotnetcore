@@ -53,7 +53,6 @@ namespace GraphQLCore.Type.Translation
             this.inputBindings.Add(typeof(bool?), graphQLBoolean);
         }
 
-
         public void AddKnownType(GraphQLBaseType type)
         {
             if (type is GraphQLInputType)

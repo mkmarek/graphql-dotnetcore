@@ -1,5 +1,7 @@
 ﻿namespace GraphQLCore.Tests.Validation
 {
+    using Exceptions;
+    using GraphQLCore.Validation.Rules;
     using NUnit.Framework;
     using System.Linq;
 
@@ -11,7 +13,7 @@
         {
             var errors = Validate(@"
             query Foo($a: String, $b: [Boolean!]!, $c: ComplicatedInputObjectType) {
-                field(a: $a, b: $b, c: $c)
+                field(a: $a, b: $b, c: $c) { foo }
             }
             ");
 
@@ -23,7 +25,7 @@
         {
             var errors = Validate(@"
             query Foo($a: ComplicatedObjectType, $b: [[ComplicatedObjectType!]]!, $c: ComplicatedInterfaceType) {
-                field(a: $a, b: $b, c: $c)
+                field(a: $a, b: $b, c: $c) { foo }
             }
             ");
 
@@ -31,6 +33,17 @@
             Assert.AreEqual("Variable \"$a\" cannot be non-input type \"ComplicatedObjectType\".", errors.ElementAt(0).Message);
             Assert.AreEqual("Variable \"$b\" cannot be non-input type \"[[ComplicatedObjectType!]]!\".", errors.ElementAt(1).Message);
             Assert.AreEqual("Variable \"$c\" cannot be non-input type \"ComplicatedInterfaceType\".", errors.ElementAt(2).Message);
+        }
+
+        protected override GraphQLException[] Validate(string body)
+        {
+            return validationContext.Validate(
+                GetAst(body),
+                this.validationTestSchema,
+                new IValidationRule[]
+                {
+                    new VariablesAreInputTypes(),
+                });
         }
     }
 }

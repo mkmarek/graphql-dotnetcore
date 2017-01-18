@@ -78,6 +78,7 @@
         {
             return new IValidationRule[]
             {
+                new NoUnusedVariables(),
                 new NoUndefinedVariables(),
                 new DefaultValuesOfCorrectType(),
                 new VariablesInAllowedPositions(),
@@ -86,6 +87,7 @@
                 new UniqueArguments(),
                 new UniqueVariableNames(),
                 new UniqueOperationNames(),
+                new UniqueFragmentNames(),
                 new KnownTypeNames(),
                 new PossibleFragmentSpreads(),
                 new ScalarLeafs(),

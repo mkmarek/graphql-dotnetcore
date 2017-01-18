@@ -3,6 +3,8 @@
     using Language.AST;
     using System.Collections.Generic;
     using Type;
+    using System;
+    using System.Linq;
 
     public class VariableUsagesProvider : ValidationASTVisitor
     {
@@ -28,9 +30,13 @@
 
         public override GraphQLFragmentSpread BeginVisitFragmentSpread(GraphQLFragmentSpread fragmentSpread)
         {
-            var fragment = this.fragments[fragmentSpread.Name.Value];
+            if (this.fragments.ContainsKey(fragmentSpread.Name.Value))
+            {
+                var fragment = this.fragments[fragmentSpread.Name.Value];
+                this.fragments.Remove(fragmentSpread.Name.Value);
 
-            this.BeginVisitFragmentDefinition(fragment);
+                this.BeginVisitFragmentDefinition(fragment);
+            }
 
             return base.BeginVisitFragmentSpread(fragmentSpread);
         }
@@ -46,6 +52,35 @@
             }
 
             return base.EndVisitArgument(argument);
+        }
+
+        public override GraphQLObjectField BeginVisitObjectField(GraphQLObjectField node)
+        {
+            if (node.Value is GraphQLVariable)
+            {
+                var usage = this.CreateUsage(node);
+
+                if (usage != null)
+                    this.variableUsages.Add(usage);
+            }
+
+            return base.BeginVisitObjectField(node);
+        }
+
+        private VariableUsage CreateUsage(GraphQLObjectField node)
+        {
+            var field = (this.GetLastField()
+                ?.GetGraphQLType(this.SchemaRepository) as GraphQLComplexType)
+                ?.GetFieldInfo(node.Name.Value);
+
+            if (field == null)
+                return null;
+
+            return new VariableUsage()
+            {
+                ArgumentType = field.GetGraphQLType(this.SchemaRepository),
+                Variable = node.Value as GraphQLVariable
+            };
         }
 
         private static IDictionary<string, GraphQLFragmentDefinition> GetFragmentsFromDocument(GraphQLDocument document)

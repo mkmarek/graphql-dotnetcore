@@ -25,7 +25,7 @@
             return new Parser(new Lexer()).Parse(new Source(body));
         }
 
-        protected GraphQLException[] Validate(string body)
+        protected virtual GraphQLException[] Validate(string body)
         {
             return validationContext.Validate(
                 GetAst(body),
@@ -46,7 +46,7 @@
                     new VariablesAreInputTypes(),
                     new ProvidedNonNullArguments(),
                     new ScalarLeafs(),
-                    new ArgumentsOfCorrectType()
+                    new ArgumentsOfCorrectType(),
                 });
         }
     }

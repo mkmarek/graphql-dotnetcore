@@ -1,7 +1,4 @@
-﻿using System.Reflection;
-using GraphQLCore.Execution;
-
-namespace GraphQLCore.Type
+﻿namespace GraphQLCore.Type
 {
     using Complex;
     using Exceptions;
@@ -49,7 +46,7 @@ namespace GraphQLCore.Type
 
                 if (astField == null)
                     continue;
-                
+
                 object value = this.GetValueFromField(schemaRepository, field.Value, astField);
 
                 if (value == null && astField.Value.Kind == ASTNodeKind.Variable)

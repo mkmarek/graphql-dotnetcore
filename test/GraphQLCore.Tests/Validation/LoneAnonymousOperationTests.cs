@@ -13,7 +13,7 @@
                 ...Foo
             }
             fragment Foo on QueryRoot {
-                field
+                field { foo }
             }");
 
             Assert.IsEmpty(errors);
@@ -39,7 +39,7 @@
         {
             var errors = this.Validate(@"
             {
-                field
+                field { foo }
             }
             mutation Foo {
                 field
@@ -53,10 +53,10 @@
         {
             var errors = this.Validate(@"
             {
-                field
+                field { foo }
             }
             subscription Foo {
-                field
+                field { foo }
             }");
 
             Assert.AreEqual("This anonymous operation must be the only defined operation.", errors.Single().Message);

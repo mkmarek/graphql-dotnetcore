@@ -11,7 +11,7 @@
         {
             var errors = this.Validate(@"
             {
-                field(arg: { f: true })
+                field(arg: { f: true }) { foo }
             }
             ");
 
@@ -23,7 +23,7 @@
         {
             var errors = this.Validate(@"
             {
-                field(arg: { f: true }, arg1: { f: true })
+                field(arg: { f: true }, arg1: { f: true }) { foo }
             }
             ");
 
@@ -35,7 +35,7 @@
         {
             var errors = this.Validate(@"
             {
-                 "+"field(arg: { f1: \"value\", f2: \"value\", f3: \"value\" })"+@"
+                 "+"field(arg: { f1: \"value\", f2: \"value\", f3: \"value\" })"+ @" { foo }
             }
             ");
 
@@ -55,7 +55,7 @@
                         id: 1
                     }
                     id: 1
-                })
+                }) { foo }
             }
             ");
 
@@ -67,7 +67,7 @@
         {
             var errors = this.Validate(@"
             {
-                " + "field(arg: { f1: \"value\", f1: \"value\"})" + @"
+                " + "field(arg: { f1: \"value\", f1: \"value\"})" + @"  { foo }
             }
             ");
 

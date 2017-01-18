@@ -2,7 +2,6 @@
 {
     using Exceptions;
     using Language.AST;
-    using Language;
     using System.Collections.Generic;
     using System.Linq;
     using Type;

@@ -11,7 +11,7 @@
         {
             var errors = Validate(@"
             query foo($a: String, $b: String, $c: String) {
-                field(a: $a, b: $b, c: $c)
+                field(a: $a, b: $b, c: $c) { foo }
             }
             ");
 
@@ -23,7 +23,7 @@
         {
             var errors = Validate(@"
             query foo($a: Int, $b: Int) {
-                foo(a: $a, b: $b, c: $c)
+                foo(a: $a, b: $b, c: $c) 
             }
             ");
 
@@ -47,7 +47,7 @@
         {
             var errors = Validate(@"
             query a {
-                field(arg: $arg, arg1: $arg1, arg2: $arg2)
+                field(a: $arg, b: $arg1, c: $arg2) { foo }
             }
             query b ($b: Int) {
                 foo(a: $a, b: $b, c: $c)
