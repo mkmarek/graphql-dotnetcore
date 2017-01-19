@@ -177,6 +177,10 @@ namespace GraphQLCore.Type.Translation
             if (ReflectionUtilities.IsCollection(type))
                 return new GraphQLList(this.GetSchemaTypeFor(ReflectionUtilities.GetCollectionMemberType(type)));
 
+            var underlyingTypeOfNullable = Nullable.GetUnderlyingType(type);
+            if (underlyingTypeOfNullable != null)
+                return this.GetSchemaTypeFor(underlyingTypeOfNullable);
+
             return this.GetSchemaTypeFor(type, type);
         }
     }

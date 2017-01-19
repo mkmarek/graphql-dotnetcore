@@ -3,8 +3,6 @@
     using Language.AST;
     using System.Collections.Generic;
     using Type;
-    using System;
-    using System.Linq;
 
     public class VariableUsagesProvider : ValidationASTVisitor
     {
@@ -67,22 +65,6 @@
             return base.BeginVisitObjectField(node);
         }
 
-        private VariableUsage CreateUsage(GraphQLObjectField node)
-        {
-            var field = (this.GetLastField()
-                ?.GetGraphQLType(this.SchemaRepository) as GraphQLComplexType)
-                ?.GetFieldInfo(node.Name.Value);
-
-            if (field == null)
-                return null;
-
-            return new VariableUsage()
-            {
-                ArgumentType = field.GetGraphQLType(this.SchemaRepository),
-                Variable = node.Value as GraphQLVariable
-            };
-        }
-
         private static IDictionary<string, GraphQLFragmentDefinition> GetFragmentsFromDocument(GraphQLDocument document)
         {
             var fragments = new Dictionary<string, GraphQLFragmentDefinition>();
@@ -98,6 +80,22 @@
             }
 
             return fragments;
+        }
+
+        private VariableUsage CreateUsage(GraphQLObjectField node)
+        {
+            var field = (this.GetLastField()
+                ?.GetGraphQLType(this.SchemaRepository) as GraphQLComplexType)
+                ?.GetFieldInfo(node.Name.Value);
+
+            if (field == null)
+                return null;
+
+            return new VariableUsage()
+            {
+                ArgumentType = field.GetGraphQLType(this.SchemaRepository),
+                Variable = node.Value as GraphQLVariable
+            };
         }
 
         private VariableUsage CreateUsage(GraphQLArgument argument)

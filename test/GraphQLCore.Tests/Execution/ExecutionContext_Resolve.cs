@@ -3,6 +3,8 @@
     using GraphQLCore.Type;
     using Microsoft.CSharp.RuntimeBinder;
     using NUnit.Framework;
+    using System.Collections.Generic;
+    using System.Linq;
 
     [TestFixture]
     public class ExecutionContext_Resolve
@@ -128,6 +130,91 @@
             Assert.IsFalse(fieldNames.Contains("__typename"));
         }
 
+        [Test]
+        public void Execute_Enum_CorrectlyReturnsEnumValue()
+        {
+            dynamic result = this.schema.Execute(@"
+            {
+                enum
+            }");
+
+            var value = result.@enum;
+
+            Assert.AreEqual("One", value);
+        }
+
+        [Test]
+        public void Execute_Introspection_ReturnsCorrectlyNonNullEnumField()
+        {
+            dynamic result = this.schema.Execute(@"
+            {
+                __type(name: ""RootQueryType"") {
+                    fields {
+                        name
+                        type {
+                            ofType {
+                                name
+                            }
+                            kind
+                        }
+                    }
+                }
+            }");
+
+            var fields = result.__type.fields as IEnumerable<dynamic>;
+            var emumField = fields.Single(e => e.name == "enum");
+
+            Assert.AreEqual("NON_NULL", emumField.type.kind);
+            Assert.AreEqual("TestEnum", emumField.type.ofType.name);
+        }
+
+        [Test]
+        public void Execute_Introspection_ReturnsCorrectlyNullableEnumField()
+        {
+            dynamic result = this.schema.Execute(@"
+            {
+                __type(name: ""RootQueryType"") {
+                    fields {
+                        name
+                        type {
+                            name
+                        }
+                    }
+                }
+            }");
+
+            var fields = result.__type.fields as IEnumerable<dynamic>;
+            var emumField = fields.Single(e => e.name == "nullableEnum");
+
+            Assert.AreEqual("TestEnum", emumField.type.name);
+        }
+
+        [Test]
+        public void Execute_NullableEnum_CorrectlyReturnsEnumValue()
+        {
+            dynamic result = this.schema.Execute(@"
+            {
+                nullableEnum
+            }");
+
+            var value = result.nullableEnum;
+
+            Assert.AreEqual("Two", value);
+        }
+
+        [Test]
+        public void Execute_NullableEnumWithNull_CorrectlyReturnsEnumValue()
+        {
+            dynamic result = this.schema.Execute(@"
+            {
+                nullableEnumWithNull
+            }");
+
+            var value = result.nullableEnumWithNull;
+
+            Assert.AreEqual(null, value);
+        }
+
         [SetUp]
         public void SetUp()
         {
@@ -160,6 +247,7 @@
                 new AnotherTestType { Hello = "world", World = "hello" }
             });
 
+            this.schema.AddKnownType(new TestEnumType());
             this.schema.AddKnownType(rootType);
             this.schema.AddKnownType(anotherSestedType);
             this.schema.AddKnownType(nestedType);
@@ -204,12 +292,24 @@
             }
         }
 
+        public enum TestEnum { One, Two }
+
+        public class TestEnumType : GraphQLEnumType<TestEnum>
+        {
+            public TestEnumType() : base("TestEnum", "")
+            {
+            }
+        }
+
         public class RootQueryType : GraphQLObjectType
         {
             public RootQueryType() : base("RootQueryType", "")
             {
                 this.Field("hello", () => "world");
                 this.Field("test", () => "test");
+                this.Field("enum", () => TestEnum.One);
+                this.Field("nullableEnum", () => TestEnum.Two as TestEnum?);
+                this.Field("nullableEnumWithNull", () => null as TestEnum?);
             }
         }
 
