@@ -93,7 +93,8 @@
                 new ScalarLeafs(),
                 new ArgumentsOfCorrectType(),
                 new ProvidedNonNullArguments(),
-                new VariablesAreInputTypes()
+                new VariablesAreInputTypes(),
+                new NoUnusedFragments()
             };
         }
 
