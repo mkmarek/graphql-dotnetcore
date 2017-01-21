@@ -94,7 +94,8 @@
                 new ArgumentsOfCorrectType(),
                 new ProvidedNonNullArguments(),
                 new VariablesAreInputTypes(),
-                new NoUnusedFragments()
+                new NoUnusedFragments(),
+                new NoFragmentCycles()
             };
         }
 
