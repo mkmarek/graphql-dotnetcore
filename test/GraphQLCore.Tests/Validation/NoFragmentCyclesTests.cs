@@ -3,14 +3,10 @@ namespace GraphQLCore.Tests.Validation
     using Exceptions;
     using GraphQLCore.Validation.Rules;
     using NUnit.Framework;
-    using System;
-    using System.Collections.Generic;
     using System.Linq;
-    using System.Threading.Tasks;
-
 
     [TestFixture]
-    public class NoFragmetnCyclesTests : ValidationTestBase
+    public class NoFragmentCyclesTests : ValidationTestBase
     {
         [Test]
         public void NoCircularFragmentSpreads_DoesntReportAnyError()
