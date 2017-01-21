@@ -117,7 +117,9 @@
         {
             var variableResolver = this.CreateVariableResolver();
 
-            var fieldCollector = new FieldCollector(this.fragments);
+            var fieldCollector = new FieldCollector(
+                this.fragments,
+                this.graphQLSchema.SchemaRepository);
 
             var scope = new FieldScope(
                 this.graphQLSchema.SchemaRepository,

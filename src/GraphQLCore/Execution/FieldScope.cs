@@ -1,5 +1,6 @@
 ﻿namespace GraphQLCore.Execution
 {
+    using GraphQLCore.Type.Directives;
     using Language.AST;
     using System.Collections;
     using System.Collections.Generic;
@@ -100,7 +101,8 @@
             return expression.Compile().DynamicInvoke(argumentValues);
         }
 
-        private void AddFieldsFromSelectionToResultDictionary(IDictionary<string, object> dictionary, string fieldName, IList<GraphQLFieldSelection> fieldSelections)
+        private void AddFieldsFromSelectionToResultDictionary(
+            IDictionary<string, object> dictionary, string fieldName, IList<GraphQLFieldSelection> fieldSelections)
         {
             foreach (var selection in fieldSelections)
                 this.AddToResultDictionaryIfNotAlreadyPresent(dictionary, fieldName, selection);
@@ -151,9 +153,22 @@
         {
             var arguments = this.GetArgumentsFromSelection(selection);
             var fieldInfo = this.GetFieldInfo(type, selection);
-            var resolvedValue = this.ResolveField(fieldInfo, arguments, this.parent);
+            var directivesToUse = selection.Directives;
 
-            return this.CompleteValue(resolvedValue, selection, arguments);
+            var result = this.ResolveField(fieldInfo, arguments, this.parent);
+            foreach (var directive in selection.Directives)
+            {
+                var directiveType = this.schemaRepository.GetDirective(directive.Name.Value);
+
+                if (directiveType != null && directiveType.Locations.Any(l => l == DirectiveLocation.FIELD))
+                {
+                    result = this.InvokeWithArguments(
+                        directive.Arguments.ToList(),
+                        directiveType.GetResolver(result));
+                }
+            }
+
+            return this.CompleteValue(result, selection, arguments);
         }
 
         private GraphQLObjectTypeFieldInfo GetFieldInfo(GraphQLObjectType type, GraphQLFieldSelection selection)
@@ -178,7 +193,8 @@
             return input;
         }
 
-        private object ResolveField(GraphQLObjectTypeFieldInfo fieldInfo, IList<GraphQLArgument> arguments, object parent)
+        private object ResolveField(
+            GraphQLObjectTypeFieldInfo fieldInfo, IList<GraphQLArgument> arguments, object parent)
         {
             if (fieldInfo == null)
                 return null;

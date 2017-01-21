@@ -23,6 +23,13 @@
             this.Field("types", () => this.IntrospectAllSchemaTypes());
             this.Field("queryType", () => this.IntrospectQueryType());
             this.Field("mutationType", () => this.IntrospectMudationType());
+            this.Field("directives", () => this.IntrospectDirectives());
+        }
+
+        public IEnumerable<IntrospectedDirective> IntrospectDirectives()
+        {
+            return this.schemaRepository.GetDirectives()
+                .Select(e => e.Introspect(this.schemaRepository));
         }
 
         public IEnumerable<IntrospectedType> IntrospectAllSchemaTypes()

@@ -1,10 +1,11 @@
 ﻿namespace GraphQLCore.Type
 {
     using Execution;
+    using GraphQLCore.Type.Directives;
     using Introspection;
     using Language;
     using Language.AST;
-    using System;
+    using System.Collections.Generic;
     using System.Linq;
     using Translation;
 
@@ -18,6 +19,7 @@
             this.IntrospectedSchema = new IntrospectedSchemaType(this.SchemaRepository, this);
 
             this.RegisterIntrospectionTypes();
+            this.RegisterDefaultDirectives();
         }
 
         public IntrospectedSchemaType IntrospectedSchema { get; private set; }
@@ -69,6 +71,11 @@
             return this.IntrospectedSchema.IntrospectAllSchemaTypes().Where(e => e.Name == name).FirstOrDefault();
         }
 
+        public void AddOrReplaceDirective(GraphQLDirectiveType directive)
+        {
+            this.SchemaRepository.AddOrReplaceDirective(directive);
+        }
+
         private GraphQLDocument GetAst(string expression)
         {
             return new Parser(new Lexer()).Parse(new Source(expression));
@@ -81,7 +88,15 @@
             this.SchemaRepository.AddKnownType(new IntrospectedFieldType());
             this.SchemaRepository.AddKnownType(new IntrospectedInputValueType());
             this.SchemaRepository.AddKnownType(new GraphQLEnumValue(null, null));
+            this.SchemaRepository.AddKnownType(new IntrospectedDirectiveType());
+            this.SchemaRepository.AddKnownType(new IntrospectedDirectiveLocationType());
             this.SchemaRepository.AddKnownType(this.IntrospectedSchema);
+        }
+
+        private void RegisterDefaultDirectives()
+        {
+            this.SchemaRepository.AddOrReplaceDirective(new GraphQLIncludeDirectiveType());
+            this.SchemaRepository.AddOrReplaceDirective(new GraphQLSkipDirectiveType());
         }
     }
 }

@@ -2,6 +2,7 @@
 
 namespace GraphQLCore.Type.Translation
 {
+    using GraphQLCore.Type.Directives;
     using System;
     using System.Collections.Generic;
 
@@ -10,6 +11,12 @@ namespace GraphQLCore.Type.Translation
         IVariableResolver VariableResolver { get; set; }
 
         void AddKnownType(GraphQLBaseType type);
+
+        void AddOrReplaceDirective(GraphQLDirectiveType directive);
+
+        GraphQLDirectiveType GetDirective(string name);
+
+        IEnumerable<GraphQLDirectiveType> GetDirectives();
 
         GraphQLComplexType[] GetImplementingInterfaces(GraphQLComplexType type);
 

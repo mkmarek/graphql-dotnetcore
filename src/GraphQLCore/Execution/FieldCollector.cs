@@ -1,21 +1,27 @@
 ﻿namespace GraphQLCore.Execution
 {
+    using GraphQLCore.Type.Directives;
+    using GraphQLCore.Type.Translation;
     using Language.AST;
     using System.Collections.Generic;
     using System.Linq;
     using Type;
-    using Type.Scalar;
 
     public class FieldCollector : IFieldCollector
     {
         private Dictionary<string, GraphQLFragmentDefinition> fragments;
+        private ISchemaRepository schemaRepository;
 
-        public FieldCollector(Dictionary<string, GraphQLFragmentDefinition> fragments)
+        public FieldCollector(
+            Dictionary<string, GraphQLFragmentDefinition> fragments,
+            ISchemaRepository schemaRepository)
         {
             this.fragments = fragments;
+            this.schemaRepository = schemaRepository;
         }
 
-        public Dictionary<string, IList<GraphQLFieldSelection>> CollectFields(GraphQLObjectType runtimeType, GraphQLSelectionSet selectionSet)
+        public Dictionary<string, IList<GraphQLFieldSelection>> CollectFields(
+            GraphQLObjectType runtimeType, GraphQLSelectionSet selectionSet)
         {
             var fields = new Dictionary<string, IList<GraphQLFieldSelection>>();
 
@@ -25,23 +31,9 @@
             return fields;
         }
 
-        private static GraphQLValue GetIncludeIfArgumentValue(IEnumerable<GraphQLDirective> directives)
-        {
-            var skipAST = directives?.FirstOrDefault(e => e.Name.Value == "include");
-
-            return skipAST?.Arguments?.SingleOrDefault(e => e.Name.Value == "if")?.Value;
-        }
-
-        private static GraphQLValue GetSkipIfArgumentValue(IEnumerable<GraphQLDirective> directives)
-        {
-            var skipAST = directives?.FirstOrDefault(e => e.Name.Value == "skip");
-
-            return skipAST?.Arguments?.SingleOrDefault(e => e.Name.Value == "if")?.Value;
-        }
-
         private void CollectField(GraphQLFieldSelection selection, Dictionary<string, IList<GraphQLFieldSelection>> fields)
         {
-            if (!this.ShouldIncludeNode(selection.Directives))
+            if (!this.ShouldIncludeNode(selection.Directives, DirectiveLocation.FIELD))
                 return;
 
             var entryKey = this.GetFieldEntryKey(selection);
@@ -64,7 +56,7 @@
 
         private void CollectFragmentFields(GraphQLObjectType runtimeType, GraphQLInlineFragment fragment, Dictionary<string, IList<GraphQLFieldSelection>> fields)
         {
-            if (!this.ShouldIncludeNode(fragment.Directives))
+            if (!this.ShouldIncludeNode(fragment.Directives, DirectiveLocation.INLINE_FRAGMENT))
                 return;
 
             if (!this.DoesFragmentConditionMatch(runtimeType, fragment))
@@ -76,6 +68,9 @@
 
         private void CollectFragmentSpreadFields(GraphQLObjectType runtimeType, GraphQLFragmentSpread fragmentSpread, Dictionary<string, IList<GraphQLFieldSelection>> fields)
         {
+            if (!this.ShouldIncludeNode(fragmentSpread.Directives, DirectiveLocation.FRAGMENT_SPREAD))
+                return;
+
             var fragment = this.fragments[fragmentSpread.Name.Value];
             this.CollectFragmentFields(runtimeType, fragment, fields);
         }
@@ -96,17 +91,21 @@
             return selection.Alias != null ? selection.Alias.Value : selection.Name.Value;
         }
 
-        private bool ShouldIncludeNode(IEnumerable<GraphQLDirective> directives)
+        private bool ShouldIncludeNode(
+            IEnumerable<GraphQLDirective> directives,
+            DirectiveLocation location)
         {
-            var boolean = new GraphQLBoolean();
-            var shouldSkip = GetSkipIfArgumentValue(directives);
-            var shouldContinue = GetIncludeIfArgumentValue(directives);
-
-            if (shouldSkip != null && boolean.GetFromAst(shouldSkip, null).Equals(true))
-                return false;
-
-            if (shouldContinue != null && boolean.GetFromAst(shouldContinue, null).Equals(false))
-                return false;
+            foreach (var directive in directives)
+            {
+                var directiveType = this.schemaRepository.GetDirective(directive.Name.Value);
+                if (directiveType != null)
+                {
+                    if (!directiveType.Locations.Any(e => e == location))
+                        continue;
+                    if (!directiveType.IncludeFieldIntoResult(directive, this.schemaRepository))
+                        return false;
+                }
+            }
 
             return true;
         }

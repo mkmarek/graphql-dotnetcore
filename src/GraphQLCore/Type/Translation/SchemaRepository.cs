@@ -3,6 +3,7 @@
 namespace GraphQLCore.Type.Translation
 {
     using Exceptions;
+    using GraphQLCore.Type.Directives;
     using Scalar;
     using System;
     using System.Collections.Generic;
@@ -16,12 +17,15 @@ namespace GraphQLCore.Type.Translation
 
         private Dictionary<Type, GraphQLBaseType> outputBindings;
 
+        private Dictionary<string, GraphQLDirectiveType> directives;
+
         public IVariableResolver VariableResolver { get; set; }
 
         public SchemaRepository()
         {
             this.outputBindings = new Dictionary<Type, GraphQLBaseType>();
             this.inputBindings = new Dictionary<Type, GraphQLInputType>();
+            this.directives = new Dictionary<string, GraphQLDirectiveType>();
 
             var graphQLInt = new GraphQLInt();
             var graphQLLong = new GraphQLLong();
@@ -51,6 +55,28 @@ namespace GraphQLCore.Type.Translation
             this.inputBindings.Add(typeof(long?), graphQLLong);
             this.inputBindings.Add(typeof(float?), graphQLFloat);
             this.inputBindings.Add(typeof(bool?), graphQLBoolean);
+        }
+
+        public void AddOrReplaceDirective(GraphQLDirectiveType directive)
+        {
+            if (this.directives.ContainsKey(directive.Name))
+                this.directives.Remove(directive.Name);
+
+            this.directives.Add(directive.Name, directive);
+        }
+
+        public GraphQLDirectiveType GetDirective(string name)
+        {
+            if (this.directives.ContainsKey(name))
+                return this.directives[name];
+
+            return null;
+        }
+
+        public IEnumerable<GraphQLDirectiveType> GetDirectives()
+        {
+            return this.directives.Select(e => e.Value)
+                .ToList();
         }
 
         public void AddKnownType(GraphQLBaseType type)

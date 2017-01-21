@@ -316,6 +316,29 @@
             Assert.AreEqual("INPUT_OBJECT", inputObject.kind);
         }
 
+        [Test]
+        public void Directives_ContainsCorrectDataForDirectives()
+        {
+            IEnumerable<dynamic> directives = GetSchema().directives;
+
+            var includeDirective = directives.Single(e => e.name == "include");
+            var skipDirective = directives.Single(e => e.name == "skip");
+
+            Assert.AreEqual(new dynamic[] { "FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT" }, 
+                includeDirective.locations);
+
+            Assert.AreEqual(new dynamic[] { "FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT" }, 
+                skipDirective.locations);
+
+            Assert.AreEqual("if", includeDirective.args[0].name);
+            Assert.AreEqual("NON_NULL", includeDirective.args[0].type.kind);
+            Assert.AreEqual("Boolean", includeDirective.args[0].type.ofType.name);
+
+            Assert.AreEqual("if", skipDirective.args[0].name);
+            Assert.AreEqual("NON_NULL", skipDirective.args[0].type.kind);
+            Assert.AreEqual("Boolean", skipDirective.args[0].type.ofType.name);
+        }
+
         [SetUp]
         public void SetUp()
         {
