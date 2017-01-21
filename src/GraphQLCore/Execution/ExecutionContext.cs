@@ -95,7 +95,8 @@
                 new ProvidedNonNullArguments(),
                 new VariablesAreInputTypes(),
                 new NoUnusedFragments(),
-                new NoFragmentCycles()
+                new NoFragmentCycles(),
+                new KnownFragmentNames()
             };
         }
 
