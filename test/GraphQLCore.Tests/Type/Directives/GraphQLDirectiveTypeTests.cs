@@ -21,10 +21,13 @@ namespace GraphQLCore.Tests.Type.Directives
             this.testDirective = Substitute.For<GraphQLDirectiveType>(
                 "test", "some description", DirectiveLocation.FIELD);
 
-            this.testDirective.IncludeFieldIntoResult(null, null)
+            this.testDirective.PreExecutionIncludeFieldIntoResult(null, null)
                 .ReturnsForAnyArgs(true);
 
-            this.testDirective.GetResolver(Arg.Any<object>())
+            this.testDirective.PostExecutionIncludeFieldIntoResult(null, null, null, null)
+                .ReturnsForAnyArgs(true);
+
+            this.testDirective.GetResolver(Arg.Any<object>(), Arg.Any<object>())
                 .Returns((Expression<Func<object>>)(() => "modified"));
 
             this.schema.AddOrReplaceDirective(this.testDirective);
@@ -41,7 +44,7 @@ namespace GraphQLCore.Tests.Type.Directives
 
             this.testDirective
                 .Received()
-                .GetResolver("bar");
+                .GetResolver("bar", Arg.Any<dynamic>());
         }
 
         [Test]
@@ -59,7 +62,7 @@ namespace GraphQLCore.Tests.Type.Directives
         [Test]
         public void DirectiveOnFieldNotIncludesField_DoesNotCallGetResolver()
         {
-             this.testDirective.IncludeFieldIntoResult(null, null)
+             this.testDirective.PreExecutionIncludeFieldIntoResult(null, null)
                 .ReturnsForAnyArgs(false);
 
             var result = this.schema.Execute(@"
@@ -70,7 +73,24 @@ namespace GraphQLCore.Tests.Type.Directives
 
             this.testDirective
                 .DidNotReceiveWithAnyArgs()
-                .GetResolver(null);
+                .GetResolver(null, null);
+        }
+
+        [Test]
+        public void DirectiveOnFieldNotIncludesFieldPostExecution_DoesCallGetResolver()
+        {
+             this.testDirective.PostExecutionIncludeFieldIntoResult(null, null, null, null)
+                .ReturnsForAnyArgs(false);
+
+            var result = this.schema.Execute(@"
+            {
+                foo @test
+            }
+            ");
+
+            this.testDirective
+                .Received()
+                .GetResolver("bar", Arg.Any<dynamic>());
         }
     }
 }

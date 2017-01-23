@@ -20,7 +20,7 @@
         {
         }
 
-        public override bool IncludeFieldIntoResult(
+        public override bool PreExecutionIncludeFieldIntoResult(
             GraphQLDirective directive,
             ISchemaRepository schemaRepository)
         {
@@ -32,7 +32,7 @@
             return !(bool)value;
         }
 
-        public override LambdaExpression GetResolver(object value)
+        public override LambdaExpression GetResolver(object value, object parentValue)
         {
             Expression<Func<bool, object>> resolver = (@if) => @value;
 

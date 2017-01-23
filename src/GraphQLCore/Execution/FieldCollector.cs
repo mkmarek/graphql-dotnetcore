@@ -102,7 +102,7 @@
                 {
                     if (!directiveType.Locations.Any(e => e == location))
                         continue;
-                    if (!directiveType.IncludeFieldIntoResult(directive, this.schemaRepository))
+                    if (!directiveType.PreExecutionIncludeFieldIntoResult(directive, this.schemaRepository))
                         return false;
                 }
             }

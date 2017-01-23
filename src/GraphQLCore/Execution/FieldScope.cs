@@ -112,7 +112,20 @@
                     IDictionary<string, object> dictionary, string fieldName, GraphQLFieldSelection selection)
         {
             if (!dictionary.ContainsKey(fieldName))
-                dictionary.Add(fieldName, this.GetDefinitionAndExecuteField(this.type, selection));
+            {
+                var result = this.GetDefinitionAndExecuteField(this.type, selection);
+
+                foreach (var directive in selection.Directives)
+                {
+                    var directiveType = this.schemaRepository.GetDirective(directive.Name.Value);
+
+                    if (!directiveType.PostExecutionIncludeFieldIntoResult(
+                            directive, this.schemaRepository, result, this.parent))
+                        return;
+                }
+
+                 dictionary.Add(fieldName, result);
+            }
         }
 
         private object CompleteCollectionType(IEnumerable input, GraphQLFieldSelection selection, IList<GraphQLArgument> arguments)
@@ -164,7 +177,7 @@
                 {
                     result = this.InvokeWithArguments(
                         directive.Arguments.ToList(),
-                        directiveType.GetResolver(result));
+                        directiveType.GetResolver(result, this.parent));
                 }
             }
 
