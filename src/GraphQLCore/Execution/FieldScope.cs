@@ -106,25 +106,39 @@
         {
             foreach (var selection in fieldSelections)
                 this.AddToResultDictionaryIfNotAlreadyPresent(dictionary, fieldName, selection);
+
+            foreach (var selection in fieldSelections)
+                this.ApplyDirectives(dictionary, fieldName, selection);
         }
 
-        private void AddToResultDictionaryIfNotAlreadyPresent(
-                    IDictionary<string, object> dictionary, string fieldName, GraphQLFieldSelection selection)
+        private void ApplyDirectives(
+            IDictionary<string, object> dictionary,
+            string fieldName,
+            GraphQLFieldSelection selection)
         {
-            if (!dictionary.ContainsKey(fieldName))
+            if (dictionary.ContainsKey(fieldName))
             {
-                var result = this.GetDefinitionAndExecuteField(this.type, selection);
-
                 foreach (var directive in selection.Directives)
                 {
                     var directiveType = this.schemaRepository.GetDirective(directive.Name.Value);
 
                     if (!directiveType.PostExecutionIncludeFieldIntoResult(
-                            directive, this.schemaRepository, result, this.parent))
-                        return;
+                            directive, this.schemaRepository, dictionary[fieldName], (ExpandoObject)dictionary))
+                            dictionary.Remove(fieldName);
                 }
+            }
+        }
 
-                 dictionary.Add(fieldName, result);
+        private void AddToResultDictionaryIfNotAlreadyPresent(
+            IDictionary<string, object> dictionary,
+            string fieldName,
+            GraphQLFieldSelection selection)
+        {
+            if (!dictionary.ContainsKey(fieldName))
+            {
+                 dictionary.Add(
+                     fieldName,
+                    this.GetDefinitionAndExecuteField(this.type, selection, dictionary));
             }
         }
 
@@ -138,7 +152,10 @@
         }
 
         private object CompleteObjectType(
-            GraphQLObjectType input, GraphQLFieldSelection selection, IList<GraphQLArgument> arguments, object parentObject)
+            GraphQLObjectType input,
+            GraphQLFieldSelection selection,
+            IList<GraphQLArgument> arguments,
+            object parentObject)
         {
             var scope = new FieldScope(
                 this.schemaRepository,
@@ -162,7 +179,10 @@
             return arguments;
         }
 
-        private object GetDefinitionAndExecuteField(GraphQLObjectType type, GraphQLFieldSelection selection)
+        private object GetDefinitionAndExecuteField(
+            GraphQLObjectType type,
+            GraphQLFieldSelection selection,
+            IDictionary<string, object> dictionary)
         {
             var arguments = this.GetArgumentsFromSelection(selection);
             var fieldInfo = this.GetFieldInfo(type, selection);
@@ -177,7 +197,7 @@
                 {
                     result = this.InvokeWithArguments(
                         directive.Arguments.ToList(),
-                        directiveType.GetResolver(result, this.parent));
+                        directiveType.GetResolver(result, (ExpandoObject)dictionary));
                 }
             }
 
