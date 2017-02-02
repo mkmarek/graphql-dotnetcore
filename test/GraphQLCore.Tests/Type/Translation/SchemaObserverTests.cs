@@ -29,6 +29,16 @@
             Assert.IsInstanceOf<FurColorEnum>(objectType);
         }
 
+        [Test]
+        public void GetSchemaTypeFor_NullableEnum_ReturnsCorrectSchemaType()
+        {
+            this.schemaRepository.AddKnownType(new FurColorEnum());
+
+            var objectType = this.schemaRepository.GetSchemaTypeFor(typeof(FurColor?));
+
+            Assert.IsInstanceOf<FurColorEnum>(objectType);
+        }
+
         [SetUp]
         public void SetUp()
         {
