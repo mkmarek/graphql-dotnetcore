@@ -1,5 +1,6 @@
 ﻿namespace GraphQLCore.Tests.Execution
 {
+    using Exceptions;
     using GraphQLCore.Type;
     using NUnit.Framework;
     using Schemas;
@@ -320,6 +321,44 @@
 
             Assert.AreEqual("sample", array.ElementAt(0).stringField);
             Assert.AreEqual("sample", array.ElementAt(1).stringField);
+        }
+
+        [Test]
+        public void Execute_WithNullOrEmptyVariables_ParsesAndReturnsCorrectValue()
+        {
+            var query = @"
+            query getIntArg($intArgVar: Int, $intArgVar2: Int) {
+                complicatedArgs {
+                    intArgField(intArg: $intArgVar)
+                    intArgField2 : intArgField(intArg: $intArgVar2)
+                }
+            }";
+            dynamic variables = new ExpandoObject();
+            variables.intArgVar2 = null;
+
+            var result = this.schema.Execute(query, variables);
+
+            Assert.AreEqual(null, result.complicatedArgs.intArgField);
+            Assert.AreEqual(null, result.complicatedArgs.intArgField2);
+        }
+
+        [Test]
+        public void Execute_WithNonNullEmptyVariable_ThrowsError()
+        {
+            var query = @"
+            query getIntArg($intArgVar: Int!) {
+                complicatedArgs {
+                    intArgField(intArg: $intArgVar)
+                }
+            }";
+            dynamic variables = new ExpandoObject();
+
+            var exception = Assert.Throws<GraphQLException>(() =>
+            {
+                var result = this.schema.Execute(query, variables);
+            });
+
+            Assert.AreEqual("Type \"Int!\" is non-nullable and cannot be null.", exception.Message);
         }
 
         [SetUp]

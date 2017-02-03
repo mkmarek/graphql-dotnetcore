@@ -1,4 +1,5 @@
-﻿using GraphQLCore.Language.AST;
+﻿using GraphQLCore.Exceptions;
+using GraphQLCore.Language.AST;
 using GraphQLCore.Type;
 using GraphQLCore.Type.Translation;
 using GraphQLCore.Utils;
@@ -49,12 +50,16 @@ namespace GraphQLCore.Execution
             var variableDefinition = this.GetVariableDefinition(variableName);
             var typeDefinition = this.GetTypeDefinition(variableDefinition.Type);
 
-            if (this.variables.ContainsKey(variableName))
-            {
-                return this.TranslatePerDefinition(this.variables[variableName], typeDefinition);
-            }
+            object variableValue;
+            this.variables.TryGetValue(variableName, out variableValue);
 
-            throw new NotImplementedException();
+            if (variableValue != null) 
+                return this.TranslatePerDefinition(variableValue, typeDefinition);                
+
+            if (typeDefinition is Type.GraphQLNonNullType)
+                throw new GraphQLException($"Type \"{typeDefinition.ToString()}\" is non-nullable and cannot be null.");
+
+            return null;
         }
 
         public object GetValue(GraphQLVariable value) => this.GetValue(value.Name.Value);
