@@ -1,9 +1,11 @@
 ﻿namespace GraphQLCore.Type.Complex
 {
+    using Execution;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Reflection;
     using Translation;
     using Utils;
 
@@ -42,7 +44,11 @@
 
         private static Dictionary<string, GraphQLObjectTypeArgumentInfo> GetArguments(LambdaExpression resolver)
         {
-            return resolver.Parameters.Select(e => new GraphQLObjectTypeArgumentInfo()
+            var contextType = typeof(IContext<>);
+
+            return resolver.Parameters
+                .Where(e => !(e.Type.GetTypeInfo().IsGenericType && e.Type.GetGenericTypeDefinition() == contextType))
+                .Select(e => new GraphQLObjectTypeArgumentInfo()
             {
                 Name = e.Name,
                 SystemType = e.Type

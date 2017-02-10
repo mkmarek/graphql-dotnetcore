@@ -1,6 +1,7 @@
 ﻿namespace GraphQLCore.Type
 {
     using Complex;
+    using Execution;
     using Introspection;
     using System;
     using System.Collections.Generic;
@@ -48,7 +49,8 @@
 
         public GraphQLObjectTypeFieldInfo[] GetFieldsInfo()
         {
-            return this.Fields.Select(e => e.Value)
+            return this.Fields
+                .Select(e => e.Value)
                 .ToArray();
         }
 

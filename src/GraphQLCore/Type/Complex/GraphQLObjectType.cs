@@ -4,6 +4,9 @@
     using Exceptions;
     using System.Collections.Generic;
     using System.Linq.Expressions;
+    using Execution;
+    using System.Linq;
+    using System.Reflection;
 
     public abstract class GraphQLObjectType : GraphQLComplexType
     {
@@ -25,7 +28,27 @@
             if (this.ContainsField(fieldName))
                 throw new GraphQLException("Can't insert two fields with the same name.");
 
+            this.ValidateResolver(resolver);
             this.Fields.Add(fieldName, this.CreateResolverFieldInfo(fieldName, resolver));
+        }
+
+        private void ValidateResolver(LambdaExpression resolver)
+        {
+            var contextType = typeof(IContext<>);
+
+            var contextParameters = resolver.Parameters
+                .Where(e => e.Type.GetTypeInfo().IsGenericType && e.Type.GetGenericTypeDefinition() == contextType);
+
+            foreach (var context in contextParameters)
+            {
+                var argumentType = context.Type.GetTypeInfo().GetGenericArguments().Single();
+
+                if (argumentType != this.SystemType)
+                {
+                    throw new GraphQLException(
+                        $"Can't specify IContext of type \"{argumentType.Name}\" in GraphQLObjectType with type \"{this.SystemType}\"");
+                }
+            }
         }
 
         private GraphQLObjectTypeFieldInfo CreateResolverFieldInfo(string fieldName, LambdaExpression resolver)

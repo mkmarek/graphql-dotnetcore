@@ -7,10 +7,12 @@
     using System.Dynamic;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Reflection;
     using Type;
     using Type.Complex;
     using Type.Translation;
     using Utils;
+    using System;
 
     public class FieldScope
     {
@@ -63,8 +65,7 @@
         public object[] FetchArgumentValues(LambdaExpression expression, IList<GraphQLArgument> arguments)
         {
             return ReflectionUtilities.GetParameters(expression)
-                .Select(e => ReflectionUtilities.ChangeValueType(
-                    this.GetArgumentValue(arguments, e.Name, this.schemaRepository.GetSchemaInputTypeFor(e.Type)), e.Type))
+                .Select(e => this.GetValueForArgument(arguments, e))
                 .ToArray();
         }
 
@@ -109,6 +110,35 @@
 
             foreach (var selection in fieldSelections)
                 this.ApplyDirectives(dictionary, fieldName, selection);
+        }
+
+        private object GetValueForArgument(IList<GraphQLArgument> arguments, ParameterExpression e)
+        {
+            if (this.IsContextType(e))
+                return this.CreateContextObject(e.Type);
+
+            return ReflectionUtilities.ChangeValueType(
+                this.GetArgumentValue(arguments, e.Name,
+                this.schemaRepository.GetSchemaInputTypeFor(e.Type)), e.Type);
+        }
+
+        private bool IsContextType(ParameterExpression e)
+        {
+            var contextType = typeof(IContext<>);
+
+            return e.Type.GetTypeInfo().IsGenericType && e.Type.GetGenericTypeDefinition() == contextType;
+        }
+
+        private object CreateContextObject(Type type)
+        {
+            var genericArgument = type.GetTypeInfo()
+                .GetGenericArguments()
+                .Single();
+
+            var fieldContextType = typeof(FieldContext<>)
+                .MakeGenericType(genericArgument);
+
+            return Activator.CreateInstance(fieldContextType, this.parent);
         }
 
         private void ApplyDirectives(
