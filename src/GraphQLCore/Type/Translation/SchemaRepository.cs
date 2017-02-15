@@ -45,16 +45,6 @@ namespace GraphQLCore.Type.Translation
             this.inputBindings.Add(typeof(long), graphQLLong);
             this.inputBindings.Add(typeof(float), graphQLFloat);
             this.inputBindings.Add(typeof(bool), graphQLBoolean);
-
-            this.outputBindings.Add(typeof(int?), graphQLInt);
-            this.outputBindings.Add(typeof(long?), graphQLLong);
-            this.outputBindings.Add(typeof(float?), graphQLFloat);
-            this.outputBindings.Add(typeof(bool?), graphQLBoolean);
-
-            this.inputBindings.Add(typeof(int?), graphQLInt);
-            this.inputBindings.Add(typeof(long?), graphQLLong);
-            this.inputBindings.Add(typeof(float?), graphQLFloat);
-            this.inputBindings.Add(typeof(bool?), graphQLBoolean);
         }
 
         public void AddOrReplaceDirective(GraphQLDirectiveType directive)
@@ -137,6 +127,10 @@ namespace GraphQLCore.Type.Translation
         {
             if (ReflectionUtilities.IsCollection(type))
                 return new GraphQLList(this.GetSchemaInputTypeFor(ReflectionUtilities.GetCollectionMemberType(type)));
+
+            var underlyingType = Nullable.GetUnderlyingType(type);
+            if (underlyingType != null)
+                type = underlyingType;
 
             if (this.inputBindings.ContainsKey(type))
                 return this.inputBindings[type];
