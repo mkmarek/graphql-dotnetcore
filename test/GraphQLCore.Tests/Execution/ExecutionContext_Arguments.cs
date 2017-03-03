@@ -120,6 +120,29 @@
             Assert.AreEqual("efg", ((IEnumerable<dynamic>)((IEnumerable<dynamic>)result.withObjectListArg).ElementAt(0).StringArray).ElementAt(1));
         }
 
+        [Test]
+        public void Execute_AstObjectNestedListArgument_CorrectlyTranslatesIntoOutput()
+        {
+            dynamic result = this.schema.Execute(@"
+                {
+                    withObjectNestedListArg(obj: [
+                        [
+                            { stringArray: [""abc"", ""efg""] },
+                            { stringArray: [""ABC"", ""EFG""] },
+                        ],
+                        [
+                            { stringArray: [""hij"", ""klm""] },
+                            { stringArray: [""HIJ"", ""KLM""] },
+                        ]
+                    ]) { 
+                        StringArray 
+                    } 
+                }");
+
+            Assert.AreEqual("abc", result.withObjectNestedListArg[0][0].StringArray[0]);
+            Assert.AreEqual("klm", result.withObjectNestedListArg[1][0].StringArray[1]);
+        }
+
         [SetUp]
         public void SetUp()
         {
@@ -176,6 +199,7 @@
                 this.Field("withIEnumerable", (IEnumerable<int> ids) => ids.Count());
                 this.Field("withObjectArg", (TestObject obj) => obj);
                 this.Field("withObjectListArg", (IEnumerable<TestObject> obj) => obj);
+                this.Field("withObjectNestedListArg", (IEnumerable<IEnumerable<TestObject>> obj) => obj);
             }
         }
 

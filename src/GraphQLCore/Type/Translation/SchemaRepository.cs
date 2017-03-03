@@ -1,8 +1,7 @@
-﻿using GraphQLCore.Execution;
-
-namespace GraphQLCore.Type.Translation
+﻿namespace GraphQLCore.Type.Translation
 {
     using Exceptions;
+    using Execution;
     using GraphQLCore.Type.Directives;
     using Scalar;
     using System;
@@ -95,11 +94,18 @@ namespace GraphQLCore.Type.Translation
 
         public Type GetInputSystemTypeFor(GraphQLBaseType type)
         {
+            if (type is GraphQLList)
+                return ReflectionUtilities.CreateListTypeOf(
+                    this.GetInputSystemTypeFor(((GraphQLList)type).MemberType));
+
             var reflectedType = this.inputBindings
-                .Where(e => e.Value == type)
+                .Where(e => e.Value.Name == type.Name)
                 .Select(e => e.Key)
                 .FirstOrDefault();
 
+            if (!(type is GraphQLNonNullType))
+                reflectedType = ReflectionUtilities.CreateNullableType(reflectedType);
+            
             return reflectedType;
         }
 
@@ -126,8 +132,17 @@ namespace GraphQLCore.Type.Translation
         public GraphQLInputType GetSchemaInputTypeFor(Type type)
         {
             if (ReflectionUtilities.IsCollection(type))
-                return new GraphQLList(this.GetSchemaInputTypeFor(ReflectionUtilities.GetCollectionMemberType(type)));
+                return this.CreateInputList(type);
 
+            var inputType = this.GetSchemaInputTypeForType(type);
+
+            if (ReflectionUtilities.IsValueType(type) && !ReflectionUtilities.IsNullable(type))
+                return new GraphQLNonNullType(inputType);
+
+            return inputType;
+        }
+
+        private GraphQLInputType GetSchemaInputTypeForType(Type type) {
             var underlyingType = Nullable.GetUnderlyingType(type);
             if (underlyingType != null)
                 type = underlyingType;
@@ -195,13 +210,34 @@ namespace GraphQLCore.Type.Translation
         private GraphQLBaseType GetSchemaTypeForWithNoError(Type type)
         {
             if (ReflectionUtilities.IsCollection(type))
-                return new GraphQLList(this.GetSchemaTypeFor(ReflectionUtilities.GetCollectionMemberType(type)));
+                return this.CreateList(type);
 
-            var underlyingTypeOfNullable = Nullable.GetUnderlyingType(type);
-            if (underlyingTypeOfNullable != null)
-                return this.GetSchemaTypeFor(underlyingTypeOfNullable);
+            var underlyingNullableType = Nullable.GetUnderlyingType(type);
+            if (underlyingNullableType != null)
+                return this.GetSchemaTypeFor(underlyingNullableType, underlyingNullableType);
+
+            if (ReflectionUtilities.IsValueType(type))
+                return new GraphQLNonNullType(this.GetSchemaTypeFor(type, type));
 
             return this.GetSchemaTypeFor(type, type);
+        }
+
+        public GraphQLList CreateList(Type arrayType)
+        {
+            var memberType = ReflectionUtilities.GetCollectionMemberType(arrayType);
+            var schemaType = this.GetSchemaTypeFor(memberType);
+            var list = new GraphQLList(schemaType);
+
+            return list;
+        }
+
+        public GraphQLList CreateInputList(Type arrayType)
+        {
+            var memberType = ReflectionUtilities.GetCollectionMemberType(arrayType);
+            var schemaType = this.GetSchemaInputTypeFor(memberType);
+            var list = new GraphQLList(schemaType);
+
+            return list;
         }
     }
 }

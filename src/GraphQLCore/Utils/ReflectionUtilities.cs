@@ -155,6 +155,30 @@
             return toList.Invoke(null, new object[] { input });
         }
 
+        public static bool IsNullOrEmptyCollection(object source)
+        {
+            if (source == null)
+                return true;
+
+            if (!(source is IEnumerable))
+                return false;
+
+            foreach (var item in (IEnumerable)source) {
+                if (!IsNullOrEmptyCollection(item))
+                    return false;
+            }
+
+            return true;
+        }
+
+        public static Type CreateNullableType(Type type)
+        {
+            if (IsValueType(type))
+                return typeof(Nullable<>).MakeGenericType(type);
+
+            return type;
+        }
+
         internal static Type CreateListTypeOf(Type type)
         {
             var listType = typeof(List<>);

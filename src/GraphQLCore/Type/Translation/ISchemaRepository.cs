@@ -35,5 +35,9 @@ namespace GraphQLCore.Type.Translation
         GraphQLInputType GetSchemaInputTypeByName(string value);
 
         GraphQLBaseType GetSchemaOutputTypeByName(string value);
+
+        GraphQLList CreateList(Type arrayType);
+
+        GraphQLList CreateInputList(Type arrayType);
     }
 }

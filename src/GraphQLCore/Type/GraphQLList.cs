@@ -25,11 +25,8 @@
 
         public GraphQLBaseType MemberType { get; private set; }
 
-        public override object GetFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
+        public override object GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
-            if (astValue.Kind == ASTNodeKind.Variable)
-                return null;
-
             if (!(this.MemberType is GraphQLInputType))
                 return null;
 
@@ -40,7 +37,7 @@
                 ReflectionUtilities.CreateListTypeOf(
                     schemaRepository.GetInputSystemTypeFor(inputType)));
 
-            if (singleValue != null)
+            if (!ReflectionUtilities.IsNullOrEmptyCollection(singleValue))
             {
                 output.Add(singleValue);
                 return output;

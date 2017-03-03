@@ -76,11 +76,6 @@
             if (argument == null)
                 return null;
 
-            if (argument.Value.Kind == ASTNodeKind.Variable)
-            {
-                return this.variableResolver.GetValue((GraphQLVariable)argument.Value);
-            }
-
             return type.GetFromAst(argument.Value, this.schemaRepository);
         }
 
