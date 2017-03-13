@@ -163,7 +163,8 @@
             if (!(source is IEnumerable))
                 return false;
 
-            foreach (var item in (IEnumerable)source) {
+            foreach (var item in (IEnumerable)source)
+            {
                 if (!IsNullOrEmptyCollection(item))
                     return false;
             }

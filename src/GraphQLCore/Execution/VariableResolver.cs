@@ -53,8 +53,8 @@ namespace GraphQLCore.Execution
             object variableValue;
             this.variables.TryGetValue(variableName, out variableValue);
 
-            if (variableValue != null) 
-                return this.TranslatePerDefinition(variableValue, typeDefinition);                
+            if (variableValue != null)
+                return this.TranslatePerDefinition(variableValue, typeDefinition);
 
             if (typeDefinition is Type.GraphQLNonNullType)
                 throw new GraphQLException($"Type \"{typeDefinition.ToString()}\" is non-nullable and cannot be null.");

@@ -2,6 +2,7 @@
 {
     using GraphQLCore.Type.Directives;
     using Language.AST;
+    using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Dynamic;
@@ -12,7 +13,6 @@
     using Type.Complex;
     using Type.Translation;
     using Utils;
-    using System;
 
     public class FieldScope
     {
@@ -113,8 +113,11 @@
                 return this.CreateContextObject(e.Type);
 
             return ReflectionUtilities.ChangeValueType(
-                this.GetArgumentValue(arguments, e.Name,
-                this.schemaRepository.GetSchemaInputTypeFor(e.Type)), e.Type);
+                this.GetArgumentValue(
+                    arguments,
+                    e.Name,
+                    this.schemaRepository.GetSchemaInputTypeFor(e.Type)),
+                    e.Type);
         }
 
         private bool IsContextType(ParameterExpression e)

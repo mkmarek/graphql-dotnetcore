@@ -18,6 +18,16 @@
             this.inputTypeStack = new Stack<GraphQLBaseType>();
         }
 
+        public static IEnumerable<VariableUsage> Get(
+            GraphQLOperationDefinition operation, GraphQLDocument document, IGraphQLSchema schema)
+        {
+            var visitor = new VariableUsagesProvider(GetFragmentsFromDocument(document), schema);
+
+            visitor.BeginVisitOperationDefinition(operation);
+
+            return visitor.variableUsages;
+        }
+
         public override GraphQLListValue BeginVisitListValue(GraphQLListValue node)
         {
             var lastType = this.GetLastInputType();
@@ -86,16 +96,6 @@
             return this.SchemaRepository.GetSchemaInputTypeFor(fieldType.SystemType);
         }
 
-        public static IEnumerable<VariableUsage> Get(
-            GraphQLOperationDefinition operation, GraphQLDocument document, IGraphQLSchema schema)
-        {
-            var visitor = new VariableUsagesProvider(GetFragmentsFromDocument(document), schema);
-
-            visitor.BeginVisitOperationDefinition(operation);
-
-            return visitor.variableUsages;
-        }
-
         public override GraphQLFragmentSpread BeginVisitFragmentSpread(GraphQLFragmentSpread fragmentSpread)
         {
             if (this.fragments.ContainsKey(fragmentSpread.Name.Value))
@@ -139,7 +139,7 @@
         private VariableUsage CreateUsage(GraphQLVariable variable)
         {
             var type = this.GetLastInputType();
-           
+
             return new VariableUsage()
             {
                 ArgumentType = type,

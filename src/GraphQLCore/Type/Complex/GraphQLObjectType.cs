@@ -2,10 +2,10 @@
 {
     using Complex;
     using Exceptions;
-    using System.Collections.Generic;
-    using System.Linq.Expressions;
     using Execution;
+    using System.Collections.Generic;
     using System.Linq;
+    using System.Linq.Expressions;
     using System.Reflection;
 
     public abstract class GraphQLObjectType : GraphQLComplexType

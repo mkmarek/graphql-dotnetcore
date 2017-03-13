@@ -56,14 +56,14 @@
             return result;
         }
 
-        private object GetField(GraphQLObjectField astField, GraphQLInputObjectTypeFieldInfo fieldInfo, ISchemaRepository schemaRepository)
-        {
-            return this.GetValueFromField(schemaRepository, fieldInfo, astField);
-        }
-
         private static GraphQLObjectField GetFieldFromAstObjectValue(GraphQLObjectValue objectAstValue, string fieldName)
         {
             return objectAstValue.Fields.FirstOrDefault(e => e.Name.Value == fieldName);
+        }
+
+        private object GetField(GraphQLObjectField astField, GraphQLInputObjectTypeFieldInfo fieldInfo, ISchemaRepository schemaRepository)
+        {
+            return this.GetValueFromField(schemaRepository, fieldInfo, astField);
         }
 
         private void AssignValueToObjectField(T result, GraphQLInputObjectTypeFieldInfo field, object value)

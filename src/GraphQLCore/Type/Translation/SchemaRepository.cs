@@ -95,8 +95,10 @@
         public Type GetInputSystemTypeFor(GraphQLBaseType type)
         {
             if (type is GraphQLList)
+            {
                 return ReflectionUtilities.CreateListTypeOf(
                     this.GetInputSystemTypeFor(((GraphQLList)type).MemberType));
+            }
 
             var reflectedType = this.inputBindings
                 .Where(e => e.Value.Name == type.Name)
@@ -105,7 +107,7 @@
 
             if (!(type is GraphQLNonNullType))
                 reflectedType = ReflectionUtilities.CreateNullableType(reflectedType);
-            
+
             return reflectedType;
         }
 
@@ -142,17 +144,6 @@
             return inputType;
         }
 
-        private GraphQLInputType GetSchemaInputTypeForType(Type type) {
-            var underlyingType = Nullable.GetUnderlyingType(type);
-            if (underlyingType != null)
-                type = underlyingType;
-
-            if (this.inputBindings.ContainsKey(type))
-                return this.inputBindings[type];
-
-            throw new GraphQLException($"Unknown input type {type} have you added it to known types?");
-        }
-
         public GraphQLBaseType GetSchemaOutputTypeByName(string name)
         {
             return this.GetOutputKnownTypes()
@@ -177,6 +168,36 @@
                         .Contains(objectType.SystemType))
                     .Select(e => e as GraphQLComplexType)
                     .ToArray();
+        }
+
+        public GraphQLList CreateList(Type arrayType)
+        {
+            var memberType = ReflectionUtilities.GetCollectionMemberType(arrayType);
+            var schemaType = this.GetSchemaTypeFor(memberType);
+            var list = new GraphQLList(schemaType);
+
+            return list;
+        }
+
+        public GraphQLList CreateInputList(Type arrayType)
+        {
+            var memberType = ReflectionUtilities.GetCollectionMemberType(arrayType);
+            var schemaType = this.GetSchemaInputTypeFor(memberType);
+            var list = new GraphQLList(schemaType);
+
+            return list;
+        }
+
+        private GraphQLInputType GetSchemaInputTypeForType(Type type)
+        {
+            var underlyingType = Nullable.GetUnderlyingType(type);
+            if (underlyingType != null)
+                type = underlyingType;
+
+            if (this.inputBindings.ContainsKey(type))
+                return this.inputBindings[type];
+
+            throw new GraphQLException($"Unknown input type {type} have you added it to known types?");
         }
 
         private void AddInputType(GraphQLInputType type)
@@ -220,24 +241,6 @@
                 return new GraphQLNonNullType(this.GetSchemaTypeFor(type, type));
 
             return this.GetSchemaTypeFor(type, type);
-        }
-
-        public GraphQLList CreateList(Type arrayType)
-        {
-            var memberType = ReflectionUtilities.GetCollectionMemberType(arrayType);
-            var schemaType = this.GetSchemaTypeFor(memberType);
-            var list = new GraphQLList(schemaType);
-
-            return list;
-        }
-
-        public GraphQLList CreateInputList(Type arrayType)
-        {
-            var memberType = ReflectionUtilities.GetCollectionMemberType(arrayType);
-            var schemaType = this.GetSchemaInputTypeFor(memberType);
-            var list = new GraphQLList(schemaType);
-
-            return list;
         }
     }
 }
