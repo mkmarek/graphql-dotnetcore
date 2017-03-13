@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace GraphQLCore.Execution
 {
@@ -73,7 +74,34 @@ namespace GraphQLCore.Execution
                 return this.CreateObjectFromDynamic((GraphQLInputObjectType)typeDefinition, (ExpandoObject)inputObject);
 
             if (typeDefinition is GraphQLList)
-                return this.CreateList((IEnumerable)inputObject, (GraphQLList)typeDefinition);
+            {
+                var list = (GraphQLList)typeDefinition;
+                var schemaType = list.MemberType as GraphQLInputType;
+                var systemType = this.schemaRepository.GetInputSystemTypeFor(schemaType);
+                var output = GraphQLList.CreateOutputList(schemaType, this.schemaRepository);
+
+                if (inputObject is ICollection)
+                {
+                    foreach (var member in (ICollection)inputObject)
+                    {
+                        var value = this.TranslatePerDefinition(member, list.MemberType);
+                        value = ReflectionUtilities.ChangeValueType(value, systemType);
+
+                        output.Add(value);
+                    }
+
+                    return output;
+                }
+                else
+                {
+                    var singleValue = this.TranslatePerDefinition(inputObject, list.MemberType);
+
+                    singleValue = ReflectionUtilities.ChangeValueType(singleValue, systemType);
+                    output.Add(singleValue);
+
+                    return output;
+                }
+            }
 
             return inputObject;
         }

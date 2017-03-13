@@ -68,8 +68,7 @@
 
         private void AssignValueToObjectField(T result, GraphQLInputObjectTypeFieldInfo field, object value)
         {
-            if (ReflectionUtilities.IsCollection(field.SystemType))
-                value = ReflectionUtilities.ChangeToCollection(value, field.SystemType);
+            value = ReflectionUtilities.ChangeValueType(value, field.SystemType);
 
             ReflectionUtilities.MakeSetterFromLambda(field.Lambda)
                     .DynamicInvoke(result, value);

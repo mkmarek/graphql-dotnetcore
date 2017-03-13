@@ -50,10 +50,10 @@
             if (underlyingNullableType != null)
                 return ChangeValueType(input, underlyingNullableType);
 
-            if (IsCollection(target))
+            if (IsCollection(target) && IsCollection(input.GetType()))
                 return ChangeToCollection(input, target);
 
-            if (IsEnum(target))
+            if (IsEnum(target) && input is string)
                 return Enum.Parse(target, input as string);
 
             return null;
@@ -153,23 +153,6 @@
                 .MakeGenericMethod(type);
 
             return toList.Invoke(null, new object[] { input });
-        }
-
-        public static bool IsNullOrEmptyCollection(object source)
-        {
-            if (source == null)
-                return true;
-
-            if (!(source is IEnumerable))
-                return false;
-
-            foreach (var item in (IEnumerable)source)
-            {
-                if (!IsNullOrEmptyCollection(item))
-                    return false;
-            }
-
-            return true;
         }
 
         public static Type CreateNullableType(Type type)

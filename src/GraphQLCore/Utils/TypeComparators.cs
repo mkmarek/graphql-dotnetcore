@@ -45,7 +45,7 @@ namespace GraphQLCore.Utils
                 {
                     return IsSubtypeOf(
                         ((GraphQLList)possibleSubtype).MemberType,
-                        ((GraphQLList)possibleSubtype).MemberType,
+                        ((GraphQLList)superType).MemberType,
                         schemaRepository);
                 }
 
