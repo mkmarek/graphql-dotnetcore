@@ -124,6 +124,26 @@
             Assert.AreEqual(typeof(FurColor?), inputType);
         }
 
+        [Test]
+        public void GetInputSystemTypeFor_NonNullableList_ReturnsCorrectSystemType()
+        {
+            var inputType = this.schemaRepository.GetInputSystemTypeFor(
+                new GraphQLNonNullType(
+                    new GraphQLList(
+                        new GraphQLNonNullType(
+                            new GraphQLList(
+                                new GraphQLNonNullType(
+                                    new GraphQLInt()
+                                )
+                            )
+                        )
+                    )
+                )
+            );
+
+            Assert.AreEqual(typeof(int), inputType.GenericTypeArguments.Single().GenericTypeArguments.Single());
+        }
+
         [SetUp]
         public void SetUp()
         {

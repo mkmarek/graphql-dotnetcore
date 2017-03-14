@@ -94,21 +94,13 @@
 
         public Type GetInputSystemTypeFor(GraphQLBaseType type)
         {
-            if (type is GraphQLList)
-            {
-                return ReflectionUtilities.CreateListTypeOf(
-                    this.GetInputSystemTypeFor(((GraphQLList)type).MemberType));
-            }
+            if (type is GraphQLNonNullType)
+                return this.GetNonNullInputSystemTypeFor(((GraphQLNonNullType)type).UnderlyingNullableType);
 
-            var reflectedType = this.inputBindings
-                .Where(e => e.Value.Name == type.Name)
-                .Select(e => e.Key)
-                .FirstOrDefault();
+            var inputType = ReflectionUtilities.CreateNullableType(
+                this.GetNonNullInputSystemTypeFor(type));
 
-            if (!(type is GraphQLNonNullType))
-                reflectedType = ReflectionUtilities.CreateNullableType(reflectedType);
-
-            return reflectedType;
+            return inputType;
         }
 
         public IEnumerable<GraphQLComplexType> GetOutputKnownComplexTypes()
@@ -198,6 +190,22 @@
                 return this.inputBindings[type];
 
             throw new GraphQLException($"Unknown input type {type} have you added it to known types?");
+        }
+
+        private Type GetNonNullInputSystemTypeFor(GraphQLBaseType type)
+        {
+            if (type is GraphQLList)
+            {
+                return ReflectionUtilities.CreateListTypeOf(
+                    this.GetInputSystemTypeFor(((GraphQLList)type).MemberType));
+            }
+
+            var reflectedType = this.inputBindings
+                .Where(e => e.Value.Name == type.Name)
+                .Select(e => e.Key)
+                .FirstOrDefault();
+
+            return reflectedType;
         }
 
         private void AddInputType(GraphQLInputType type)

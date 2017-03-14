@@ -75,6 +75,9 @@ namespace GraphQLCore.Execution
 
             if (typeDefinition is GraphQLList)
             {
+                if (inputObject == null)
+                    return null;
+
                 var list = (GraphQLList)typeDefinition;
                 var schemaType = list.MemberType as GraphQLInputType;
                 var systemType = this.schemaRepository.GetInputSystemTypeFor(schemaType);
