@@ -53,10 +53,12 @@
 
         private static dynamic GetVariables(GraphiQLInput input)
         {
-            if (string.IsNullOrWhiteSpace(input.Variables))
+            var variables = input.Variables?.ToString();
+
+            if (string.IsNullOrEmpty(variables))
                 return new ExpandoObject();
 
-            return JsonConvert.DeserializeObject<ExpandoObject>(input.Variables);
+            return JsonConvert.DeserializeObject<ExpandoObject>(variables);
         }
     }
 }

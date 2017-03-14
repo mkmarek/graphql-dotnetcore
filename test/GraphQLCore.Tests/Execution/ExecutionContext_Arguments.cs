@@ -192,6 +192,17 @@
             Assert.AreEqual(new string[] { TestEnum.One.ToString() }, result.withObjectArg.enumField);
         }
 
+        [Test]
+        public void Execute_NullValue_CorrectlyTranslatesIntoOutput()
+        {
+            dynamic result = this.schema.Execute(@"
+                {
+                    isNull(nonMandatory: null)
+                }");
+
+            Assert.IsTrue(result.isNull);
+        }
+
         [SetUp]
         public void SetUp()
         {

@@ -21,6 +21,9 @@
             if (astValue is GraphQLVariable)
                 return new GraphQLException[] { };
 
+            if (astValue is GraphQLNullValue)
+                return this.ValidateNullType(type, astValue);
+
             if (type is GraphQLList)
                 return this.ValidateListType(type, astValue);
 
@@ -64,6 +67,19 @@
                 return this.ValidateListMembers(itemType, (GraphQLListValue)astValue);
 
             return this.IsValid(itemType, astValue);
+        }
+
+        private IEnumerable<GraphQLException> ValidateNullType(GraphQLBaseType type, GraphQLValue astValue)
+        {
+            if (type is Type.GraphQLNonNullType)
+            {
+                return new GraphQLException[]
+                {
+                    new GraphQLException($"Expected type \"{type.Name}\", found null.")
+                };
+            }
+
+            return new GraphQLException[] { };
         }
     }
 }

@@ -17,6 +17,7 @@
         FloatValue,
         StringValue,
         BooleanValue,
+        NullValue,
         EnumValue,
         ListValue,
         ObjectValue,

@@ -36,7 +36,7 @@
 
         public override object GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
-            if (!(this.MemberType is GraphQLInputType))
+            if (!(this.MemberType is GraphQLInputType) || astValue.Kind == ASTNodeKind.NullValue)
                 return null;
 
             var inputType = this.MemberType as GraphQLInputType;
