@@ -3,6 +3,7 @@
     using Exceptions;
     using Language.AST;
     using System.Collections.Generic;
+    using System.Linq;
     using Type;
 
     public class ArgumentsOfCorrectTypeVisitor : ValidationASTVisitor
@@ -21,13 +22,18 @@
 
             var errors = this.LiteralValueValidator.IsValid(argumentType, astValue);
 
-            foreach (var error in errors)
-            {
-                this.Errors.Add(new GraphQLException(
-                    $"Argument \"{argument.Name.Value}\" has invalid value {astValue} {error.Message}"));
-            }
+            if (errors.Any())
+                this.Errors.Add(this.ComposeErrorMessage(argument, astValue, errors));
 
             return base.EndVisitArgument(argument);
+        }
+
+        private GraphQLException ComposeErrorMessage(GraphQLArgument argument, GraphQLValue astValue, IEnumerable<GraphQLException> innerExceptions)
+        {
+            var innerMessage = string.Join("\n", innerExceptions.Select(e => e.Message));
+            var exceptionMessage = $"Argument \"{argument.Name.Value}\" has invalid value {astValue}.\n{innerMessage}";
+
+            return new GraphQLException(exceptionMessage);
         }
     }
 }
