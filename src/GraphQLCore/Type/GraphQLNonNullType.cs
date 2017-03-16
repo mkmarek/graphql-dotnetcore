@@ -24,7 +24,7 @@
 
         public GraphQLBaseType UnderlyingNullableType { get; private set; }
 
-        public override object GetFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
+        public override object GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
             if (this.UnderlyingNullableType is GraphQLInputType)
                 return ((GraphQLInputType)this.UnderlyingNullableType).GetFromAst(astValue, schemaRepository);

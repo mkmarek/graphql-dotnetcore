@@ -15,7 +15,7 @@
 
         public Type SystemType { get; protected set; }
 
-        public override object GetFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
+        public override object GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
             if (astValue.Kind != ASTNodeKind.EnumValue)
                 return null;

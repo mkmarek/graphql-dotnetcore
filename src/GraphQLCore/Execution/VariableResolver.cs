@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace GraphQLCore.Execution
 {
@@ -53,8 +54,8 @@ namespace GraphQLCore.Execution
             object variableValue;
             this.variables.TryGetValue(variableName, out variableValue);
 
-            if (variableValue != null) 
-                return this.TranslatePerDefinition(variableValue, typeDefinition);                
+            if (variableValue != null)
+                return this.TranslatePerDefinition(variableValue, typeDefinition);
 
             if (typeDefinition is Type.GraphQLNonNullType)
                 throw new GraphQLException($"Type \"{typeDefinition.ToString()}\" is non-nullable and cannot be null.");
@@ -73,7 +74,15 @@ namespace GraphQLCore.Execution
                 return this.CreateObjectFromDynamic((GraphQLInputObjectType)typeDefinition, (ExpandoObject)inputObject);
 
             if (typeDefinition is GraphQLList)
-                return this.CreateList((IEnumerable)inputObject, (GraphQLList)typeDefinition);
+            {
+                if (inputObject == null)
+                    return null;
+
+                if (ReflectionUtilities.IsCollection(inputObject.GetType()))
+                    return this.CreateList((IEnumerable)inputObject, (GraphQLList)typeDefinition);
+
+                return this.CreateSingleValueList(inputObject, (GraphQLList)typeDefinition);
+            }
 
             return inputObject;
         }
@@ -107,6 +116,16 @@ namespace GraphQLCore.Execution
         {
             foreach (var item in inputObject)
                 yield return this.TranslatePerDefinition(item, typeDefinition.MemberType);
+        }
+
+        private IEnumerable CreateSingleValueList(object inputObject, GraphQLList typeDefinition)
+        {
+            var systemType = this.schemaRepository.GetInputSystemTypeFor(typeDefinition.MemberType);
+
+            var singleValue = this.TranslatePerDefinition(inputObject, typeDefinition.MemberType);
+            singleValue = ReflectionUtilities.ChangeValueType(singleValue, systemType);
+
+            yield return singleValue;
         }
 
         private GraphQLBaseType GetTypeDefinition(GraphQLType typeDefinition)

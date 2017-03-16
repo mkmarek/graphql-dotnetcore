@@ -50,10 +50,10 @@
             if (underlyingNullableType != null)
                 return ChangeValueType(input, underlyingNullableType);
 
-            if (IsCollection(target))
+            if (IsCollection(target) && IsCollection(input.GetType()))
                 return ChangeToCollection(input, target);
 
-            if (IsEnum(target))
+            if (IsEnum(target) && input is string)
                 return Enum.Parse(target, input as string);
 
             return null;
@@ -153,6 +153,14 @@
                 .MakeGenericMethod(type);
 
             return toList.Invoke(null, new object[] { input });
+        }
+
+        public static Type CreateNullableType(Type type)
+        {
+            if (IsValueType(type))
+                return typeof(Nullable<>).MakeGenericType(type);
+
+            return type;
         }
 
         internal static Type CreateListTypeOf(Type type)

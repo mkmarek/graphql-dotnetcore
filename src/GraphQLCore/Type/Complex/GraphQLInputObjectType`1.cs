@@ -4,6 +4,7 @@
     using Exceptions;
     using Language.AST;
     using System;
+    using System.Collections;
     using System.Linq;
     using System.Linq.Expressions;
     using Translation;
@@ -32,7 +33,7 @@
             this.Fields.Add(fieldName, GraphQLInputObjectTypeFieldInfo.CreateAccessorFieldInfo(fieldName, accessor));
         }
 
-        public override object GetFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
+        public override object GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
             if (!(astValue is GraphQLObjectValue))
                 return null;
@@ -47,13 +48,7 @@
                 if (astField == null)
                     continue;
 
-                object value = this.GetValueFromField(schemaRepository, field.Value, astField);
-
-                if (value == null && astField.Value.Kind == ASTNodeKind.Variable)
-                {
-                    value = schemaRepository.VariableResolver.GetValue((GraphQLVariable)astField.Value);
-                    value = ReflectionUtilities.ChangeValueType(value, field.Value.SystemType);
-                }
+                var value = this.GetField(astField, field.Value, schemaRepository);
 
                 this.AssignValueToObjectField(result, field.Value, value);
             }
@@ -66,10 +61,14 @@
             return objectAstValue.Fields.FirstOrDefault(e => e.Name.Value == fieldName);
         }
 
+        private object GetField(GraphQLObjectField astField, GraphQLInputObjectTypeFieldInfo fieldInfo, ISchemaRepository schemaRepository)
+        {
+            return this.GetValueFromField(schemaRepository, fieldInfo, astField);
+        }
+
         private void AssignValueToObjectField(T result, GraphQLInputObjectTypeFieldInfo field, object value)
         {
-            if (ReflectionUtilities.IsCollection(field.SystemType))
-                value = ReflectionUtilities.ChangeToCollection(value, field.SystemType);
+            value = ReflectionUtilities.ChangeValueType(value, field.SystemType);
 
             ReflectionUtilities.MakeSetterFromLambda(field.Lambda)
                     .DynamicInvoke(result, value);

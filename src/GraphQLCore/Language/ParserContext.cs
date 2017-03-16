@@ -250,6 +250,15 @@
             };
         }
 
+        private GraphQLValue ParseNullValue(Token token)
+        {
+            this.Advance();
+            return new GraphQLNullValue()
+            {
+                Location = this.GetLocation(token.Start)
+            };
+        }
+
         private GraphQLValue ParseConstantValue()
         {
             return this.ParseValueLiteral(true);
@@ -615,11 +624,13 @@
 
             if (token.Value.Equals("true") || token.Value.Equals("false"))
                 return this.ParseBooleanValue(token);
-            else if (token.Value != null && !token.Value.Equals("null"))
+            else if (token.Value.Equals("null"))
+                return this.ParseNullValue(token);
+            else if (token != null)
                 return this.ParseEnumValue(token);
 
             throw new GraphQLSyntaxErrorException(
-                    $"Unexpected {this.currentToken}", this.source, this.currentToken.Start);
+                $"Unexpected {this.currentToken}", this.source, this.currentToken.Start);
         }
 
         private GraphQLValue ParseObject(bool isConstant)

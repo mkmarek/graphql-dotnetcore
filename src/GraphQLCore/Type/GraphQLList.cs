@@ -25,31 +25,40 @@
 
         public GraphQLBaseType MemberType { get; private set; }
 
-        public override object GetFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
+        public static IList CreateOutputList(GraphQLInputType inputType, ISchemaRepository schemaRepository)
         {
-            if (astValue.Kind == ASTNodeKind.Variable)
-                return null;
-
-            if (!(this.MemberType is GraphQLInputType))
-                return null;
-
-            var inputType = this.MemberType as GraphQLInputType;
-            var singleValue = inputType.GetFromAst(astValue, schemaRepository);
-
             IList output = (IList)Activator.CreateInstance(
                 ReflectionUtilities.CreateListTypeOf(
                     schemaRepository.GetInputSystemTypeFor(inputType)));
 
-            if (singleValue != null)
+            return output;
+        }
+
+        public override object GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
+        {
+            if (!(this.MemberType is GraphQLInputType) || astValue.Kind == ASTNodeKind.NullValue)
+                return null;
+
+            var inputType = this.MemberType as GraphQLInputType;
+            var output = CreateOutputList(inputType, schemaRepository);
+
+            if (astValue.Kind != ASTNodeKind.ListValue)
             {
-                output.Add(singleValue);
+                var value = inputType.GetFromAst(astValue, schemaRepository);
+                output.Add(value);
                 return output;
             }
 
             var list = ((GraphQLListValue)astValue).Values;
 
             foreach (var item in list)
-                output.Add(inputType.GetFromAst(item, schemaRepository));
+            {
+                var value = inputType.GetFromAst(item, schemaRepository);
+                if (value == null && inputType is GraphQLNonNullType)
+                    return null;
+
+                output.Add(value);
+            }
 
             return output;
         }

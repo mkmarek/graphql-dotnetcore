@@ -120,6 +120,89 @@
             Assert.AreEqual("efg", ((IEnumerable<dynamic>)((IEnumerable<dynamic>)result.withObjectListArg).ElementAt(0).StringArray).ElementAt(1));
         }
 
+        [Test]
+        public void Execute_WithNestedListSingleValueArgument_CorrectlyTranslatesIntoOutput()
+        {
+            dynamic result = this.schema.Execute(@"
+                {
+                    withObjectNestedListArg(obj: [
+                        [
+                            { stringArray: ""abc"" },
+                            { stringArray: [""ABC"", ""EFG""] },
+                        ],
+                        { stringArray: [""hij"", ""klm""] }
+                    ]) { 
+                        StringArray 
+                    }
+                }");
+            
+            Assert.AreEqual("abc", result.withObjectNestedListArg[0][0].StringArray[0]);
+            Assert.AreEqual("klm", result.withObjectNestedListArg[1][0].StringArray[1]);
+        }
+
+        [Test]
+        public void Execute_SingleValueInNestedList_CorrectlyTranslatesIntoOutput()
+        {
+            dynamic result = this.schema.Execute(@"
+                {
+                    withNestedArray(matrix: [
+                        [
+                            [1, 2],
+                            3
+                        ],
+                        [1, 2, [1, 2, 3]],
+                        4
+                    ])
+                }");
+
+            var expectedResult = new int?[][][]
+            {
+                new int?[][]
+                {
+                    new int?[] { 1, 2 },
+                    new int?[] { 3 }
+                },
+                new int?[][]
+                {
+                    new int?[] { 1 },
+                    new int?[] { 2 },
+                    new int?[] { 1, 2, 3 }
+                },
+                new int?[][]
+                {
+                    new int?[] { 4 },
+                }
+            };
+
+            Assert.AreEqual(expectedResult, result.withNestedArray);
+        }
+
+        [Test]
+        public void Execute_EnumSingleValue_CorrectlyTranslatesIntoOutput()
+        {
+            dynamic result = this.schema.Execute(@"
+                {
+                    withObjectArg(obj: {
+                        enumField: [One]
+                    }) {
+                        enumField
+                    }
+                }");
+
+            Assert.AreEqual(new string[] { TestEnum.One.ToString() }, result.withObjectArg.enumField);
+        }
+
+        [Test]
+        public void Execute_NullValue_CorrectlyTranslatesIntoOutput()
+        {
+            dynamic result = this.schema.Execute(@"
+                {
+                    isNull(nonMandatory: null)
+                }");
+
+            Assert.IsTrue(result.isNull);
+        }
+
         [SetUp]
         public void SetUp()
         {
@@ -132,6 +215,7 @@
             this.schema.AddKnownType(nestedTypeNonGeneric);
             this.schema.AddKnownType(nestedType);
             this.schema.AddKnownType(new InputTestObjectType());
+            this.schema.AddKnownType(new TestEnumType());
 
             this.schema.Query(rootType);
         }
@@ -151,6 +235,7 @@
                 this.Field(instance => instance.Id);
                 this.Field(instance => instance.StringField);
                 this.Field(instance => instance.StringArray);
+                this.Field("enumField", instance => instance.Enum);
                 this.Field("nested", (int id) => nestedTypeNonGeneric);
             }
         }
@@ -161,6 +246,7 @@
             {
                 this.Field("stringField", instance => instance.StringField);
                 this.Field("stringArray", instance => instance.StringArray);
+                this.Field("enumField", instance => instance.Enum);
             }
         }
 
@@ -176,6 +262,15 @@
                 this.Field("withIEnumerable", (IEnumerable<int> ids) => ids.Count());
                 this.Field("withObjectArg", (TestObject obj) => obj);
                 this.Field("withObjectListArg", (IEnumerable<TestObject> obj) => obj);
+                this.Field("withObjectNestedListArg", (IEnumerable<IEnumerable<TestObject>> obj) => obj);
+                this.Field("withNestedArray", (int?[][][] matrix) => matrix);
+            }
+        }
+
+        private class TestEnumType : GraphQLEnumType<TestEnum>
+        {
+            public TestEnumType() : base("TestEnumType", "")
+            {
             }
         }
 
@@ -184,6 +279,9 @@
             public int Id { get; set; }
             public string StringField { get; set; }
             public string[] StringArray { get; set; }
+            public TestEnum[] Enum { get; set; }
         }
+
+        private enum TestEnum { One, Two, Three }
     }
 }

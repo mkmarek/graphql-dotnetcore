@@ -293,7 +293,7 @@
             }
             ");
 
-            Assert.AreEqual("Argument \"stringListArg\" has invalid value [\"one\", 2] In element #1: Expected type \"String\", found 2.",
+            Assert.AreEqual("Argument \"stringListArg\" has invalid value [\"one\", 2].\nIn element #1: Expected type \"String\", found 2.",
                 errors.Single().Message);
         }
 
@@ -533,6 +533,61 @@
             ");
 
             Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"stringArg\" has invalid value BAR"));
+        }
+
+        [Test]
+        public void StringIntoInt_InObjectField_ExpectsSingleError()
+        {
+            var errors = Validate(@"
+            {
+                insertInputObject(inputObject: {
+                    intField: ""aaa""
+                }) {
+                    intField
+                }
+            }
+            ");
+
+            Assert.AreEqual("Argument \"inputObject\" has invalid value GraphQLCore.Language.AST.GraphQLObjectValue.\nIn field \"intField\": Expected type \"Int\", found \"aaa\".",
+                errors.Single().Message);
+        }
+
+        [Test]
+        public void IncorrectItemType_InListFieldInObject_ExpectsSingleError()
+        {
+            var errors = Validate(@"
+            {
+                insertInputObject(inputObject: {
+                    stringListField: [null, 1, ""3"", [8, 5, 4]]
+                }) {
+                    stringListField
+                }
+            }
+            ");
+
+            Assert.AreEqual("Argument \"inputObject\" has invalid value GraphQLCore.Language.AST.GraphQLObjectValue.\nIn field \"stringListField\": In element #1: Expected type \"String\", found 1.\nIn field \"stringListField\": In element #3: Expected type \"String\", found [8, 5, 4].",
+                errors.Single().Message);
+        }
+
+        [Test]
+        public void IncorrectItemType_InNestedObjectField_ExpectsSingleError()
+        {
+            var errors = Validate(@"
+            {
+                insertInputObject(inputObject: {
+                    nested: {
+                        nonNullIntField: null
+                    }
+                }) {
+                    nested {
+                        nonNullIntField
+                    }
+                }
+            }
+            ");
+
+            Assert.AreEqual("Argument \"inputObject\" has invalid value GraphQLCore.Language.AST.GraphQLObjectValue.\nIn field \"nested\": In field \"nonNullIntField\": Expected type \"Int\", found null.",
+                errors.Single().Message);
         }
     }
 }

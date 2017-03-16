@@ -361,11 +361,103 @@
             Assert.AreEqual("Type \"Int!\" is non-nullable and cannot be null.", exception.Message);
         }
 
+        [Test]
+        public void Execute_WithVariablesInLists_ParsesAndReturnsCorrectValues()
+        {
+            var query = @"
+            query insertObject($stringArgVar: String, $complicatedObjectArgVar: ComplicatedInputObjectType, $stringListArgVar: [String]) {
+                insertInputObject(inputObject: {
+                    stringListField: [$stringArgVar, ""and"", $stringArgVar],
+                    complicatedObjectArray: [
+                        $complicatedObjectArgVar,
+                        {
+                            stringListField: $stringListArgVar,
+                        }
+                    ]
+                }) {
+                    stringListField
+                    complicatedObjectArray {
+                        stringField
+                        stringListField
+                    }
+                }
+            }";
+
+            var result = this.schema.Execute(query, this.variables);
+
+            Assert.AreEqual(new string[] { "sample", "and", "sample" }, result.insertInputObject.stringListField);
+            Assert.AreEqual("sample", result.insertInputObject.complicatedObjectArray[0].stringField);
+            Assert.AreEqual(new string[] { "a", "b", "c" }, result.insertInputObject.complicatedObjectArray[1].stringListField);
+            Assert.AreEqual(null, result.insertInputObject.complicatedObjectArray[1].stringField);
+        }
+
+        [Test]
+        public void Execute_WithDeeplyNestedVariable_ParsesAndReturnsCorrectValue()
+        {
+            var query = @"
+            query insertObject($complicatedObjectArgVar: ComplicatedInputObjectType) {
+                insertInputObject(inputObject: {
+                    nested: {
+                        nested: $complicatedObjectArgVar
+                    }
+                }) {
+                    nested {
+                        nested {
+                            intField
+                        }
+                    }
+                }
+            }";
+
+            var result = this.schema.Execute(query, this.variables);
+
+            Assert.AreEqual(1, result.insertInputObject.nested.nested.intField);
+        }
+
+        [Test]
+        public void Execute_WithNestedJaggedListVariable_ParsesAndReturnsCorrectValue()
+        {
+            this.variables.one = "a";
+            this.variables.two = new string[] { "a", "b" };
+            this.variables.three = new List<string[]>()
+            {
+                new string[] { "a", null },
+                new string[] { "c", "d" }
+            };
+
+            var query = @"
+            query jagged($one: String, $two: [String], $three: [[String]]) {
+                jagged(jagged: [
+                    [
+                        [$one, ""b""],
+                        $two
+                    ],
+                    $three
+                ])
+            }";
+
+            var result = this.schema.Execute(query, this.variables);
+
+            var expectedResult = new string[][][]
+            {
+                new string[][]
+                {
+                    new string[] { "a", "b" },
+                    new string[] { "a", "b" }
+                },
+                new string[][]
+                {
+                    new string[] { "a", null },
+                    new string[] { "c", "d" }
+                }
+            };
+
+            Assert.AreEqual(expectedResult, result.jagged);
+        }
+
         [SetUp]
         public void SetUp()
         {
-
-
             this.variables = new ExpandoObject();
             this.variables.intArgVar = 3;
             this.variables.stringArgVar = "sample";

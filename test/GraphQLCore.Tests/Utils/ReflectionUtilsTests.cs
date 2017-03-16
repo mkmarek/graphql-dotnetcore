@@ -27,5 +27,15 @@
 
             Assert.IsNull(result);
         }
+
+        [Test]
+        public void ChangeValueType_NonEnumerableToEnumerable_ReturnsNull()
+        {
+            var result = ReflectionUtilities.ChangeValueType(1, typeof(int[]));
+            var result2 = ReflectionUtilities.ChangeValueType("test", typeof(List<string>));
+
+            Assert.IsNull(result);
+            Assert.IsNull(result2);
+        }
     }
 }

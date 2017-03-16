@@ -1,6 +1,7 @@
 ﻿namespace GraphQLCore.Tests.Schemas
 {
     using GraphQLCore.Type;
+    using System.Collections.Generic;
     using System.Linq;
 
     public enum FurColor
@@ -182,6 +183,7 @@
             this.Field("bar", (int? a) => "foo");
             this.Field("sum", (int?[] arg) => arg.Sum());
             this.Field("field", (string a, string b, string c) => this);
+            this.Field("jagged", (IEnumerable<string[][]> jagged) => jagged);
             this.Field("interfaceObject", () => (ComplicatedInteface)new ComplicatedObject());
             this.Field("complicatedArgs", () => complicatedArgs);
             this.Field("insertInputObject", (ComplicatedObject inputObject) => inputObject);

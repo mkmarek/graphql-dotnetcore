@@ -21,6 +21,9 @@
             if (astValue is GraphQLVariable)
                 return new GraphQLException[] { };
 
+            if (astValue is GraphQLNullValue)
+                return this.ValidateNullType(type, astValue);
+
             if (type is GraphQLList)
                 return this.ValidateListType(type, astValue);
 
@@ -34,15 +37,31 @@
         {
             var value = ((GraphQLInputType)type).GetFromAst(astValue, this.schemaRepository);
 
-            if (value == null)
-            {
-                return new GraphQLException[]
-                {
+            if (type is GraphQLInputObjectType)
+                return this.ValidateObjectFields((GraphQLInputObjectType)type, (GraphQLObjectValue)astValue);
+
+            if (value == null) {
+                return new GraphQLException[] {
                     new GraphQLException($"Expected type \"{type.Name}\", found {astValue}.")
                 };
             }
 
             return new GraphQLException[] { };
+        }
+
+        private IEnumerable<GraphQLException> ValidateObjectFields(GraphQLInputObjectType objectType, GraphQLObjectValue objectValue)
+        {
+            foreach (var field in objectValue.Fields)
+            {
+                var fieldInfo = objectType.GetFieldInfo(field.Name.Value);
+                var fieldType = fieldInfo.GetGraphQLType(this.schemaRepository);
+                var fieldValue = field.Value;
+
+                var fieldErrors = this.IsValid(fieldType, fieldValue);
+
+                foreach (var fieldError in fieldErrors)
+                    yield return new GraphQLException($"In field \"{field.Name.Value}\": {fieldError.Message}");
+            }
         }
 
         private IEnumerable<GraphQLException> ValidateListMembers(GraphQLBaseType itemType, GraphQLListValue astValue)
@@ -64,6 +83,19 @@
                 return this.ValidateListMembers(itemType, (GraphQLListValue)astValue);
 
             return this.IsValid(itemType, astValue);
+        }
+
+        private IEnumerable<GraphQLException> ValidateNullType(GraphQLBaseType type, GraphQLValue astValue)
+        {
+            if (type is Type.GraphQLNonNullType)
+            {
+                return new GraphQLException[]
+                {
+                    new GraphQLException($"Expected type \"{type.Name}\", found null.")
+                };
+            }
+
+            return new GraphQLException[] { };
         }
     }
 }
