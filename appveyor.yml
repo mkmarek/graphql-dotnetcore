@@ -17,10 +17,10 @@ build_script:
   - dotnet build src\GraphQLCore --configuration Release
   - ps: .\CreateArtifacts.ps1
 test_script:
-  - dotnet test .\test\GraphQLCore.Tests\
-  - where dotnet
-  - .\OpenCover\OpenCover.4.6.519\tools\OpenCover.Console.exe -oldstyle -target:"C:\\Program Files\\dotnet\\dotnet.exe" -targetargs:"test .\test\GraphQLCore.Tests" -output:coverage.xml -register:user
-  - .\coveralls.net\coveralls.net.0.6.0\tools\csmacnz.coveralls.exe --opencover -i .\coverage.xml
+  - cd test\GraphQLCore.Tests
+  - dotnet run
+  - ..\..\OpenCover\OpenCover.4.6.519\tools\OpenCover.Console.exe -oldstyle -target:"C:\\Program Files\\dotnet\\dotnet.exe" -targetargs:"run" -output:coverage.xml -register:user
+  - ..\..\coveralls.net\coveralls.net.0.6.0\tools\csmacnz.coveralls.exe --opencover -i .\coverage.xml
 artifacts:  
 - path: .\artifacts\**\*.nupkg
   name: NuGet

@@ -162,6 +162,15 @@
                     .ToArray();
         }
 
+        public GraphQLComplexType[] GetPossibleTypesForUnion(GraphQLUnionType unionType)
+        {
+            return this.GetOutputKnownComplexTypes()
+                    .Where(e => unionType.PossibleTypes.Contains(e.SystemType) ||
+                        unionType.PossibleTypes.Contains(e.GetType())) 
+                    .Select(e => e as GraphQLComplexType)
+                    .ToArray();
+        }
+
         public GraphQLList CreateList(Type arrayType)
         {
             var memberType = ReflectionUtilities.GetCollectionMemberType(arrayType);

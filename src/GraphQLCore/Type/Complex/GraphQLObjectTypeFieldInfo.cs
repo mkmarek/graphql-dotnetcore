@@ -37,6 +37,18 @@
             };
         }
 
+        public static GraphQLObjectTypeFieldInfo CreateUnionResolverFieldInfo(string fieldName, Type unionType, LambdaExpression resolver)
+        {
+            return new GraphQLObjectTypeFieldInfo()
+            {
+                Name = fieldName,
+                IsResolver = true,
+                Lambda = resolver,
+                Arguments = GetArguments(resolver),
+                SystemType = unionType
+            };
+        }
+
         protected override GraphQLBaseType GetSchemaType(Type type, ISchemaRepository schemaRepository)
         {
             return schemaRepository.GetSchemaTypeFor(type);

@@ -1,6 +1,7 @@
 ﻿namespace GraphQLCore.Type
 {
     using Exceptions;
+    using GraphQLCore.Type.Complex;
     using System;
     using System.Linq.Expressions;
     using Utils;
@@ -12,17 +13,21 @@
             this.SystemType = typeof(T);
         }
 
-        public void Field<TFieldType>(string fieldName, Expression<Func<T, TFieldType>> accessor)
+        public FieldDefinitionBuilder Field<TFieldType>(string fieldName, Expression<Func<T, TFieldType>> accessor)
         {
             if (this.ContainsField(fieldName))
                 throw new GraphQLException("Can't insert two fields with the same name.");
 
-            this.Fields.Add(fieldName, this.CreateFieldInfo(fieldName, accessor));
+            var fieldInfo = this.CreateFieldInfo(fieldName, accessor);
+
+            this.Fields.Add(fieldName, fieldInfo);
+
+            return new FieldDefinitionBuilder(fieldInfo);
         }
 
-        public void Field<TFieldType>(Expression<Func<T, TFieldType>> accessor)
+        public FieldDefinitionBuilder Field<TFieldType>(Expression<Func<T, TFieldType>> accessor)
         {
-            this.Field(ReflectionUtilities.GetPropertyInfo(accessor).Name, accessor);
+            return this.Field(ReflectionUtilities.GetPropertyInfo(accessor).Name, accessor);
         }
     }
 }

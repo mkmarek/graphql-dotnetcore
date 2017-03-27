@@ -64,6 +64,13 @@
             return base.BeginVisitInlineFragment(inlineFragment);
         }
 
+        public override GraphQLInlineFragment EndVisitInlineFragment(GraphQLInlineFragment inlineFragment)
+        {
+            this.typeStack.Pop();
+
+            return base.EndVisitInlineFragment(inlineFragment);
+        }
+
         public override GraphQLOperationDefinition BeginVisitOperationDefinition(GraphQLOperationDefinition definition)
         {
             switch (definition.Operation)

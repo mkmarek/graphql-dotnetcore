@@ -18,18 +18,23 @@
             this.SystemType = this.GetType();
         }
 
-        public void Field<TFieldType>(string fieldName, LambdaExpression fieldLambda)
+        public FieldDefinitionBuilder Field(string fieldName, LambdaExpression fieldLambda)
         {
-            this.AddField(fieldName, fieldLambda);
+            return this.AddField(fieldName, fieldLambda);
         }
 
-        protected virtual void AddField(string fieldName, LambdaExpression resolver)
+        protected virtual FieldDefinitionBuilder AddField(string fieldName, LambdaExpression resolver)
         {
             if (this.ContainsField(fieldName))
                 throw new GraphQLException("Can't insert two fields with the same name.");
 
             this.ValidateResolver(resolver);
-            this.Fields.Add(fieldName, this.CreateResolverFieldInfo(fieldName, resolver));
+
+            var fieldInfo = this.CreateResolverFieldInfo(fieldName, resolver);
+
+            this.Fields.Add(fieldName, fieldInfo);
+
+            return new FieldDefinitionBuilder(fieldInfo);
         }
 
         private void ValidateResolver(LambdaExpression resolver)
@@ -54,6 +59,11 @@
         private GraphQLObjectTypeFieldInfo CreateResolverFieldInfo(string fieldName, LambdaExpression resolver)
         {
             return GraphQLObjectTypeFieldInfo.CreateResolverFieldInfo(fieldName, resolver);
+        }
+
+        private GraphQLObjectTypeFieldInfo CreateUnionResolverFieldInfo(string fieldName, System.Type unionType, LambdaExpression resolver)
+        {
+            return GraphQLObjectTypeFieldInfo.CreateUnionResolverFieldInfo(fieldName, unionType, resolver);
         }
     }
 }

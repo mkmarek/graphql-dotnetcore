@@ -9,6 +9,7 @@
             var rootQuery = new Query();
             var rootMutation = new Mutation();
 
+            this.AddKnownType(new GraphQLCharacterUnion());
             this.AddKnownType(new GraphQLCharacterInterface());
             this.AddKnownType(new GraphQLHumanObject());
             this.AddKnownType(new GraphQLDroidObject());

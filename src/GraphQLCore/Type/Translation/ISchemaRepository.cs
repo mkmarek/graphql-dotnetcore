@@ -32,6 +32,8 @@ namespace GraphQLCore.Type.Translation
 
         GraphQLComplexType[] GetTypesImplementing(GraphQLInterfaceType objectType);
 
+        GraphQLComplexType[] GetPossibleTypesForUnion(GraphQLUnionType unionType);
+
         GraphQLInputType GetSchemaInputTypeByName(string value);
 
         GraphQLBaseType GetSchemaOutputTypeByName(string value);
