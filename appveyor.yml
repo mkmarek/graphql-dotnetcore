@@ -15,7 +15,7 @@ before_build:
   - dotnet restore
 build_script:
   - dotnet build src\GraphQLCore --configuration Release
-  - ps: .\CreateArtifacts.ps1
+  - ps: .\createArtifacts.ps1
 test_script:
   - cd test\GraphQLCore.Tests
   - dotnet run
