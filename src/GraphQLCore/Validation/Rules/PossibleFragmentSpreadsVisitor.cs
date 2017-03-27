@@ -34,18 +34,21 @@
 
         public override GraphQLFragmentSpread BeginVisitFragmentSpread(GraphQLFragmentSpread fragmentSpread)
         {
-            var fragmentDefinition = this.Fragments[fragmentSpread.Name.Value];
-            var fragmentType = this.GetFragmentType(fragmentDefinition);
-            var parentType = this.GetLastType();
-
-            if (fragmentType != null &&
-                parentType != null &&
-                !this.DoTypesOverlap(fragmentType, parentType))
+            if (this.Fragments.ContainsKey(fragmentSpread.Name.Value))
             {
-                this.Errors.Add(
-                    new GraphQLException(
-                        this.GetIncompatibleTypeInFragmentMessage(
-                            fragmentType, parentType, fragmentSpread.Name.Value)));
+                var fragmentDefinition = this.Fragments[fragmentSpread.Name.Value];
+                var fragmentType = this.GetFragmentType(fragmentDefinition);
+                var parentType = this.GetLastType();
+
+                if (fragmentType != null &&
+                    parentType != null &&
+                    !this.DoTypesOverlap(fragmentType, parentType))
+                {
+                    this.Errors.Add(
+                        new GraphQLException(
+                            this.GetIncompatibleTypeInFragmentMessage(
+                                fragmentType, parentType, fragmentSpread.Name.Value)));
+                }
             }
 
             return base.BeginVisitFragmentSpread(fragmentSpread);
@@ -72,13 +75,17 @@
 
             var parentImplementsFragmentType = fragmentType
                 .Introspect(this.SchemaRepository)
-                .Interfaces.Any(e => e.Name == parentType.Name);
+                .Interfaces?.Any(e => e.Name == parentType.Name) ?? false;
 
             var fragmentTypeImplementsParent = parentType
                 .Introspect(this.SchemaRepository)
-                .Interfaces.Any(e => e.Name == fragmentType.Name);
+                .Interfaces?.Any(e => e.Name == fragmentType.Name) ?? false;
 
-            return parentImplementsFragmentType || fragmentTypeImplementsParent;
+            var fragmentTypeIsWithinPossibleTypes = parentType
+                .Introspect(this.SchemaRepository)
+                .PossibleTypes?.Any(e => e.Name == fragmentType.Name) ?? false;
+
+            return parentImplementsFragmentType || fragmentTypeImplementsParent || fragmentTypeIsWithinPossibleTypes;
         }
 
         private GraphQLBaseType GetFragmentType(GraphQLInlineFragment inlineFragment)

@@ -117,6 +117,11 @@
             if (inlineFragment.SelectionSet != null)
                 this.BeginVisitSelectionSet(inlineFragment.SelectionSet);
 
+            return this.EndVisitInlineFragment(inlineFragment);
+        }
+
+        public virtual GraphQLInlineFragment EndVisitInlineFragment(GraphQLInlineFragment inlineFragment)
+        {
             return inlineFragment;
         }
 

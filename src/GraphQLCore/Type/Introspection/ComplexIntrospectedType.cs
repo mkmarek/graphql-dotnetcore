@@ -18,6 +18,9 @@ namespace GraphQLCore.Type.Introspection
         {
             get
             {
+                if (this.type is GraphQLUnionType)
+                    return null;
+
                 return this.type.GetFieldsInfo()
                     .Select(field => new IntrospectedField()
                     {
@@ -38,6 +41,9 @@ namespace GraphQLCore.Type.Introspection
         {
             get
             {
+                if (this.type is GraphQLUnionType)
+                    return null;
+
                 return this.schemaRepository.GetImplementingInterfaces(this.type)
                     .Select(e => e.Introspect(this.schemaRepository))
                     .ToArray();
@@ -48,12 +54,21 @@ namespace GraphQLCore.Type.Introspection
         {
             get
             {
-                if (!(this.type is GraphQLInterfaceType))
-                    return null;
+                if (this.type is GraphQLInterfaceType)
+                {
+                    return this.schemaRepository.GetTypesImplementing((GraphQLInterfaceType)this.type)
+                        .Select(e => e.Introspect(this.schemaRepository))
+                        .ToArray();
+                }
 
-                return this.schemaRepository.GetTypesImplementing((GraphQLInterfaceType)this.type)
-                    .Select(e => e.Introspect(this.schemaRepository))
-                    .ToArray();
+                if (this.type is GraphQLUnionType)
+                {
+                    return this.schemaRepository.GetPossibleTypesForUnion((GraphQLUnionType)this.type)
+                        .Select(e => e.Introspect(this.schemaRepository))
+                        .ToArray();
+                }
+
+                return new IntrospectedType[] { };
             }
         }
     }

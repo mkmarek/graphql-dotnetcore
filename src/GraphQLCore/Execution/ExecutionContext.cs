@@ -160,14 +160,18 @@
         }
 
         private object IntrospectSchemaIfRequested(
-                            FieldScope scope, IDictionary<string, IList<GraphQLFieldSelection>> fields)
+            FieldScope scope, IDictionary<string, IList<GraphQLFieldSelection>> fields)
         {
             if (fields.ContainsKey("__schema"))
             {
                 var field = fields["__schema"].Single();
                 fields.Remove("__schema");
 
-                return scope.CompleteValue(this.graphQLSchema.IntrospectedSchema, field, field.Arguments.ToList());
+                return scope.CompleteValue(
+                    this.graphQLSchema.IntrospectedSchema,
+                    this.graphQLSchema.IntrospectedSchema.GetType(),
+                    field,
+                    field.Arguments.ToList());
             }
 
             return null;
@@ -181,10 +185,13 @@
                 var field = fields["__type"].Single();
                 fields.Remove("__type");
 
-                return scope.CompleteValue(
-                    scope.InvokeWithArguments(
+                var value = scope.InvokeWithArguments(
                         field.Arguments.ToList(),
-                        this.GetTypeIntrospectionLambda()),
+                        this.GetTypeIntrospectionLambda());
+
+                return scope.CompleteValue(
+                    value,
+                    value.GetType(),
                     field,
                     field.Arguments.ToList());
             }

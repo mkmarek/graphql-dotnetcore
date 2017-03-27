@@ -39,24 +39,34 @@
             this.variableResolver = variableResolver;
         }
 
-        public object CompleteValue(object input, GraphQLFieldSelection selection, IList<GraphQLArgument> arguments)
+        public object CompleteValue(
+            object input,
+            Type inputType,
+            GraphQLFieldSelection selection,
+            IList<GraphQLArgument> arguments)
         {
-            if (input == null)
+            if (input == null || inputType == null)
                 return null;
 
-            if (input is GraphQLObjectType)
+            if (ReflectionUtilities.IsDescendant(inputType, typeof(GraphQLUnionType)))
+            {
+                var unionSchemaType = this.schemaRepository.GetSchemaTypeFor(inputType) as GraphQLUnionType;
+                return this.CompleteValue(input, unionSchemaType.ResolveType(input), selection, arguments);
+            }
+
+            if (ReflectionUtilities.IsDescendant(inputType, typeof(GraphQLObjectType)))
                 return this.CompleteObjectType((GraphQLObjectType)input, selection, arguments, this.parent);
 
-            if (ReflectionUtilities.IsCollection(input.GetType()))
+            if (ReflectionUtilities.IsCollection(inputType))
                 return this.CompleteCollectionType((IEnumerable)input, selection, arguments);
 
-            var schemaValue = this.schemaRepository.GetSchemaTypeFor(input.GetType());
+            var schemaValue = this.schemaRepository.GetSchemaTypeFor(inputType);
             if (schemaValue is GraphQLObjectType)
             {
                 return this.CompleteObjectType((GraphQLObjectType)schemaValue, selection, arguments, input);
             }
 
-            if (ReflectionUtilities.IsEnum(input.GetType()))
+            if (ReflectionUtilities.IsEnum(inputType))
                 return input.ToString();
 
             return input;
@@ -174,7 +184,7 @@
         {
             var result = new List<object>();
             foreach (var element in input)
-                result.Add(this.CompleteValue(element, selection, arguments));
+                result.Add(this.CompleteValue(element, element?.GetType(), selection, arguments));
 
             return result;
         }
@@ -229,7 +239,8 @@
                 }
             }
 
-            return this.CompleteValue(result, selection, arguments);
+            var resultType = fieldInfo?.SystemType ?? result?.GetType();
+            return this.CompleteValue(result, resultType, selection, arguments);
         }
 
         private GraphQLObjectTypeFieldInfo GetFieldInfo(GraphQLObjectType type, GraphQLFieldSelection selection)
