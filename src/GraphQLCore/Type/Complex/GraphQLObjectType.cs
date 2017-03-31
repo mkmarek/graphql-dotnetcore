@@ -37,33 +37,9 @@
             return new FieldDefinitionBuilder(fieldInfo);
         }
 
-        private void ValidateResolver(LambdaExpression resolver)
-        {
-            var contextType = typeof(IContext<>);
-
-            var contextParameters = resolver.Parameters
-                .Where(e => e.Type.GetTypeInfo().IsGenericType && e.Type.GetGenericTypeDefinition() == contextType);
-
-            foreach (var context in contextParameters)
-            {
-                var argumentType = context.Type.GetTypeInfo().GetGenericArguments().Single();
-
-                if (argumentType != this.SystemType)
-                {
-                    throw new GraphQLException(
-                        $"Can't specify IContext of type \"{argumentType.Name}\" in GraphQLObjectType with type \"{this.SystemType}\"");
-                }
-            }
-        }
-
         private GraphQLObjectTypeFieldInfo CreateResolverFieldInfo(string fieldName, LambdaExpression resolver)
         {
             return GraphQLObjectTypeFieldInfo.CreateResolverFieldInfo(fieldName, resolver);
-        }
-
-        private GraphQLObjectTypeFieldInfo CreateUnionResolverFieldInfo(string fieldName, System.Type unionType, LambdaExpression resolver)
-        {
-            return GraphQLObjectTypeFieldInfo.CreateUnionResolverFieldInfo(fieldName, unionType, resolver);
         }
     }
 }

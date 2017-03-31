@@ -20,5 +20,12 @@ namespace GraphQLCore.Type.Complex
 
             return this;
         }
+
+        public FieldDefinitionBuilder OnChannel(string channelName)
+        {
+            this.fieldInfo.Channel = channelName;
+
+            return this;
+        }
     }
 }
