@@ -1,5 +1,6 @@
 ﻿namespace GraphQLCore.Type
 {
+    using GraphQLCore.Type.Complex;
     using Introspection;
     using Translation;
 
@@ -7,6 +8,7 @@
     {
         GraphQLObjectType MutationType { get; }
         GraphQLObjectType QueryType { get; }
+        GraphQLSubscriptionType SubscriptionType { get; }
         IntrospectedSchemaType IntrospectedSchema { get; }
         ISchemaRepository SchemaRepository { get; }
 

@@ -21,7 +21,7 @@
         }
 
         public Dictionary<string, IList<GraphQLFieldSelection>> CollectFields(
-            GraphQLObjectType runtimeType, GraphQLSelectionSet selectionSet)
+            GraphQLComplexType runtimeType, GraphQLSelectionSet selectionSet)
         {
             var fields = new Dictionary<string, IList<GraphQLFieldSelection>>();
 
@@ -44,7 +44,7 @@
             fields[entryKey].Add(selection);
         }
 
-        private void CollectFieldsInSelection(GraphQLObjectType runtimeType, ASTNode selection, Dictionary<string, IList<GraphQLFieldSelection>> fields)
+        private void CollectFieldsInSelection(GraphQLComplexType runtimeType, ASTNode selection, Dictionary<string, IList<GraphQLFieldSelection>> fields)
         {
             switch (selection.Kind)
             {
@@ -54,7 +54,7 @@
             }
         }
 
-        private void CollectFragmentFields(GraphQLObjectType runtimeType, GraphQLInlineFragment fragment, Dictionary<string, IList<GraphQLFieldSelection>> fields)
+        private void CollectFragmentFields(GraphQLComplexType runtimeType, GraphQLInlineFragment fragment, Dictionary<string, IList<GraphQLFieldSelection>> fields)
         {
             if (!this.ShouldIncludeNode(fragment.Directives, DirectiveLocation.INLINE_FRAGMENT))
                 return;
@@ -66,7 +66,7 @@
                 .ToList().ForEach(e => fields.Add(e.Key, e.Value));
         }
 
-        private void CollectFragmentSpreadFields(GraphQLObjectType runtimeType, GraphQLFragmentSpread fragmentSpread, Dictionary<string, IList<GraphQLFieldSelection>> fields)
+        private void CollectFragmentSpreadFields(GraphQLComplexType runtimeType, GraphQLFragmentSpread fragmentSpread, Dictionary<string, IList<GraphQLFieldSelection>> fields)
         {
             if (!this.ShouldIncludeNode(fragmentSpread.Directives, DirectiveLocation.FRAGMENT_SPREAD))
                 return;
@@ -75,7 +75,7 @@
             this.CollectFragmentFields(runtimeType, fragment, fields);
         }
 
-        private bool DoesFragmentConditionMatch(GraphQLObjectType runtimeType, GraphQLInlineFragment fragment)
+        private bool DoesFragmentConditionMatch(GraphQLComplexType runtimeType, GraphQLInlineFragment fragment)
         {
             if (fragment.TypeCondition == null)
                 return true;

@@ -11,32 +11,25 @@
     using System.Reflection;
     using Type;
     using Type.Complex;
-    using Type.Translation;
     using Utils;
+
 
     public class FieldScope
     {
         private List<GraphQLArgument> arguments;
-        private IFieldCollector fieldCollector;
+        private ExecutionContext context;
         private object parent;
-        private GraphQLObjectType type;
-        private ISchemaRepository schemaRepository;
-        private IVariableResolver variableResolver;
+        private GraphQLComplexType type;
 
         public FieldScope(
-            ISchemaRepository schemaRepository,
-            IVariableResolver variableResolver,
-            IFieldCollector fieldCollector,
-            GraphQLObjectType type,
+            ExecutionContext context,
+            GraphQLComplexType type,
             object parent)
         {
             this.type = type;
             this.parent = parent;
             this.arguments = new List<GraphQLArgument>();
-
-            this.fieldCollector = fieldCollector;
-            this.schemaRepository = schemaRepository;
-            this.variableResolver = variableResolver;
+            this.context = context;
         }
 
         public object CompleteValue(
@@ -48,34 +41,22 @@
             if (input == null || inputType == null)
                 return null;
 
-            if (ReflectionUtilities.IsDescendant(inputType, typeof(GraphQLUnionType)))
-            {
-                var unionSchemaType = this.schemaRepository.GetSchemaTypeFor(inputType) as GraphQLUnionType;
-                return this.CompleteValue(input, unionSchemaType.ResolveType(input), selection, arguments);
-            }
+            var result = input;
 
-            if (ReflectionUtilities.IsDescendant(inputType, typeof(GraphQLObjectType)))
-                return this.CompleteObjectType((GraphQLObjectType)input, selection, arguments, this.parent);
+            var resolved = 
+                  this.TryResolveUnion(ref result, inputType, selection)
+               || this.TryResolveObjectType(ref result, inputType, selection)
+               || this.TryResolveCollection(ref result, inputType, selection)
+               || this.TryResolveGraphQLObjectType(ref result, inputType, selection)
+               || this.TryResolveEnum(ref result, inputType);
 
-            if (ReflectionUtilities.IsCollection(inputType))
-                return this.CompleteCollectionType((IEnumerable)input, selection, arguments);
-
-            var schemaValue = this.schemaRepository.GetSchemaTypeFor(inputType);
-            if (schemaValue is GraphQLObjectType)
-            {
-                return this.CompleteObjectType((GraphQLObjectType)schemaValue, selection, arguments, input);
-            }
-
-            if (ReflectionUtilities.IsEnum(inputType))
-                return input.ToString();
-
-            return input;
+            return resolved ? result : input;
         }
 
-        public object[] FetchArgumentValues(LambdaExpression expression, IList<GraphQLArgument> arguments)
+        public object[] FetchArgumentValues(LambdaExpression expression, IList<GraphQLArgument> arguments, object parent)
         {
             return ReflectionUtilities.GetParameters(expression)
-                .Select(e => this.GetValueForArgument(arguments, e))
+                .Select(e => this.GetValueForArgument(arguments, e, parent))
                 .ToArray();
         }
 
@@ -86,7 +67,7 @@
             if (argument == null)
                 return null;
 
-            return type.GetFromAst(argument.Value, this.schemaRepository);
+            return type.GetFromAst(argument.Value, this.context.SchemaRepository);
         }
 
         public dynamic GetObject(Dictionary<string, IList<GraphQLFieldSelection>> fields)
@@ -100,9 +81,9 @@
             return result;
         }
 
-        public object InvokeWithArguments(IList<GraphQLArgument> arguments, LambdaExpression expression)
+        public object InvokeWithArguments(IList<GraphQLArgument> arguments, LambdaExpression expression, object parent = null)
         {
-            var argumentValues = this.FetchArgumentValues(expression, arguments);
+            var argumentValues = this.FetchArgumentValues(expression, arguments, parent);
 
             return expression.Compile().DynamicInvoke(argumentValues);
         }
@@ -117,16 +98,16 @@
                 this.ApplyDirectives(dictionary, fieldName, selection);
         }
 
-        private object GetValueForArgument(IList<GraphQLArgument> arguments, ParameterExpression e)
+        private object GetValueForArgument(IList<GraphQLArgument> arguments, ParameterExpression e, object parent)
         {
             if (this.IsContextType(e))
-                return this.CreateContextObject(e.Type);
+                return this.CreateContextObject(e.Type, parent);
 
             return ReflectionUtilities.ChangeValueType(
                 this.GetArgumentValue(
                     arguments,
                     e.Name,
-                    this.schemaRepository.GetSchemaInputTypeFor(e.Type)),
+                    this.context.SchemaRepository.GetSchemaInputTypeFor(e.Type)),
                     e.Type);
         }
 
@@ -137,7 +118,7 @@
             return e.Type.GetTypeInfo().IsGenericType && e.Type.GetGenericTypeDefinition() == contextType;
         }
 
-        private object CreateContextObject(Type type)
+        private object CreateContextObject(Type type, object parent)
         {
             var genericArgument = type.GetTypeInfo()
                 .GetGenericArguments()
@@ -146,7 +127,7 @@
             var fieldContextType = typeof(FieldContext<>)
                 .MakeGenericType(genericArgument);
 
-            return Activator.CreateInstance(fieldContextType, this.parent);
+            return Activator.CreateInstance(fieldContextType, parent ?? this.parent);
         }
 
         private void ApplyDirectives(
@@ -158,10 +139,10 @@
             {
                 foreach (var directive in selection.Directives)
                 {
-                    var directiveType = this.schemaRepository.GetDirective(directive.Name.Value);
+                    var directiveType = this.context.SchemaRepository.GetDirective(directive.Name.Value);
 
                     if (!directiveType.PostExecutionIncludeFieldIntoResult(
-                            directive, this.schemaRepository, dictionary[fieldName], (ExpandoObject)dictionary))
+                            directive, this.context.SchemaRepository, dictionary[fieldName], (ExpandoObject)dictionary))
                             dictionary.Remove(fieldName);
                 }
             }
@@ -174,9 +155,9 @@
         {
             if (!dictionary.ContainsKey(fieldName))
             {
-                 dictionary.Add(
-                     fieldName,
-                    this.GetDefinitionAndExecuteField(this.type, selection, dictionary));
+                var fieldData = this.GetDefinitionAndExecuteField(this.type, selection, dictionary);
+
+                 dictionary.Add(fieldName,fieldData);
             }
         }
 
@@ -195,16 +176,12 @@
             IList<GraphQLArgument> arguments,
             object parentObject)
         {
-            var scope = new FieldScope(
-                this.schemaRepository,
-                this.variableResolver,
-                this.fieldCollector,
-                input,
-                parentObject);
+            var scope = new FieldScope(this.context, input, parentObject)
+            {
+                arguments = arguments.ToList()
+            };
 
-            scope.arguments = arguments.ToList();
-
-            return scope.GetObject(this.fieldCollector.CollectFields(input, selection.SelectionSet));
+            return scope.GetObject(this.context.FieldCollector.CollectFields(input, selection.SelectionSet));
         }
 
         private List<GraphQLArgument> GetArgumentsFromSelection(GraphQLFieldSelection selection)
@@ -218,7 +195,7 @@
         }
 
         private object GetDefinitionAndExecuteField(
-            GraphQLObjectType type,
+            GraphQLComplexType type,
             GraphQLFieldSelection selection,
             IDictionary<string, object> dictionary)
         {
@@ -227,9 +204,28 @@
             var directivesToUse = selection.Directives;
 
             var result = this.ResolveField(fieldInfo, arguments, this.parent);
+
+            this.PublishToEventChannel(fieldInfo, result);
+
+            result = this.ApplyDirectivesToResult(selection, dictionary, result);
+            var resultType = GetResultType(type, fieldInfo, result);
+
+            return this.CompleteValue(result, resultType, selection, arguments);
+        }
+
+        private void PublishToEventChannel(GraphQLObjectTypeFieldInfo fieldInfo, object result)
+        {
+            if (!string.IsNullOrEmpty(fieldInfo?.Channel) && this.context.OperationType == OperationType.Mutation)
+            {
+                this.context.Schema?.SubscriptionType?.EventBus?.Publish(result, fieldInfo.Channel);
+            }
+        }
+
+        private object ApplyDirectivesToResult(GraphQLFieldSelection selection, IDictionary<string, object> dictionary, object result)
+        {
             foreach (var directive in selection.Directives)
             {
-                var directiveType = this.schemaRepository.GetDirective(directive.Name.Value);
+                var directiveType = this.context.SchemaRepository.GetDirective(directive.Name.Value);
 
                 if (directiveType != null && directiveType.Locations.Any(l => l == DirectiveLocation.FIELD))
                 {
@@ -239,11 +235,19 @@
                 }
             }
 
-            var resultType = fieldInfo?.SystemType ?? result?.GetType();
-            return this.CompleteValue(result, resultType, selection, arguments);
+            return result;
         }
 
-        private GraphQLObjectTypeFieldInfo GetFieldInfo(GraphQLObjectType type, GraphQLFieldSelection selection)
+        private Type GetResultType(
+            GraphQLComplexType type, GraphQLObjectTypeFieldInfo fieldInfo, object result)
+        {
+            if (type is GraphQLSubscriptionType)
+                return ((GraphQLSubscriptionTypeFieldInfo)fieldInfo).SubscriptionReturnType;
+
+            return fieldInfo?.SystemType ?? result?.GetType();
+        }
+
+        private GraphQLObjectTypeFieldInfo GetFieldInfo(GraphQLComplexType type, GraphQLFieldSelection selection)
         {
             var name = this.GetFieldName(selection);
             return type.GetFieldInfo(name);
@@ -275,6 +279,67 @@
                 return this.ProcessField(this.InvokeWithArguments(arguments, fieldInfo.Lambda));
 
             return this.ProcessField(fieldInfo.Lambda.Compile().DynamicInvoke(new object[] { parent }));
+        }
+
+        private bool TryResolveEnum(ref object input, Type inputType)
+        {
+            if (ReflectionUtilities.IsEnum(inputType))
+            {
+                input = input.ToString();
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool TryResolveGraphQLObjectType(ref object input, Type inputType, GraphQLFieldSelection selection)
+        {
+            var schemaValue = this.context.SchemaRepository.GetSchemaTypeFor(inputType);
+            if (schemaValue is GraphQLObjectType)
+            {
+                input = this.CompleteObjectType((GraphQLObjectType)schemaValue, selection, arguments, input);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool TryResolveCollection(ref object input, Type inputType, GraphQLFieldSelection selection)
+        {
+            if (ReflectionUtilities.IsCollection(inputType))
+            {
+                input = this.CompleteCollectionType((IEnumerable)input, selection, arguments);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool TryResolveObjectType(ref object input, Type inputType, GraphQLFieldSelection selection)
+        {
+            if (ReflectionUtilities.IsDescendant(inputType, typeof(GraphQLObjectType)))
+            {
+                input = this.CompleteObjectType((GraphQLObjectType)input, selection, arguments, this.parent);
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool TryResolveUnion(ref object input, Type inputType, GraphQLFieldSelection selection)
+        {
+            if (ReflectionUtilities.IsDescendant(inputType, typeof(GraphQLUnionType)))
+            {
+                var unionSchemaType = this.context.SchemaRepository.GetSchemaTypeFor(inputType) as GraphQLUnionType;
+                input = this.CompleteValue(input, unionSchemaType.ResolveType(input), selection, arguments);
+
+                return true;
+            }
+
+            return false;
         }
     }
 }

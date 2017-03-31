@@ -6,6 +6,6 @@
 
     public interface IFieldCollector
     {
-        Dictionary<string, IList<GraphQLFieldSelection>> CollectFields(GraphQLObjectType runtimeType, GraphQLSelectionSet selectionSet);
+        Dictionary<string, IList<GraphQLFieldSelection>> CollectFields(GraphQLComplexType runtimeType, GraphQLSelectionSet selectionSet);
     }
 }

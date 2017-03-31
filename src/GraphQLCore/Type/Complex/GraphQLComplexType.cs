@@ -2,11 +2,13 @@
 {
     using Complex;
     using Execution;
+    using GraphQLCore.Exceptions;
     using Introspection;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Reflection;
     using Translation;
 
     public abstract class GraphQLComplexType : GraphQLBaseType, ISystemTypeBound
@@ -52,6 +54,25 @@
             return this.Fields
                 .Select(e => e.Value)
                 .ToArray();
+        }
+
+        protected void ValidateResolver(LambdaExpression resolver)
+        {
+            var contextType = typeof(IContext<>);
+
+            var contextParameters = resolver.Parameters
+                .Where(e => e.Type.GetTypeInfo().IsGenericType && e.Type.GetGenericTypeDefinition() == contextType);
+
+            foreach (var context in contextParameters)
+            {
+                var argumentType = context.Type.GetTypeInfo().GetGenericArguments().Single();
+
+                if (argumentType != this.SystemType)
+                {
+                    throw new GraphQLException(
+                        $"Can't specify IContext of type \"{argumentType.Name}\" in GraphQLObjectType with type \"{this.SystemType}\"");
+                }
+            }
         }
 
         public override IntrospectedType Introspect(ISchemaRepository schemaRepository)

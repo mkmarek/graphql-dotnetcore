@@ -23,6 +23,7 @@
             this.Field("types", () => this.IntrospectAllSchemaTypes());
             this.Field("queryType", () => this.IntrospectQueryType());
             this.Field("mutationType", () => this.IntrospectMudationType());
+            this.Field("subscriptionType", () => this.IntrospectSubscriptionType());
             this.Field("directives", () => this.IntrospectDirectives());
         }
 
@@ -51,6 +52,11 @@
         private IntrospectedType IntrospectMudationType()
         {
             return this.schema.MutationType?.Introspect(this.schemaRepository);
+        }
+
+        private IntrospectedType IntrospectSubscriptionType()
+        {
+            return this.schema.SubscriptionType?.Introspect(this.schemaRepository);
         }
 
         private IntrospectedType IntrospectQueryType()
