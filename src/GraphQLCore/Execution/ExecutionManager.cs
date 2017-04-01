@@ -123,11 +123,11 @@
 
         public dynamic ComposeResultForSubscriptions(GraphQLComplexType type, GraphQLOperationDefinition operationDefinition)
         {
-            var context = CreateExecutionContext(operationDefinition);
+            var context = this.CreateExecutionContext(operationDefinition);
 
             var scope = new FieldScope(context, type, null);
 
-            return ProcessSubscriptions(
+            return this.ProcessSubscriptions(
                     (GraphQLSubscriptionType)type,
                     context.FieldCollector,
                     scope);
@@ -135,10 +135,10 @@
 
         public dynamic ComposeResultForQueryAndMutation(GraphQLComplexType type, GraphQLOperationDefinition operationDefinition)
         {
-            var context = CreateExecutionContext(operationDefinition);
+            var context = this.CreateExecutionContext(operationDefinition);
             var scope = new FieldScope(context, type, null);
 
-            return ResolveQueryAndMutationResult(
+            return this.ResolveQueryAndMutationResult(
                     type,
                     operationDefinition.SelectionSet,
                     context.FieldCollector,
@@ -203,8 +203,7 @@
                 this.Operation.Name.Value,
                 this.variables,
                 filter,
-                this.ast
-            ));
+                this.ast));
 
             return 5456;
         }

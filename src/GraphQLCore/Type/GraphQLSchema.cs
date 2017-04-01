@@ -74,7 +74,7 @@
         public void Subscription(GraphQLSubscriptionType root)
         {
             this.SubscriptionType = root;
-            this.SubscriptionType.EventBus.OnMessageReceived += InvokeSubscriptionMessageReceived;
+            this.SubscriptionType.EventBus.OnMessageReceived += this.InvokeSubscriptionMessageReceived;
         }
 
         public IntrospectedType IntrospectType(string name)
@@ -112,7 +112,7 @@
 
         private void InvokeSubscriptionMessageReceived(OnMessageReceivedEventArgs args)
         {
-            using (var context = GetExecutionContext(args))
+            using (var context = this.GetExecutionContext(args))
             {
                 foreach (var definition in args.Document.Definitions)
                     context.ResolveDefinition(definition, args.OperationToExecute);

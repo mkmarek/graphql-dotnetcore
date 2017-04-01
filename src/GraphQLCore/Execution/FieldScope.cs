@@ -157,7 +157,7 @@
             {
                 var fieldData = this.GetDefinitionAndExecuteField(this.type, selection, dictionary);
 
-                 dictionary.Add(fieldName,fieldData);
+                dictionary.Add(fieldName, fieldData);
             }
         }
 
@@ -208,7 +208,7 @@
             this.PublishToEventChannel(fieldInfo, result);
 
             result = this.ApplyDirectivesToResult(selection, dictionary, result);
-            var resultType = GetResultType(type, fieldInfo, result);
+            var resultType = this.GetResultType(type, fieldInfo, result);
 
             return this.CompleteValue(result, resultType, selection, arguments);
         }
@@ -298,7 +298,7 @@
             var schemaValue = this.context.SchemaRepository.GetSchemaTypeFor(inputType);
             if (schemaValue is GraphQLObjectType)
             {
-                input = this.CompleteObjectType((GraphQLObjectType)schemaValue, selection, arguments, input);
+                input = this.CompleteObjectType((GraphQLObjectType)schemaValue, selection, this.arguments, input);
 
                 return true;
             }
@@ -310,7 +310,7 @@
         {
             if (ReflectionUtilities.IsCollection(inputType))
             {
-                input = this.CompleteCollectionType((IEnumerable)input, selection, arguments);
+                input = this.CompleteCollectionType((IEnumerable)input, selection, this.arguments);
 
                 return true;
             }
@@ -322,7 +322,7 @@
         {
             if (ReflectionUtilities.IsDescendant(inputType, typeof(GraphQLObjectType)))
             {
-                input = this.CompleteObjectType((GraphQLObjectType)input, selection, arguments, this.parent);
+                input = this.CompleteObjectType((GraphQLObjectType)input, selection, this.arguments, this.parent);
                 return true;
             }
 
@@ -334,7 +334,7 @@
             if (ReflectionUtilities.IsDescendant(inputType, typeof(GraphQLUnionType)))
             {
                 var unionSchemaType = this.context.SchemaRepository.GetSchemaTypeFor(inputType) as GraphQLUnionType;
-                input = this.CompleteValue(input, unionSchemaType.ResolveType(input), selection, arguments);
+                input = this.CompleteValue(input, unionSchemaType.ResolveType(input), selection, this.arguments);
 
                 return true;
             }

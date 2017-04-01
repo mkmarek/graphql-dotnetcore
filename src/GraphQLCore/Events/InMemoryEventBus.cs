@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-
-namespace GraphQLCore.Events
+﻿namespace GraphQLCore.Events
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Linq.Expressions;
+    using System.Text;
+
     public class InMemoryEventBus : IEventBus
     {
         private List<EventBusSubscription> subscriptions;
@@ -18,10 +18,10 @@ namespace GraphQLCore.Events
 
         public void Publish(object data, string channel)
         {
-            if (OnMessageReceived == null)
+            if (this.OnMessageReceived == null)
                 return;
 
-            foreach (var subscription in subscriptions.ToList())
+            foreach (var subscription in this.subscriptions.ToList())
             {
                 if ((bool)subscription.Filter.Compile().DynamicInvoke(data))
                 {
