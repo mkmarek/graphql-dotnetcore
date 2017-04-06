@@ -49,32 +49,32 @@
         }
     }
 
-    public interface ComplicatedParentInteface
+    public interface ComplicatedParentInterface
     {
         int? IntField { get; set; }
     }
 
     public interface SimpleInterface
     {
-        bool BooleanField { get; set; }
+        bool? BooleanField { get; set; }
     }
 
-    public interface ComplicatedInteface : ComplicatedParentInteface
+    public interface ComplicatedInterface : ComplicatedParentInterface
     {
-        bool BooleanField { get; set; }
-        FurColor EnumField { get; set; }
-        float FloatField { get; set; }
+        bool? BooleanField { get; set; }
+        FurColor? EnumField { get; set; }
+        float? FloatField { get; set; }
         ComplicatedObject Nested { get; set; }
         int NonNullIntField { get; set; }
         string StringField { get; set; }
         string[] StringListField { get; set; }
     }
 
-    public class ComplicatedObject : ComplicatedInteface
+    public class ComplicatedObject : ComplicatedInterface
     {
-        public bool BooleanField { get; set; }
-        public FurColor EnumField { get; set; }
-        public float FloatField { get; set; }
+        public bool? BooleanField { get; set; }
+        public FurColor? EnumField { get; set; }
+        public float? FloatField { get; set; }
         public int? IntField { get; set; }
         public ComplicatedObject Nested { get; set; }
         public int NonNullIntField { get; set; }
@@ -85,7 +85,7 @@
 
     public class SimpleObject : SimpleInterface
     {
-        public bool BooleanField { get; set; }
+        public bool? BooleanField { get; set; }
     }
 
     public class ComplicatedObjectType : GraphQLObjectType<ComplicatedObject>
@@ -120,7 +120,7 @@
         }
     }
 
-    public class ComplicatedParentInterfaceType : GraphQLInterfaceType<ComplicatedParentInteface>
+    public class ComplicatedParentInterfaceType : GraphQLInterfaceType<ComplicatedParentInterface>
     {
         public ComplicatedParentInterfaceType() : base("ComplicatedParentInterfaceType", "")
         {
@@ -151,7 +151,7 @@
         }
     }
 
-    public class ComplicatedInterfaceType : GraphQLInterfaceType<ComplicatedInteface>
+    public class ComplicatedInterfaceType : GraphQLInterfaceType<ComplicatedInterface>
     {
         public ComplicatedInterfaceType() : base("ComplicatedInterfaceType", "")
         {
@@ -183,8 +183,9 @@
             this.Field("bar", (int? a) => "foo");
             this.Field("sum", (int?[] arg) => arg.Sum());
             this.Field("field", (string a, string b, string c) => this);
+            this.Field("nonNullField", (NonNullable<string> a) => a);
             this.Field("jagged", (IEnumerable<string[][]> jagged) => jagged);
-            this.Field("interfaceObject", () => (ComplicatedInteface)new ComplicatedObject());
+            this.Field("interfaceObject", () => (ComplicatedInterface)new ComplicatedObject());
             this.Field("complicatedArgs", () => complicatedArgs);
             this.Field("insertInputObject", (ComplicatedObject inputObject) => inputObject);
         }

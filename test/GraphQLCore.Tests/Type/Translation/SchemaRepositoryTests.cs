@@ -141,7 +141,27 @@
                 )
             );
 
-            Assert.AreEqual(typeof(int), inputType.GenericTypeArguments.Single().GenericTypeArguments.Single());
+            Assert.AreEqual(typeof(NonNullable<List<NonNullable<List<int>>>>), inputType);
+        }
+
+        [Test]
+        public void GetSchemaTypeFor_NonNullableType_ReturnsCorrectSchemaType()
+        {
+            this.schemaRepository.AddKnownType(new ComplicatedObjectType());
+
+            var objectType = this.schemaRepository.GetSchemaTypeFor(typeof(NonNullable<ComplicatedObject>));
+
+            Assert.AreEqual("ComplicatedObjectType!", objectType.ToString());
+        }
+
+        [Test]
+        public void GetInputSchemaTypeFor_NonNullableType_ReturnsCorrectSchemaType()
+        {
+            this.schemaRepository.AddKnownType(new ComplicatedInputObjectType());
+
+            var objectType = this.schemaRepository.GetSchemaInputTypeFor(typeof(NonNullable<ComplicatedObject>));
+
+            Assert.AreEqual("ComplicatedInputObjectType!", objectType.ToString());
         }
 
         [SetUp]

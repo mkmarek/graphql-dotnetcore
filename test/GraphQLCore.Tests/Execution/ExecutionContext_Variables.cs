@@ -21,6 +21,7 @@
                             
                                 insertInputObject(inputObject: 
                                 {
+                                    nonNullIntField: 0
                                     stringField: $stringArgVar
                                     intField: $intArgVar
                                 })
@@ -292,6 +293,7 @@
             var query = @"
             query getStringListField($stringListArgVar: [String]) {
                 insertInputObject(inputObject: {
+                    nonNullIntField: 0,
                     stringListField: $stringListArgVar
                 }) {
                     stringListField
@@ -367,11 +369,13 @@
             var query = @"
             query insertObject($stringArgVar: String, $complicatedObjectArgVar: ComplicatedInputObjectType, $stringListArgVar: [String]) {
                 insertInputObject(inputObject: {
+                    nonNullIntField: 0,
                     stringListField: [$stringArgVar, ""and"", $stringArgVar],
                     complicatedObjectArray: [
                         $complicatedObjectArgVar,
                         {
-                            stringListField: $stringListArgVar,
+                            nonNullIntField: 0,
+                            stringListField: $stringListArgVar
                         }
                     ]
                 }) {
@@ -397,7 +401,9 @@
             var query = @"
             query insertObject($complicatedObjectArgVar: ComplicatedInputObjectType) {
                 insertInputObject(inputObject: {
+                    nonNullIntField: 0,
                     nested: {
+                        nonNullIntField: 0,
                         nested: $complicatedObjectArgVar
                     }
                 }) {
@@ -455,6 +461,62 @@
             Assert.AreEqual(expectedResult, result.jagged);
         }
 
+        [Test]
+        public void Execute_WithSingleValueListVariable_ParsesAndReturnsCorrectValue()
+        {
+            var query = @"query getnonNullIntListArg($intArgVar: [Int!]) {
+                            complicatedArgs {
+                                nonNullIntListArgField(nonNullIntListArg: $intArgVar)
+                            }
+                        }";
+
+            var result = this.schema.Execute(query, variables);
+
+            Assert.AreEqual(new int[] { 3 }, result.complicatedArgs.nonNullIntListArgField);
+        }
+
+        [Test]
+        public void Execute_WithNullListVariable_ParsesAndReturnsCorrectValue()
+        {
+            var query = @"query getnonNullIntListArg($nullArgVar: [Int!]) {
+                            complicatedArgs {
+                                nonNullIntListArgField(nonNullIntListArg: $nullArgVar)
+                            }
+                        }";
+
+            var result = this.schema.Execute(query, variables);
+
+            Assert.AreEqual(null, result.complicatedArgs.nonNullIntListArgField);
+        }
+
+        [Test]
+        public void Execute_WithNonNullArgument_ParsesAndReturnsCorrectValue()
+        {
+            var query = @"query getNonNullField($stringArgVar: String!) {
+                            nonNullField(a: $stringArgVar)
+                        }";
+
+            var result = this.schema.Execute(query, variables);
+
+            Assert.AreEqual("sample", result.nonNullField);
+        }
+
+        [Test]
+        public void Execute_WithoutNonNullArgument_ReturnsError()
+        {
+            var query = @"query getnonNullIntListArg($nullArgVar: Int!) {
+                            complicatedArgs {
+                                nonNullIntArgField(nonNullIntArg: $nullArgVar)
+                            }
+                        }";
+
+            Assert.Throws<GraphQLException>(() =>
+            {
+                this.schema.Execute(query, variables);
+            },
+            "Type \"Int!\" is non-nullable and cannot be null.");
+        }
+
         [SetUp]
         public void SetUp()
         {
@@ -472,6 +534,7 @@
             this.variables.complicatedObjectListArgVar = new object[] { CreateComplicatedDynamicObject() };
             this.variables.complicatedObjectArgVar.nested = CreateComplicatedDynamicObject();
             this.variables.complicatedObjectArgWithArrayVar = CreateComplicatedDynamicObjectWithArray();
+            this.variables.nullArgVar = null;
 
             this.schema = new TestSchema();
         }

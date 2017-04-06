@@ -541,6 +541,7 @@
             var errors = Validate(@"
             {
                 insertInputObject(inputObject: {
+                    nonNullIntField: 0,
                     intField: ""aaa""
                 }) {
                     intField
@@ -558,6 +559,7 @@
             var errors = Validate(@"
             {
                 insertInputObject(inputObject: {
+                    nonNullIntField: 0,
                     stringListField: [null, 1, ""3"", [8, 5, 4]]
                 }) {
                     stringListField
@@ -575,6 +577,7 @@
             var errors = Validate(@"
             {
                 insertInputObject(inputObject: {
+                    nonNullIntField: 0,
                     nested: {
                         nonNullIntField: null
                     }
@@ -586,7 +589,7 @@
             }
             ");
 
-            Assert.AreEqual("Argument \"inputObject\" has invalid value GraphQLCore.Language.AST.GraphQLObjectValue.\nIn field \"nested\": In field \"nonNullIntField\": Expected type \"Int\", found null.",
+            Assert.AreEqual("Argument \"inputObject\" has invalid value GraphQLCore.Language.AST.GraphQLObjectValue.\nIn field \"nested\": In field \"nonNullIntField\": Expected type \"Int!\", found null.",
                 errors.Single().Message);
         }
     }
