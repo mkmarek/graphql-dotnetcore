@@ -84,7 +84,7 @@
             Assert.AreEqual(4, usages.Count());
             Assert.AreEqual("Int", usages.ElementAt(0).ArgumentType.ToString());
             Assert.AreEqual("String", usages.ElementAt(1).ArgumentType.ToString());
-            Assert.AreEqual("FurColor!", usages.ElementAt(2).ArgumentType.ToString());
+            Assert.AreEqual("FurColor", usages.ElementAt(2).ArgumentType.ToString());
             Assert.AreEqual("ComplicatedInputObjectType", usages.ElementAt(3).ArgumentType.ToString());
         }
     }

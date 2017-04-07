@@ -21,8 +21,11 @@
             if (astValue is GraphQLVariable)
                 return new GraphQLException[] { };
 
-            if (astValue is GraphQLNullValue)
+            if (astValue is GraphQLNullValue || astValue == null)
                 return this.ValidateNullType(type, astValue);
+
+            if (type is Type.GraphQLNonNullType)
+                return this.IsValid(((Type.GraphQLNonNullType)type).UnderlyingNullableType, astValue);
 
             if (type is GraphQLList)
                 return this.ValidateListType(type, astValue);
@@ -40,9 +43,11 @@
             if (type is GraphQLInputObjectType)
                 return this.ValidateObjectFields((GraphQLInputObjectType)type, (GraphQLObjectValue)astValue);
 
-            if (value == null) {
-                return new GraphQLException[] {
-                    new GraphQLException($"Expected type \"{type.Name}\", found {astValue}.")
+            if (value == null)
+            {
+                return new GraphQLException[]
+                {
+                    new GraphQLException($"Expected type \"{type}\", found {astValue}.")
                 };
             }
 
@@ -51,16 +56,16 @@
 
         private IEnumerable<GraphQLException> ValidateObjectFields(GraphQLInputObjectType objectType, GraphQLObjectValue objectValue)
         {
-            foreach (var field in objectValue.Fields)
+            foreach (var fieldInfo in objectType.GetFieldsInfo())
             {
-                var fieldInfo = objectType.GetFieldInfo(field.Name.Value);
+                var field = objectValue.Fields.SingleOrDefault(e => e.Name.Value == fieldInfo.Name);
                 var fieldType = fieldInfo.GetGraphQLType(this.schemaRepository);
-                var fieldValue = field.Value;
+                var fieldValue = field?.Value;
 
                 var fieldErrors = this.IsValid(fieldType, fieldValue);
 
                 foreach (var fieldError in fieldErrors)
-                    yield return new GraphQLException($"In field \"{field.Name.Value}\": {fieldError.Message}");
+                    yield return new GraphQLException($"In field \"{fieldInfo.Name}\": {fieldError.Message}");
             }
         }
 
@@ -91,7 +96,7 @@
             {
                 return new GraphQLException[]
                 {
-                    new GraphQLException($"Expected type \"{type.Name}\", found null.")
+                    new GraphQLException($"Expected type \"{type}\", found null.")
                 };
             }
 

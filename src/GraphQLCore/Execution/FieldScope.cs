@@ -13,7 +13,6 @@
     using Type.Complex;
     using Utils;
 
-
     public class FieldScope
     {
         private List<GraphQLArgument> arguments;
@@ -45,6 +44,7 @@
 
             var resolved = 
                   this.TryResolveUnion(ref result, inputType, selection)
+               || this.TryResolveNonNull(ref result, inputType, selection)
                || this.TryResolveObjectType(ref result, inputType, selection)
                || this.TryResolveCollection(ref result, inputType, selection)
                || this.TryResolveGraphQLObjectType(ref result, inputType, selection)
@@ -335,6 +335,19 @@
             {
                 var unionSchemaType = this.context.SchemaRepository.GetSchemaTypeFor(inputType) as GraphQLUnionType;
                 input = this.CompleteValue(input, unionSchemaType.ResolveType(input), selection, this.arguments);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool TryResolveNonNull(ref object input, Type inputType, GraphQLFieldSelection selection)
+        {
+            var underlyingType = NonNullable.GetUnderlyingType(inputType);
+            if (underlyingType != null)
+            {
+                input = this.CompleteValue(((INonNullable)input).GetValue(), underlyingType, selection, this.arguments);
 
                 return true;
             }

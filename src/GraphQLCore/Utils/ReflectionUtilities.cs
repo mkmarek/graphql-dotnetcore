@@ -1,5 +1,6 @@
 ﻿namespace GraphQLCore.Utils
 {
+    using GraphQLCore.Type;
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -44,6 +45,13 @@
                 int result;
                 if (int.TryParse(input.ToString(), out result))
                     return result;
+            }
+
+            var underlyingNonNullableType = NonNullable.GetUnderlyingType(target);
+            if (underlyingNonNullableType != null)
+            {
+                var underlyingValue = ChangeValueType(input, underlyingNonNullableType);
+                return Activator.CreateInstance(target, underlyingValue);
             }
 
             var underlyingNullableType = Nullable.GetUnderlyingType(target);
@@ -164,6 +172,14 @@
         {
             if (IsValueType(type))
                 return typeof(Nullable<>).MakeGenericType(type);
+
+            return type;
+        }
+
+        public static Type CreateNonNullableType(Type type)
+        {
+            if (!IsValueType(type))
+                return typeof(NonNullable<>).MakeGenericType(type);
 
             return type;
         }

@@ -50,7 +50,7 @@
 
             Assert.AreEqual(
                 "Field \"booleanField\" must not have a selection since " +
-                "type \"Boolean!\" has no subfields.",
+                "type \"Boolean\" has no subfields.",
                 error.Message);
         }
 
@@ -64,7 +64,7 @@
 
             Assert.AreEqual(
                 "Field \"enumField\" must not have a selection since " +
-                "type \"FurColor!\" has no subfields.",
+                "type \"FurColor\" has no subfields.",
                 error.Message);
         }
 

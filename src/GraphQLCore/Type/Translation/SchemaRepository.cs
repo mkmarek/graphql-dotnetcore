@@ -98,7 +98,7 @@
                 return this.GetNonNullInputSystemTypeFor(((GraphQLNonNullType)type).UnderlyingNullableType);
 
             var inputType = ReflectionUtilities.CreateNullableType(
-                this.GetNonNullInputSystemTypeFor(type));
+                this.GetSystemTypeFor(type));
 
             return inputType;
         }
@@ -129,9 +129,6 @@
                 return this.CreateInputList(type);
 
             var inputType = this.GetSchemaInputTypeForType(type);
-
-            if (ReflectionUtilities.IsValueType(type) && !ReflectionUtilities.IsNullable(type))
-                return new GraphQLNonNullType(inputType);
 
             return inputType;
         }
@@ -191,17 +188,38 @@
 
         private GraphQLInputType GetSchemaInputTypeForType(Type type)
         {
-            var underlyingType = Nullable.GetUnderlyingType(type);
-            if (underlyingType != null)
-                type = underlyingType;
+            var underlyingNonNullableType = NonNullable.GetUnderlyingType(type);
+            if (underlyingNonNullableType != null)
+            {
+                return new GraphQLNonNullType(
+                    this.GetSchemaInputTypeFor(underlyingNonNullableType));
+            }
 
-            if (this.inputBindings.ContainsKey(type))
-                return this.inputBindings[type];
+            var underlyingNullableType = Nullable.GetUnderlyingType(type);
+            if (underlyingNullableType != null)
+            {
+                return this.GetSchemaInputType(underlyingNullableType);
+            }
 
-            throw new GraphQLException($"Unknown input type {type} have you added it to known types?");
+            var inputType = this.GetSchemaInputType(type);
+            if (inputType == null)
+                throw new GraphQLException($"Unknown input type {type} have you added it to known types?");
+
+            if (ReflectionUtilities.IsValueType(type))
+                return new GraphQLNonNullType(inputType);
+
+            return inputType;
         }
 
-        private Type GetNonNullInputSystemTypeFor(GraphQLBaseType type)
+        private GraphQLInputType GetSchemaInputType(Type type)
+        {
+            GraphQLInputType inputType;
+            this.inputBindings.TryGetValue(type, out inputType);
+
+            return inputType;
+        }
+
+        private Type GetSystemTypeFor(GraphQLBaseType type)
         {
             if (type is GraphQLList)
             {
@@ -215,6 +233,15 @@
                 .FirstOrDefault();
 
             return reflectedType;
+        }
+
+        private Type GetNonNullInputSystemTypeFor(GraphQLBaseType type)
+        {
+            var systemType = this.GetSystemTypeFor(type);
+            if (!ReflectionUtilities.IsValueType(systemType))
+                return ReflectionUtilities.CreateNonNullableType(systemType);
+
+            return systemType;
         }
 
         private void AddInputType(GraphQLInputType type)
@@ -249,6 +276,13 @@
         {
             if (ReflectionUtilities.IsCollection(type))
                 return this.CreateList(type);
+            
+            var underlyingNonNullableType = NonNullable.GetUnderlyingType(type);
+            if (underlyingNonNullableType != null)
+            {
+                return new GraphQLNonNullType(
+                    this.GetSchemaTypeForWithNoError(underlyingNonNullableType));
+            }
 
             var underlyingNullableType = Nullable.GetUnderlyingType(type);
             if (underlyingNullableType != null)

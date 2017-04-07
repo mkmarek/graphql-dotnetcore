@@ -1,11 +1,10 @@
 ﻿namespace GraphQLCore.Tests.Utils
 {
+    using GraphQLCore.Type;
+    using GraphQLCore.Utils;
     using NUnit.Framework;
     using System;
-    using GraphQLCore.Utils;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
 
     [TestFixture]
     public class ReflectionUtilsTests
@@ -36,6 +35,26 @@
 
             Assert.IsNull(result);
             Assert.IsNull(result2);
+        }
+
+        [Test]
+        public void CreateNonNullableType_ReturnsCorrectType()
+        {
+            var result = ReflectionUtilities.CreateNonNullableType(typeof(string));
+            var result2 = ReflectionUtilities.CreateNonNullableType(typeof(int));
+
+            Assert.AreEqual(typeof(NonNullable<string>), result);
+            Assert.AreEqual(typeof(int), result2);
+        }
+
+        [Test]
+        public void IsNullable_ReturnsCorrectValue()
+        {
+            var result = ReflectionUtilities.IsNullable(typeof(int?));
+            var result2 = ReflectionUtilities.IsNullable(typeof(int));
+
+            Assert.IsTrue(result);
+            Assert.IsFalse(result2);
         }
     }
 }
