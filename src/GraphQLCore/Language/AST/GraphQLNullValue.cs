@@ -9,5 +9,10 @@
                 return ASTNodeKind.NullValue;
             }
         }
+
+        public override string ToString()
+        {
+            return "null";
+        }
     }
 }
