@@ -11,8 +11,6 @@
             this.kindField = kind;
         }
 
-        public string AstValue { get; set; }
-
         public override ASTNodeKind Kind
         {
             get
@@ -25,7 +23,9 @@
 
         public override string ToString()
         {
-            return this.AstValue;
+            var values = string.Join(", ", this.Values);
+
+            return $"[{values}]";
         }
     }
 }

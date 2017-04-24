@@ -562,8 +562,7 @@
             return new GraphQLListValue(ASTNodeKind.ListValue)
             {
                 Values = this.Any(TokenKind.BRACKET_L, isConstant ? constant : value, TokenKind.BRACKET_R),
-                Location = this.GetLocation(start),
-                AstValue = this.source.Body.Substring(start, this.currentToken.End - start - 1)
+                Location = this.GetLocation(start)
             };
         }
 

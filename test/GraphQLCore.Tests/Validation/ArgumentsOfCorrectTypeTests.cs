@@ -549,7 +549,7 @@
             }
             ");
 
-            Assert.AreEqual("Argument \"inputObject\" has invalid value GraphQLCore.Language.AST.GraphQLObjectValue.\nIn field \"intField\": Expected type \"Int\", found \"aaa\".",
+            Assert.AreEqual("Argument \"inputObject\" has invalid value {nonNullIntField: 0, intField: \"aaa\"}.\nIn field \"intField\": Expected type \"Int\", found \"aaa\".",
                 errors.Single().Message);
         }
 
@@ -567,7 +567,7 @@
             }
             ");
 
-            Assert.AreEqual("Argument \"inputObject\" has invalid value GraphQLCore.Language.AST.GraphQLObjectValue.\nIn field \"stringListField\": In element #1: Expected type \"String\", found 1.\nIn field \"stringListField\": In element #3: Expected type \"String\", found [8, 5, 4].",
+            Assert.AreEqual("Argument \"inputObject\" has invalid value {nonNullIntField: 0, stringListField: [null, 1, \"3\", [8, 5, 4]]}.\nIn field \"stringListField\": In element #1: Expected type \"String\", found 1.\nIn field \"stringListField\": In element #3: Expected type \"String\", found [8, 5, 4].",
                 errors.Single().Message);
         }
 
@@ -589,7 +589,7 @@
             }
             ");
 
-            Assert.AreEqual("Argument \"inputObject\" has invalid value GraphQLCore.Language.AST.GraphQLObjectValue.\nIn field \"nested\": In field \"nonNullIntField\": Expected type \"Int!\", found null.",
+            Assert.AreEqual("Argument \"inputObject\" has invalid value {nonNullIntField: 0, nested: {nonNullIntField: null}}.\nIn field \"nested\": In field \"nonNullIntField\": Expected type \"Int!\", found null.",
                 errors.Single().Message);
         }
     }

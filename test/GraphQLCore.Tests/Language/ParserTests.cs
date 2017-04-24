@@ -141,6 +141,28 @@
             new Parser(new Lexer()).Parse(new Source("{ field(complex: { a: { b: [ $var ] } }) }"));
         }
 
+        [Test]
+        public void Parse_ListValues_ReturnsCorrectString()
+        {
+            var document = new Parser(new Lexer()).Parse(new Source("{ field(a: [ [ 1, 2 ], 2 , [ 1, 2, 3] ] ) }"));
+            var field = (GraphQLFieldSelection)GetSingleSelection(document);
+
+            var result = (GraphQLListValue)field.Arguments.Single().Value;
+
+            Assert.AreEqual("[[1, 2], 2, [1, 2, 3]]", result.ToString());
+        }
+
+        [Test]
+        public void Parse_NullAndObjectListValues_ReturnsCorrectString()
+        {
+            var document = new Parser(new Lexer()).Parse(new Source("{ field(a: [[], [[[null], { a: 1, b: 8}]], []]) }"));
+            var field = (GraphQLFieldSelection)GetSingleSelection(document);
+
+            var result = (GraphQLListValue)field.Arguments.Single().Value;
+
+            Assert.AreEqual("[[], [[[null], {a: 1, b: 8}]], []]", result.ToString());
+        }
+
         private static GraphQLOperationDefinition GetSingleOperationDefinition(GraphQLDocument document)
         {
             return ((GraphQLOperationDefinition)document.Definitions.Single());
