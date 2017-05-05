@@ -209,7 +209,7 @@ namespace GraphQLCore.Tests.Type
             };
 
             this.schema.Execute(@"mutation mutate {
-                testMutation2 {
+                testMutation1 {
                     content
                 }
             }");

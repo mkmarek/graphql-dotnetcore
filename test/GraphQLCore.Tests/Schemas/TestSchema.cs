@@ -88,6 +88,11 @@
         public bool? BooleanField { get; set; }
     }
 
+    public class AnotherSimpleObject : SimpleInterface
+    {
+        public bool? BooleanField { get; set; }
+    }
+
     public class ComplicatedObjectType : GraphQLObjectType<ComplicatedObject>
     {
         public ComplicatedObjectType() : base("ComplicatedObjectType", "")
@@ -109,6 +114,39 @@
         public SimpleObjectType() : base("SimpleObjectType", "")
         {
             this.Field("booleanField", e => e.BooleanField);
+            this.Field("notInterfaceField", e => "");
+            this.Field("simple", e => "simple");
+        }
+    }
+
+    public class AnotherSimpleObjectType : GraphQLObjectType<AnotherSimpleObject>
+    {
+        public AnotherSimpleObjectType() : base("AnotherSimpleObjectType", "")
+        {
+            this.Field("booleanField", e => e.BooleanField);
+            this.Field("boolField", e => false);
+            this.Field("notInterfaceField", e => "");
+            this.Field("sample", e => "sample");
+        }
+    }
+
+    public class SimpleSampleUnionType : GraphQLUnionType
+    {
+        public SimpleSampleUnionType()
+            : base("SimpleSampleUnionType", "")
+        {
+            this.AddPossibleType(typeof(SimpleObject));
+            this.AddPossibleType(typeof(AnotherSimpleObject));
+        }
+
+        public override System.Type ResolveType(object data)
+        {
+            if (data is SimpleObject)
+                return typeof(SimpleObject);
+            else if (data is AnotherSimpleObject)
+                return typeof(AnotherSimpleObject);
+
+            return null;
         }
     }
 
@@ -211,11 +249,13 @@
             this.AddKnownType(new SimpleInterfaceType());
             this.AddKnownType(new FurColorEnum());
             this.AddKnownType(new SimpleObjectType());
+            this.AddKnownType(new AnotherSimpleObjectType());
             this.AddKnownType(new ComplicatedInterfaceType());
             this.AddKnownType(new ComplicatedParentInterfaceType());
             this.AddKnownType(new ComplicatedInputObjectType());
             this.AddKnownType(new ComplicatedObjectType());
             this.AddKnownType(new ComplicatedArgs());
+            this.AddKnownType(new SimpleSampleUnionType());
             this.Query(queryRoot);
             this.Mutation(mutationRoot);
         }
