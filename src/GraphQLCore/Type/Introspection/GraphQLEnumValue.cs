@@ -11,7 +11,7 @@
         {
             this.Field("name", () => name);
             this.Field("description", () => description);
-            this.Field("isDeprecated", () => null as bool?);
+            this.Field("isDeprecated", () => false);
             this.Field("deprecationReason", () => null as string);
         }
 

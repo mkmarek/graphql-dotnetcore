@@ -274,7 +274,7 @@
         public void Execute_ObjectT1WithThreeFields_FieldAHasNullIsDeprecated()
         {
             var field = GetFieldForObject("T1", "a");
-            Assert.IsNull(field.isDeprecated);
+            Assert.IsFalse(field.isDeprecated);
         }
 
         [Test]

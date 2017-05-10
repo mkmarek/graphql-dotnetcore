@@ -49,7 +49,7 @@
             if (directive.Arguments != null)
                 this.BeginVisitArguments(directive.Arguments);
 
-            return directive;
+            return this.EndVisitDirective(directive);
         }
 
         public virtual IEnumerable<GraphQLDirective> BeginVisitDirectives(IEnumerable<GraphQLDirective> directives)
@@ -232,6 +232,11 @@
         public virtual GraphQLFieldSelection EndVisitFieldSelection(GraphQLFieldSelection selection)
         {
             return selection;
+        }
+
+        public virtual GraphQLDirective EndVisitDirective(GraphQLDirective directive)
+        {
+            return directive;
         }
 
         public virtual GraphQLVariable EndVisitVariable(GraphQLVariable variable)

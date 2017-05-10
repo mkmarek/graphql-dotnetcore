@@ -30,6 +30,7 @@
             this.Field("complicatedObjectArgField", (ComplicatedObject complicatedObjectArg) => complicatedObjectArg);
             this.Field("complicatedObjectListArgField", (ComplicatedObject[] complicatedObjectListArg) => complicatedObjectListArg);
             this.Field("insertInputObject", (ComplicatedObject inputObject) => inputObject);
+            this.Field("nested", () => this);
         }
     }
 

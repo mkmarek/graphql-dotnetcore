@@ -104,7 +104,8 @@
                 new VariablesAreInputTypes(),
                 new NoUnusedFragments(),
                 new NoFragmentCycles(),
-                new KnownFragmentNames()
+                new KnownFragmentNames(),
+                new KnownArgumentNames(), 
             };
         }
 
