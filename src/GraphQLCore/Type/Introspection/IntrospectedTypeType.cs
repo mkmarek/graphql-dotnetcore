@@ -1,5 +1,7 @@
 ﻿namespace GraphQLCore.Type.Introspection
 {
+    using Execution;
+
     public class IntrospectedTypeType : GraphQLObjectType<IntrospectedType>
     {
         public IntrospectedTypeType() : base(
@@ -16,8 +18,10 @@
             this.Field("name", e => e.Name);
             this.Field("description", e => e.Description);
             this.Field("kind", e => e.Kind);
-            this.Field("fields", e => e.Fields);
-            this.Field("enumValues", e => e.EnumValues);
+            this.Field("fields", (IContext<IntrospectedType> type, bool? includeDeprecated) =>
+                type.Instance.GetFields(includeDeprecated ?? false));
+            this.Field("enumValues", (IContext<IntrospectedType> type, bool? includeDeprecated) =>
+                type.Instance.GetEnumValues(includeDeprecated ?? false));
             this.Field("ofType", e => e.OfType);
             this.Field("interfaces", e => e.Interfaces);
             this.Field("possibleTypes", e => e.PossibleTypes);

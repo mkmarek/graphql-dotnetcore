@@ -16,6 +16,7 @@
         private GraphQLBaseType argumentType;
         private Stack<GraphQLFieldInfo> fieldStack;
         private Stack<GraphQLBaseType> typeStack;
+        private GraphQLDirective directive;
 
         protected IGraphQLSchema Schema { get; private set; }
 
@@ -40,6 +41,13 @@
                 .Value?.GetGraphQLType(this.SchemaRepository);
 
             return base.BeginVisitArgument(argument);
+        }
+
+        public override GraphQLDirective BeginVisitDirective(GraphQLDirective directive)
+        {
+            this.directive = directive;
+
+            return base.BeginVisitDirective(directive);
         }
 
         public override GraphQLFieldSelection BeginVisitFieldSelection(GraphQLFieldSelection selection)
@@ -97,6 +105,13 @@
             return base.BeginVisitSelectionSet(selectionSet);
         }
 
+        public override GraphQLDirective EndVisitDirective(GraphQLDirective directive)
+        {
+            this.directive = null;
+
+            return base.EndVisitDirective(directive);
+        }
+
         public override GraphQLFieldSelection EndVisitFieldSelection(GraphQLFieldSelection selection)
         {
             this.fieldStack.Pop();
@@ -123,10 +138,23 @@
             return this.argumentType;
         }
 
+        public GraphQLDirective GetDirective()
+        {
+            return this.directive;
+        }
+
         public GraphQLFieldInfo GetLastField()
         {
             if (this.fieldStack.Count > 0)
                 return this.fieldStack.Peek();
+
+            return null;
+        }
+
+        public GraphQLBaseType GetParentType()
+        {
+            if (this.typeStack.Count > 1)
+                return this.typeStack.Skip(1).First();
 
             return null;
         }
@@ -138,9 +166,7 @@
                 var type = this.typeStack.Peek();
 
                 if (type is GraphQLList)
-                {
                     return ((GraphQLList)type).MemberType;
-                }
 
                 return type;
             }
