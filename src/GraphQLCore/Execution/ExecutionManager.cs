@@ -106,6 +106,7 @@
                 new NoFragmentCycles(),
                 new KnownFragmentNames(),
                 new KnownArgumentNames(), 
+                new FieldsOnCorrectType(),
             };
         }
 

@@ -21,7 +21,7 @@
             if (this.OnMessageReceived == null)
                 return;
 
-            foreach (var subscription in this.subscriptions.ToList())
+            foreach (var subscription in this.subscriptions.Where(e => e.Channel == channel).ToList())
             {
                 if ((bool)subscription.Filter.Compile().DynamicInvoke(data))
                 {

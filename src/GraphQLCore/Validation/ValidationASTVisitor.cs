@@ -67,7 +67,10 @@
 
         public override GraphQLInlineFragment BeginVisitInlineFragment(GraphQLInlineFragment inlineFragment)
         {
-            this.typeStack.Push(this.SchemaRepository.GetSchemaOutputTypeByName(inlineFragment.TypeCondition.Name.Value));
+            if (inlineFragment.TypeCondition != null)
+                this.typeStack.Push(this.SchemaRepository.GetSchemaOutputTypeByName(inlineFragment.TypeCondition.Name.Value));
+            else
+                this.typeStack.Push(this.GetLastType());
 
             return base.BeginVisitInlineFragment(inlineFragment);
         }
@@ -190,6 +193,9 @@
 
             if (type is GraphQLComplexType)
                 return ((GraphQLComplexType)type).GetFieldInfo(fieldName);
+
+            if (type is GraphQLList)
+                return this.GetField(((GraphQLList)type).MemberType, fieldName);
 
             return null;
         }
