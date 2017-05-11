@@ -34,7 +34,7 @@
             introspectedType.Name = this.Name;
             introspectedType.Description = this.Description;
             introspectedType.Kind = TypeKind.ENUM;
-            introspectedType.EnumValues = GraphQLEnumValue.GetEnumValuesFor(this.SystemType);
+            introspectedType.EnumValues = IntrospectedEnumValue.GetEnumValuesFor(this.SystemType);
 
             return introspectedType;
         }

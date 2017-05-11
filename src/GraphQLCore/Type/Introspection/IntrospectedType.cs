@@ -7,7 +7,7 @@
     {
         public string Description { get; set; }
 
-        public virtual GraphQLEnumValue[] EnumValues { get; set; }
+        public virtual IntrospectedEnumValue[] EnumValues { get; set; }
 
         public virtual IntrospectedField[] Fields { get { return null; } }
 
@@ -28,11 +28,9 @@
             return this.Fields?.Where(e => includeDeprecated || !e.IsDeprecated);
         }
 
-        public IEnumerable<GraphQLEnumValue> GetEnumValues(bool includeDeprecated)
+        public IEnumerable<IntrospectedEnumValue> GetEnumValues(bool includeDeprecated)
         {
-            // TODO filter by includeDeprecated
-
-            return this.EnumValues;
+            return this.EnumValues?.Where(e => includeDeprecated || !e.IsDeprecated);
         }
     }
 }

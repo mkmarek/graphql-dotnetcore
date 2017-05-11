@@ -1,12 +1,13 @@
 ﻿namespace GraphQLCore.Type.Introspection
 {
-    using GraphQLCore.Type.Directives;
+    using Directives;
 
     public class IntrospectedDirectiveLocationType : GraphQLEnumType<DirectiveLocation>
     {
         public IntrospectedDirectiveLocationType() : base(
             "__DirectiveLocation",
-            string.Empty)
+            "A Directive can be adjacent to many parts of the GraphQL language, " +
+            "a __DirectiveLocation describes one such possible adjacencies.")
         {
         }
     }

@@ -98,7 +98,7 @@
             this.SchemaRepository.AddKnownType(new IntrospectedTypeType());
             this.SchemaRepository.AddKnownType(new IntrospectedFieldType());
             this.SchemaRepository.AddKnownType(new IntrospectedInputValueType());
-            this.SchemaRepository.AddKnownType(new GraphQLEnumValue(null, null));
+            this.SchemaRepository.AddKnownType(new IntrospectedEnumValueType());
             this.SchemaRepository.AddKnownType(new IntrospectedDirectiveType());
             this.SchemaRepository.AddKnownType(new IntrospectedDirectiveLocationType());
             this.SchemaRepository.AddKnownType(this.IntrospectedSchema);
