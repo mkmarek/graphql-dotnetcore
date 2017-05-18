@@ -252,6 +252,18 @@
             Assert.IsEmpty(errors);
         }
 
+        [Test]
+        public void FieldOnScalarType_ReportsSingleError()
+        {
+            var errors = Validate(@"
+            fragment scalarFragment on Boolean {
+                foo
+            }
+            ");
+
+            Assert.AreEqual("Cannot query field \"foo\" on type \"Boolean\".", errors.Single().Message);
+        }
+
         protected override GraphQLException[] Validate(string body)
         {
             return validationContext.Validate(

@@ -3,10 +3,10 @@
     using Complex;
     using Introspection;
     using Language.AST;
-    using Translation;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
+    using Translation;
 
     public abstract class GraphQLDirectiveType
     {

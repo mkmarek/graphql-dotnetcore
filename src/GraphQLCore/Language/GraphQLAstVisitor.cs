@@ -72,7 +72,7 @@
         {
             if (node.Arguments != null)
                 this.BeginVisitNodeCollection(node.Arguments);
-            
+
             if (node.Directives != null)
                 this.BeginVisitNodeCollection(node.Directives);
 

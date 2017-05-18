@@ -5,7 +5,6 @@
     public class GraphQLDirectiveDefinition : GraphQLTypeDefinition
     {
         public IEnumerable<GraphQLInputValueDefinition> Arguments { get; set; }
-        public IEnumerable<GraphQLInputValueDefinition> Definitions { get; set; }
 
         public override ASTNodeKind Kind
         {

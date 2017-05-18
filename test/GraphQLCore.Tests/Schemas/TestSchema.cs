@@ -213,7 +213,9 @@
 
         public override LambdaExpression GetResolver(object value, object parentValue)
         {
-            return (Expression<Func<object>>)(() => "replacedByDirective");
+            Expression<Func<int?, int?, int?, object>> resolver = (a, b, c) => "replacedByDirective";
+
+            return resolver;
         }
     }
 
@@ -243,6 +245,10 @@
             this.AddKnownType(new ComplicatedObjectType());
             this.AddKnownType(new ComplicatedArgs());
             this.AddKnownType(new SimpleSampleUnionType());
+
+            this.AddOrReplaceDirective(new TestDirective("directive", DirectiveLocation.FIELD));
+            this.AddOrReplaceDirective(new TestDirective("directive1", DirectiveLocation.FIELD));
+            this.AddOrReplaceDirective(new TestDirective("directive2", DirectiveLocation.FIELD));
 
             this.AddOrReplaceDirective(new TestDirective("onQuery", DirectiveLocation.QUERY));
             this.AddOrReplaceDirective(new TestDirective("onMutation", DirectiveLocation.MUTATION));

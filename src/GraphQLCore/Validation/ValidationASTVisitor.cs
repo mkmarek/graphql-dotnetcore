@@ -32,23 +32,6 @@
         protected LiteralValueValidator LiteralValueValidator { get; set; }
         protected ISchemaRepository SchemaRepository { get; private set; }
 
-        protected GraphQLBaseType GetLastArgumentType(GraphQLArgument argument)
-        {
-            if (this.directive != null)
-            {
-                var directiveType = this.SchemaRepository.GetDirective(this.directive.Name.Value);
-                return directiveType?.GetArgument(argument.Name.Value)?
-                    .GetGraphQLType(this.SchemaRepository);
-            }
-            else
-            {
-                return this.GetLastField()
-                    .Arguments
-                    .SingleOrDefault(e => e.Key == argument.Name.Value)
-                    .Value?.GetGraphQLType(this.SchemaRepository);
-            }
-        }
-
         public override GraphQLDirective BeginVisitDirective(GraphQLDirective directive)
         {
             this.directive = directive;
@@ -194,6 +177,23 @@
                 return this.GetField(((GraphQLList)type).MemberType, fieldName);
 
             return null;
+        }
+
+        protected GraphQLBaseType GetLastArgumentType(GraphQLArgument argument)
+        {
+            if (this.directive != null)
+            {
+                var directiveType = this.SchemaRepository.GetDirective(this.directive.Name.Value);
+                return directiveType?.GetArgument(argument.Name.Value)?
+                    .GetGraphQLType(this.SchemaRepository);
+            }
+            else
+            {
+                return this.GetLastField()
+                    .Arguments
+                    .SingleOrDefault(e => e.Key == argument.Name.Value)
+                    .Value?.GetGraphQLType(this.SchemaRepository);
+            }
         }
 
         private GraphQLFieldInfo GetIntrospectedTypeField()
