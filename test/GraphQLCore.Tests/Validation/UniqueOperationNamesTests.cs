@@ -13,7 +13,7 @@
         public void NoOperations()
         {
             var errors = this.Validate(@"
-            fragment fragA on ComplicatedInputObjectType {
+            fragment fragA on ComplicatedObjectType {
                 intField
             }");
 
@@ -80,7 +80,7 @@
             query Foo {
                 foo
             }
-            fragment Foo on ComplicatedInputObjectType {
+            fragment Foo on ComplicatedObjectType {
                 intField
             }");
 

@@ -51,6 +51,9 @@
             var suggestedObjectTypes = new List<string>();
             var interfaceUsageCount = new Dictionary<string, int>();
 
+            if (introspectedType.PossibleTypes == null)
+                return suggestedObjectTypes;
+
             foreach (var possibleType in introspectedType.PossibleTypes)
             {
                 if (possibleType.Fields.Any(e => e.Name == fieldName))

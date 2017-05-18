@@ -152,26 +152,5 @@
                 "type \"SimpleInterfaceType\" can never be of type \"ComplicatedInterfaceType\".",
                 error.Message);
         }
-
-        [Test]
-        public void AnonymousInlineFragment_Passes()
-        {
-            var errors = this.Validate(@"
-                fragment anonymousInlineFragment on SimpleInterfaceType { 
-                    ... { booleanField } }");
-
-            Assert.IsEmpty(errors);
-        }
-
-        [Test]
-        public void AnonymousInlineFragmentOnRootType_Passes()
-        {
-            var errors = this.Validate(@"
-                { 
-                    ... { __typename } 
-                }");
-
-            Assert.IsEmpty(errors);
-        }
     }
 }

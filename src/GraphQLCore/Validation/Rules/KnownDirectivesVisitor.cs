@@ -23,6 +23,15 @@
 
         public List<GraphQLException> Errors { get; private set; }
 
+        public override ASTNode BeginVisitNode(ASTNode node)
+        {
+            this.ancestorStack.Push(node);
+            node = base.BeginVisitNode(node);
+            this.ancestorStack.Pop();
+
+            return node;
+        }
+
         public override GraphQLDirective BeginVisitDirective(GraphQLDirective directive)
         {
             var directiveDefinition = this.schemaRepository.GetDirective(directive.Name.Value);
@@ -43,14 +52,14 @@
                     this.Errors.Add(new GraphQLException(errorMessage));
                 }
             }
-            
+
             return base.BeginVisitDirective(directive);
         }
 
         private DirectiveLocation GetDirectiveLocationForAstPath()
         {
             var appliedTo = this.GetLastNode();
-            
+
             switch (appliedTo.Kind)
             {
                 case ASTNodeKind.OperationDefinition:
@@ -64,9 +73,9 @@
                             return DirectiveLocation.MUTATION;
                         case OperationType.Subscription:
                             return DirectiveLocation.SUBSCRIPTION;
-                        default:
-                            throw new NotImplementedException();
                     }
+
+                    throw new NotImplementedException();
                 case ASTNodeKind.Field:
                     return DirectiveLocation.FIELD;
                 case ASTNodeKind.FragmentSpread:
@@ -100,15 +109,6 @@
                 default:
                     throw new NotImplementedException();
             }
-        }
-
-        public override ASTNode BeginVisitNode(ASTNode node)
-        {
-            this.ancestorStack.Push(node);
-            node = base.BeginVisitNode(node);
-            this.ancestorStack.Pop();
-
-            return node;
         }
 
         private ASTNode GetLastNode()

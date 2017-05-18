@@ -47,6 +47,8 @@
                     new ProvidedNonNullArguments(),
                     new ScalarLeafs(),
                     new ArgumentsOfCorrectType(),
+                    new KnownDirectives(),
+                    new FragmentsOnCompositeTypes(),
                 });
         }
     }
