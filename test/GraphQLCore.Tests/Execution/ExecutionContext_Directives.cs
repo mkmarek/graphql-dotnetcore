@@ -3,6 +3,7 @@
     using GraphQLCore.Type;
     using Microsoft.CSharp.RuntimeBinder;
     using NUnit.Framework;
+    using Schemas;
 
     [TestFixture]
     public class ExecutionContext_Directives
@@ -15,11 +16,11 @@
             dynamic result = this.schema.Execute(@"
             query fetch {
                 nested {
-                    ...frag
+                    ...frag @include(if : false)
                 }
             }
 
-            fragment frag on NestedQueryType @include(if : false) {
+            fragment frag on NestedQueryType {
                 a
                 b
             }
@@ -35,11 +36,11 @@
             dynamic result = this.schema.Execute(@"
             query fetch {
                 nested {
-                    ...frag
+                    ...frag @skip(if : false)
                 }
             }
 
-            fragment frag on NestedQueryType @skip(if : false) {
+            fragment frag on NestedQueryType {
                 a
                 b
             }
@@ -55,11 +56,11 @@
             dynamic result = this.schema.Execute(@"
             query fetch {
                 nested {
-                    ...frag
+                    ...frag @include(if : true)
                 }
             }
 
-            fragment frag on NestedQueryType @include(if : true) {
+            fragment frag on NestedQueryType {
                 a
                 b
             }
@@ -75,11 +76,11 @@
             dynamic result = this.schema.Execute(@"
             query fetch {
                 nested {
-                    ...frag
+                    ...frag @skip(if : true)
                 }
             }
 
-            fragment frag on NestedQueryType @skip(if : true) {
+            fragment frag on NestedQueryType {
                 a
                 b
             }
@@ -159,6 +160,15 @@
 
             Assert.AreEqual("world", result.a);
             Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.b; }));
+        }
+
+        [Test]
+        public void Execute_CustomDirective_ResolvesCorrectly()
+        {
+            var schema = new TestSchema();
+            dynamic result = schema.Execute("{ foo @onField }");
+
+            Assert.AreEqual("replacedByDirective", result.foo);
         }
 
         [SetUp]

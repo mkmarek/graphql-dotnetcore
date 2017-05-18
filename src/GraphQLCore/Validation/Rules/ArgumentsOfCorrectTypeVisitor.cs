@@ -17,7 +17,7 @@
 
         public override GraphQLArgument EndVisitArgument(GraphQLArgument argument)
         {
-            var argumentType = this.GetArgumentDefinition();
+            var argumentType = this.GetLastArgumentType(argument);
             var astValue = argument.Value;
 
             var errors = this.LiteralValueValidator.IsValid(argumentType, astValue);

@@ -68,10 +68,11 @@
 
         public override GraphQLArgument BeginVisitArgument(GraphQLArgument argument)
         {
-            if (this.GetLastField().Arguments.ContainsKey(argument.Name.Value))
+            var argumentType = this.GetLastArgumentType(argument);
+
+            if (argumentType != null)
             {
-                var type = this.GetLastField().Arguments[argument.Name.Value].GetGraphQLType(this.SchemaRepository);
-                this.inputTypeStack.Push(type);
+                this.inputTypeStack.Push(argumentType);
 
                 argument = base.BeginVisitArgument(argument);
                 this.inputTypeStack.Pop();

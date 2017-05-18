@@ -1,8 +1,11 @@
 ﻿namespace GraphQLCore.Tests.Schemas
 {
+    using GraphQLCore.Type.Directives;
     using GraphQLCore.Type;
+    using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Linq.Expressions;
 
     public enum FurColor
     {
@@ -142,11 +145,6 @@
 
         public override System.Type ResolveType(object data)
         {
-            if (data is SimpleObject)
-                return typeof(SimpleObject);
-            else if (data is AnotherSimpleObject)
-                return typeof(AnotherSimpleObject);
-
             return null;
         }
     }
@@ -164,29 +162,6 @@
         public ComplicatedParentInterfaceType() : base("ComplicatedParentInterfaceType", "")
         {
             this.Field("intField", e => e.IntField);
-        }
-    }
-
-    public class SampleInputObject
-    {
-        public int Id { get; set; }
-        public bool? Field { get; set; }
-        public string Field1 { get; set; }
-        public string Field2 { get; set; }
-        public string Field3 { get; set; }
-        public SampleInputObject Deep { get; set; }
-    }
-
-    public class SampleInputObjectType : GraphQLInputObjectType<SampleInputObject>
-    {
-        public SampleInputObjectType() : base("SampleInputObjectType", "SampleInputObjectType")
-        {
-            this.Field("id", e => e.Id);
-            this.Field("f", e => e.Field);
-            this.Field("f1", e => e.Field1);
-            this.Field("f2", e => e.Field2);
-            this.Field("f3", e => e.Field3);
-            this.Field("deep", e => e.Deep);
         }
     }
 
@@ -230,6 +205,18 @@
         }
     }
 
+    public class TestDirective : GraphQLDirectiveType
+    {
+        public TestDirective(string name, params DirectiveLocation[] locations) : base(name, "", locations)
+        {
+        }
+
+        public override LambdaExpression GetResolver(object value, object parentValue)
+        {
+            return (Expression<Func<object>>)(() => "replacedByDirective");
+        }
+    }
+
     public class MutationRoot : GraphQLObjectType
     {
         public MutationRoot() : base("MutationRoot", "")
@@ -246,7 +233,6 @@
             var mutationRoot = new MutationRoot();
 
             this.AddKnownType(queryRoot);
-            this.AddKnownType(new SampleInputObjectType());
             this.AddKnownType(new SimpleInterfaceType());
             this.AddKnownType(new FurColorEnum());
             this.AddKnownType(new SimpleObjectType());
@@ -257,6 +243,26 @@
             this.AddKnownType(new ComplicatedObjectType());
             this.AddKnownType(new ComplicatedArgs());
             this.AddKnownType(new SimpleSampleUnionType());
+
+            this.AddOrReplaceDirective(new TestDirective("onQuery", DirectiveLocation.QUERY));
+            this.AddOrReplaceDirective(new TestDirective("onMutation", DirectiveLocation.MUTATION));
+            this.AddOrReplaceDirective(new TestDirective("onSubscription", DirectiveLocation.SUBSCRIPTION));
+            this.AddOrReplaceDirective(new TestDirective("onField", DirectiveLocation.FIELD));
+            this.AddOrReplaceDirective(new TestDirective("onFragmentDefinition", DirectiveLocation.FRAGMENT_DEFINITION));
+            this.AddOrReplaceDirective(new TestDirective("onFragmentSpread", DirectiveLocation.FRAGMENT_SPREAD));
+            this.AddOrReplaceDirective(new TestDirective("onInlineFragment", DirectiveLocation.INLINE_FRAGMENT));
+            this.AddOrReplaceDirective(new TestDirective("onSchema", DirectiveLocation.SCHEMA));
+            this.AddOrReplaceDirective(new TestDirective("onScalar", DirectiveLocation.SCALAR));
+            this.AddOrReplaceDirective(new TestDirective("onObject", DirectiveLocation.OBJECT));
+            this.AddOrReplaceDirective(new TestDirective("onFieldDefinition", DirectiveLocation.FIELD_DEFINITION));
+            this.AddOrReplaceDirective(new TestDirective("onArgumentDefinition", DirectiveLocation.ARGUMENT_DEFINITION));
+            this.AddOrReplaceDirective(new TestDirective("onInterface", DirectiveLocation.INTERFACE));
+            this.AddOrReplaceDirective(new TestDirective("onUnion", DirectiveLocation.UNION));
+            this.AddOrReplaceDirective(new TestDirective("onEnum", DirectiveLocation.ENUM));
+            this.AddOrReplaceDirective(new TestDirective("onEnumValue", DirectiveLocation.ENUM_VALUE));
+            this.AddOrReplaceDirective(new TestDirective("onInputObject", DirectiveLocation.INPUT_OBJECT));
+            this.AddOrReplaceDirective(new TestDirective("onInputFieldDefinition", DirectiveLocation.INPUT_FIELD_DEFINITION));
+
             this.Query(queryRoot);
             this.Mutation(mutationRoot);
         }
