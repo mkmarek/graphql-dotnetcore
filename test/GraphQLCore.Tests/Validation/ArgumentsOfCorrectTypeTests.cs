@@ -1,12 +1,6 @@
 ﻿namespace GraphQLCore.Tests.Validation
 {
-    using Exceptions;
-    using GraphQLCore.Language;
-    using GraphQLCore.Language.AST;
-    using GraphQLCore.Validation;
-    using GraphQLCore.Validation.Rules;
     using NUnit.Framework;
-    using Schemas;
     using System.Linq;
 
     [TestFixture]
@@ -591,6 +585,35 @@
 
             Assert.AreEqual("Argument \"inputObject\" has invalid value {nonNullIntField: 0, nested: {nonNullIntField: null}}.\nIn field \"nested\": In field \"nonNullIntField\": Expected type \"Int!\", found null.",
                 errors.Single().Message);
+        }
+
+        [Test]
+        public void DirectivesOfCorrectTypes_ExpectsNoError()
+        {
+            var errors = Validate(@"
+            {
+                foo @include(if: true)
+                bar @skip(if: false)
+            }
+            ");
+
+            Assert.IsEmpty(errors);
+        }
+
+        [Test]
+        public void DirectivesOfIncorrectTypes_ExpectsMultipleErrors()
+        {
+            var errors = Validate(@"
+            {
+                complicatedArgs @include(if: ""yes"") {
+                    stringArgField @skip(if: ENUM)
+                }
+            }
+            ");
+
+            Assert.AreEqual(2, errors.Count());
+            Assert.AreEqual("Argument \"if\" has invalid value \"yes\".\nExpected type \"Boolean\", found \"yes\".", errors.ElementAt(0).Message);
+            Assert.AreEqual("Argument \"if\" has invalid value ENUM.\nExpected type \"Boolean\", found ENUM.", errors.ElementAt(1).Message);
         }
     }
 }

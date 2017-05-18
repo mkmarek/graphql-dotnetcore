@@ -92,5 +92,13 @@ namespace GraphQLCore.Tests.Type.Directives
                 .Received()
                 .GetResolver("bar", Arg.Any<dynamic>());
         }
+
+        [Test]
+        public void Directive_GetUnknownArgument_ReturnsNull()
+        {
+            var result = this.testDirective.GetArgument("unknown");
+
+            Assert.IsNull(result);
+        }
     }
 }

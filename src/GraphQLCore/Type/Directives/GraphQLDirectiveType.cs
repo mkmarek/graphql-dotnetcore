@@ -1,8 +1,11 @@
 ﻿namespace GraphQLCore.Type.Directives
 {
-    using GraphQLCore.Type.Introspection;
-    using GraphQLCore.Type.Translation;
+    using Complex;
+    using Introspection;
     using Language.AST;
+    using Translation;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Linq.Expressions;
 
     public abstract class GraphQLDirectiveType
@@ -46,6 +49,29 @@
                 Description = this.Description,
                 Locations = this.Locations,
                 Resolver = this.GetResolver(null, null)
+            };
+        }
+
+        public IEnumerable<GraphQLObjectTypeArgumentInfo> GetArguments()
+        {
+            return this.GetResolver(null, null).Parameters.Select(e => new GraphQLObjectTypeArgumentInfo()
+            {
+                Name = e.Name,
+                SystemType = e.Type
+            });
+        }
+
+        public GraphQLObjectTypeArgumentInfo GetArgument(string name)
+        {
+            var parameter = this.GetResolver(null, null).Parameters.FirstOrDefault(e => e.Name == name);
+
+            if (parameter == null)
+                return null;
+
+            return new GraphQLObjectTypeArgumentInfo()
+            {
+                Name = parameter.Name,
+                SystemType = parameter.Type
             };
         }
     }

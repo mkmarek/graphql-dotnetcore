@@ -107,6 +107,7 @@
                 new KnownFragmentNames(),
                 new KnownArgumentNames(), 
                 new FieldsOnCorrectType(),
+                new KnownDirectives(),
             };
         }
 

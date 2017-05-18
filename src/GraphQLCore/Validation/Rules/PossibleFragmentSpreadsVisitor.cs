@@ -15,10 +15,10 @@
 
         public List<GraphQLException> Errors { get; private set; }
 
-        public override GraphQLInlineFragment BeginVisitInlineFragment(GraphQLInlineFragment inlineFragment)
+        public override GraphQLInlineFragment EndVisitInlineFragment(GraphQLInlineFragment inlineFragment)
         {
-            var fragmentType = this.GetFragmentType(inlineFragment);
-            var parentType = this.GetLastType();
+            var fragmentType = this.GetLastType();
+            var parentType = this.GetParentType();
 
             if (fragmentType != null &&
                 parentType != null &&
@@ -29,7 +29,7 @@
                         this.GetIncompatibleTypeInAnonymousFragmentMessage(fragmentType, parentType)));
             }
 
-            return base.BeginVisitInlineFragment(inlineFragment);
+            return base.EndVisitInlineFragment(inlineFragment);
         }
 
         public override GraphQLFragmentSpread BeginVisitFragmentSpread(GraphQLFragmentSpread fragmentSpread)
@@ -86,11 +86,6 @@
                 .PossibleTypes?.Any(e => e.Name == fragmentType.Name) ?? false;
 
             return parentImplementsFragmentType || fragmentTypeImplementsParent || fragmentTypeIsWithinPossibleTypes;
-        }
-
-        private GraphQLBaseType GetFragmentType(GraphQLInlineFragment inlineFragment)
-        {
-            return this.SchemaRepository.GetSchemaOutputTypeByName(inlineFragment.TypeCondition.Name.Value);
         }
 
         private GraphQLBaseType GetFragmentType(GraphQLFragmentDefinition fragmentDefinition)

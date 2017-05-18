@@ -46,8 +46,7 @@
 
         private void CheckDirectiveArgument(GraphQLDirectiveType directiveType, string argumentName)
         {
-            var introspectedDirective = directiveType.Introspect(this.schemaRepository);
-            var arguments = introspectedDirective.GetArgs();
+            var arguments = directiveType.GetArguments();
 
             if (arguments.Any(e => e.Name == argumentName))
                 return;

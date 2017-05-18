@@ -13,7 +13,6 @@
 
     public class ValidationASTVisitor : GraphQLAstVisitor
     {
-        private GraphQLBaseType argumentType;
         private Stack<GraphQLFieldInfo> fieldStack;
         private Stack<GraphQLBaseType> typeStack;
         private GraphQLDirective directive;
@@ -33,14 +32,21 @@
         protected LiteralValueValidator LiteralValueValidator { get; set; }
         protected ISchemaRepository SchemaRepository { get; private set; }
 
-        public override GraphQLArgument BeginVisitArgument(GraphQLArgument argument)
+        protected GraphQLBaseType GetLastArgumentType(GraphQLArgument argument)
         {
-            this.argumentType = this.GetLastField()
-                .Arguments
-                .SingleOrDefault(e => e.Key == argument.Name.Value)
-                .Value?.GetGraphQLType(this.SchemaRepository);
-
-            return base.BeginVisitArgument(argument);
+            if (this.directive != null)
+            {
+                var directiveType = this.SchemaRepository.GetDirective(this.directive.Name.Value);
+                return directiveType?.GetArgument(argument.Name.Value)?
+                    .GetGraphQLType(this.SchemaRepository);
+            }
+            else
+            {
+                return this.GetLastField()
+                    .Arguments
+                    .SingleOrDefault(e => e.Key == argument.Name.Value)
+                    .Value?.GetGraphQLType(this.SchemaRepository);
+            }
         }
 
         public override GraphQLDirective BeginVisitDirective(GraphQLDirective directive)
@@ -100,11 +106,6 @@
             return definition;
         }
 
-        public override GraphQLSelectionSet BeginVisitSelectionSet(GraphQLSelectionSet selectionSet)
-        {
-            return base.BeginVisitSelectionSet(selectionSet);
-        }
-
         public override GraphQLDirective EndVisitDirective(GraphQLDirective directive)
         {
             this.directive = null;
@@ -131,11 +132,6 @@
             }
 
             return node;
-        }
-
-        public GraphQLBaseType GetArgumentDefinition()
-        {
-            return this.argumentType;
         }
 
         public GraphQLDirective GetDirective()
