@@ -47,11 +47,14 @@
             {
                 this.fieldStack.Push(field);
                 this.typeStack.Push(this.SchemaRepository.GetSchemaTypeFor(field.SystemType));
-
-                return base.BeginVisitFieldSelection(selection);
+            }
+            else
+            {
+                this.fieldStack.Push(null);
+                this.typeStack.Push(null);
             }
 
-            return selection;
+            return base.BeginVisitFieldSelection(selection);
         }
 
         public override GraphQLInlineFragment BeginVisitInlineFragment(GraphQLInlineFragment inlineFragment)
@@ -77,14 +80,11 @@
             {
                 case OperationType.Query: this.typeStack.Push(this.Schema.QueryType); break;
                 case OperationType.Mutation: this.typeStack.Push(this.Schema.MutationType); break;
-                case OperationType.Subscription: break;
+                case OperationType.Subscription: this.typeStack.Push(null); /* TODO: somehow resolve validation on subscriptions */ break;
                 default: throw new NotImplementedException();
             }
 
             definition = base.BeginVisitOperationDefinition(definition);
-
-            if (this.typeStack.Count > 0)
-                this.typeStack.Pop();
 
             return definition;
         }
@@ -108,13 +108,23 @@
         {
             var fragmentType = this.SchemaRepository.GetSchemaOutputTypeByName(node.TypeCondition.Name.Value);
 
-            if (fragmentType != null)
-            {
-                this.typeStack.Push(fragmentType);
-                return base.BeginVisitFragmentDefinition(node);
-            }
+            this.typeStack.Push(fragmentType);
 
-            return node;
+            return base.BeginVisitFragmentDefinition(node);
+        }
+
+        public override GraphQLFragmentDefinition EndVisitFragmentDefinition(GraphQLFragmentDefinition node)
+        {
+            this.typeStack.Pop();
+
+            return base.EndVisitFragmentDefinition(node);
+        }
+
+        public override GraphQLOperationDefinition EndVisitOperationDefinition(GraphQLOperationDefinition definition)
+        {
+            this.typeStack.Pop();
+
+            return base.EndVisitOperationDefinition(definition);
         }
 
         public GraphQLDirective GetDirective()
@@ -189,7 +199,14 @@
             }
             else
             {
-                return this.GetLastField()
+                var field = this.GetLastField();
+
+                if (field == null)
+                {
+                    return null;
+                }
+
+                return field
                     .Arguments
                     .SingleOrDefault(e => e.Key == argument.Name.Value)
                     .Value?.GetGraphQLType(this.SchemaRepository);

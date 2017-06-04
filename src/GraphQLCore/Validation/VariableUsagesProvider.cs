@@ -94,6 +94,9 @@
 
             var fieldType = this.GetLastType() as GraphQLComplexType;
 
+            if (fieldType == null)
+                return null;
+
             return this.SchemaRepository.GetSchemaInputTypeFor(fieldType.SystemType);
         }
 

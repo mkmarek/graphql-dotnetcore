@@ -114,6 +114,11 @@
             if (node.SelectionSet != null)
                 this.BeginVisitNode(node.SelectionSet);
 
+            return this.EndVisitFragmentDefinition(node);
+        }
+
+        public virtual GraphQLFragmentDefinition EndVisitFragmentDefinition(GraphQLFragmentDefinition node)
+        {
             return node;
         }
 

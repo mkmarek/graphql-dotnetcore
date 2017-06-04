@@ -109,6 +109,7 @@
                 new FieldsOnCorrectType(),
                 new KnownDirectives(),
                 new FragmentsOnCompositeTypes(),
+                new OverlappingFieldsCanBeMerged()
             };
         }
 

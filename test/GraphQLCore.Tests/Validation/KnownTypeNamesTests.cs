@@ -26,7 +26,7 @@
             var complicatedObjectArgFieldddddddError = errors.ElementAt(2);
 
             Assert.AreEqual("Unknown type \"JumbledUpLetters\"", jumbledUpLettersError.Message);
-            Assert.AreEqual("Unknown type \"Badger\"", badgerError.Message);
+            Assert.IsTrue(badgerError.Message.StartsWith("Unknown type \"Badger\""));
             Assert.IsTrue(
                 complicatedObjectArgFieldddddddError.Message.StartsWith(
                     "Unknown type \"ComplicatedObjectTypeee\" Did you mean \"ComplicatedObjectType\""));

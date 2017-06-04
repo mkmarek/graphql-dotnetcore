@@ -17,20 +17,20 @@
         public override GraphQLFieldSelection EndVisitFieldSelection(GraphQLFieldSelection selection)
         {
             var type = this.GetLastType();
-            var field = this.GetLastField();
 
-            if (type == null || field == null)
-                return selection;
+            if (type == null)
+                return base.EndVisitFieldSelection(selection);
 
             if (type.IsLeafType && selection?.SelectionSet != null)
             {
                 this.Errors.Add(new GraphQLException(
-                    this.NoScalarSubselection(field.Name, type)));
+                    this.NoScalarSubselection(selection.Name.Value, type)));
+                    
             }
             else if (!type.IsLeafType && selection?.SelectionSet == null)
             {
                 this.Errors.Add(new GraphQLException(
-                    this.RequiredSubselectionMessage(field.Name, type)));
+                    this.RequiredSubselectionMessage(selection.Name.Value, type)));
             }
 
             return base.EndVisitFieldSelection(selection);

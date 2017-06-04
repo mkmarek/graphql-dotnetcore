@@ -19,11 +19,15 @@
         public override GraphQLFieldSelection EndVisitFieldSelection(GraphQLFieldSelection selection)
         {
             var field = this.GetLastField();
-            var providedArguments = selection.Arguments;
 
-            foreach (var argument in field.Arguments)
+            if (field != null)
             {
-                this.ValidateArgument(argument.Value, field, providedArguments);
+                var providedArguments = selection.Arguments;
+
+                foreach (var argument in field.Arguments)
+                {
+                    this.ValidateArgument(argument.Value, field, providedArguments);
+                }
             }
 
             return base.EndVisitFieldSelection(selection);
