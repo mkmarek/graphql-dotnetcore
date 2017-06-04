@@ -55,6 +55,40 @@
         }
 
         [Test]
+        public void ArrayOfInterfacesIntoTypeInline_Pases()
+        {
+            var errors = this.Validate(@"
+                query {
+                    interfaceObjectArray {
+                        ... on ComplicatedObjectType {
+                            BooleanField
+                        }
+                    }
+                }
+                ");
+
+            Assert.IsEmpty(errors);
+        }
+
+        [Test]
+        public void ArrayOfInterfacesIntoTypeFragment_Pases()
+        {
+            var errors = this.Validate(@"
+                query {
+                    interfaceObjectArray {
+                        ...frag
+                    }
+                }
+
+                fragment frag on ComplicatedObjectType {
+                   BooleanField
+                }
+                ");
+
+            Assert.IsEmpty(errors);
+        }
+
+        [Test]
         public void InterfaceIntoOverlappingInterfaceInlineFragment_Pases()
         {
             var errors = this.Validate(@"

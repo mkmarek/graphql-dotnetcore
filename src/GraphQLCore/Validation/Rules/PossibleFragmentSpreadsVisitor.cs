@@ -20,7 +20,21 @@
             var fragmentType = this.GetLastType();
             var parentType = this.GetParentType();
 
-            if (fragmentType != null &&
+            this.ValidateInlineFragmentTypes(fragmentType, parentType);
+
+            return base.EndVisitInlineFragment(inlineFragment);
+        }
+
+        private void ValidateInlineFragmentTypes(GraphQLBaseType fragmentType, GraphQLBaseType parentType)
+        {
+            if (parentType is GraphQLList)
+            {
+                parentType = ((GraphQLList)parentType).MemberType;
+
+                this.ValidateInlineFragmentTypes(fragmentType, parentType);
+            }
+
+            else if (fragmentType != null &&
                 parentType != null &&
                 !this.DoTypesOverlap(fragmentType, parentType))
             {
@@ -28,8 +42,6 @@
                     new GraphQLException(
                         this.GetIncompatibleTypeInAnonymousFragmentMessage(fragmentType, parentType)));
             }
-
-            return base.EndVisitInlineFragment(inlineFragment);
         }
 
         public override GraphQLFragmentSpread BeginVisitFragmentSpread(GraphQLFragmentSpread fragmentSpread)

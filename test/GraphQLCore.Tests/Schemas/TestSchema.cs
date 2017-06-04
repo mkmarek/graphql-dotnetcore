@@ -200,6 +200,7 @@
             this.Field("nonNullField", (NonNullable<string> a) => a);
             this.Field("jagged", (IEnumerable<string[][]> jagged) => jagged);
             this.Field("interfaceObject", () => (ComplicatedInterface)new ComplicatedObject());
+            this.Field("interfaceObjectArray", () => new List<ComplicatedInterface>() { new ComplicatedObject() });
             this.Field("complicatedArgs", () => complicatedArgs);
             this.Field("insertInputObject", (ComplicatedObject inputObject) => inputObject);
         }
