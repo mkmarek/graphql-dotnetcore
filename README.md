@@ -113,7 +113,7 @@ git commit -m "Fix the previous fix for awesome feature"
 ```
 ###Squash it
 ```
-git reabse -i <commit>
+git rebase -i <commit>
 ```
 More info about squashing [http://gitready.com/advanced/2009/02/10/squashing-commits-with-rebase.html](http://gitready.com/advanced/2009/02/10/squashing-commits-with-rebase.html).
 
