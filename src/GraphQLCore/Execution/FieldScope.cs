@@ -1,6 +1,5 @@
 ﻿namespace GraphQLCore.Execution
 {
-    using GraphQLCore.Type.Directives;
     using Language.AST;
     using System;
     using System.Collections;
@@ -11,6 +10,8 @@
     using System.Reflection;
     using Type;
     using Type.Complex;
+    using Type.Directives;
+    using Type.Scalar;
     using Utils;
 
     public class FieldScope
@@ -42,7 +43,7 @@
 
             var result = input;
 
-            var resolved = 
+            var resolved =
                   this.TryResolveUnion(ref result, inputType, selection)
                || this.TryResolveNonNull(ref result, inputType, selection)
                || this.TryResolveObjectType(ref result, inputType, selection)
@@ -67,7 +68,7 @@
             if (argument == null)
                 return null;
 
-            return type.GetFromAst(argument.Value, this.context.SchemaRepository);
+            return type.GetFromAst(argument.Value, this.context.SchemaRepository).Value;
         }
 
         public dynamic GetObject(Dictionary<string, IList<GraphQLFieldSelection>> fields)
@@ -262,6 +263,9 @@
         {
             if (input == null)
                 return null;
+
+            if (input is ID)
+                return (string)(ID)input;
 
             if (ReflectionUtilities.IsEnum(input.GetType()))
                 return input.ToString();

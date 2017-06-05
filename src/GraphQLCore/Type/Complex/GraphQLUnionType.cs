@@ -23,8 +23,6 @@ namespace GraphQLCore.Type
             this.possibleTypes = new List<Type>();
         }
 
-        protected void AddPossibleType(Type type) { this.possibleTypes.Add(type); }
-
         public abstract Type ResolveType(object data);
 
         public override IntrospectedType Introspect(ISchemaRepository schemaRepository)
@@ -35,5 +33,7 @@ namespace GraphQLCore.Type
 
             return introspectedType;
         }
+
+        protected void AddPossibleType(Type type) { this.possibleTypes.Add(type); }
     }
 }

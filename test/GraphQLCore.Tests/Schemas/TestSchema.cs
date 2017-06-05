@@ -1,7 +1,8 @@
 ﻿namespace GraphQLCore.Tests.Schemas
 {
-    using GraphQLCore.Type.Directives;
     using GraphQLCore.Type;
+    using GraphQLCore.Type.Directives;
+    using GraphQLCore.Type.Scalar;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -19,6 +20,7 @@
     {
         public ComplicatedArgs() : base("ComplicatedArgs", "")
         {
+            this.Field("idArgField", (ID? idArg) => idArg);
             this.Field("intArgField", (int? intArg) => intArg);
             this.Field("multipleArgsField", (int? arg1, int? arg2) => arg1 + arg2);
             this.Field("nonNullIntArgField", (int nonNullIntArg) => nonNullIntArg);
@@ -41,6 +43,7 @@
     {
         public ComplicatedInputObjectType() : base("ComplicatedInputObjectType", "ComplicatedInputObjectType description")
         {
+            this.Field("idField", e => e.IDField);
             this.Field("intField", e => e.IntField);
             this.Field("nonNullIntField", e => e.NonNullIntField);
             this.Field("stringField", e => e.StringField);
@@ -76,6 +79,7 @@
 
     public class ComplicatedObject : ComplicatedInterface
     {
+        public ID? IDField { get; set; }
         public bool? BooleanField { get; set; }
         public FurColor? EnumField { get; set; }
         public float? FloatField { get; set; }
@@ -101,6 +105,7 @@
     {
         public ComplicatedObjectType() : base("ComplicatedObjectType", "")
         {
+            this.Field("idField", e => e.IDField);
             this.Field("intField", e => e.IntField);
             this.Field("nonNullIntField", e => e.NonNullIntField);
             this.Field("stringField", e => e.StringField);
@@ -206,6 +211,7 @@
             this.Field("interfaceObjectArray", () => new List<ComplicatedInterface>() { new ComplicatedObject() });
             this.Field("complicatedArgs", () => complicatedArgs);
             this.Field("insertInputObject", (ComplicatedObject inputObject) => inputObject);
+            this.Field("idArg", (ID id) => id);
         }
     }
 

@@ -3,6 +3,7 @@
     using Language.AST;
     using System;
     using Translation;
+
     public class GraphQLLong : GraphQLScalarType
     {
         public GraphQLLong() : base(
@@ -11,21 +12,19 @@
         {
         }
 
-        public override object GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
+        public override Result GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
             if (astValue.Kind == ASTNodeKind.IntValue)
             {
                 decimal value;
                 if (!decimal.TryParse(((GraphQLScalarValue)astValue).Value, out value))
-                    return null;
+                    return Result.Invalid;
 
                 if (value <= long.MaxValue && value >= long.MinValue)
-                {
-                    return Convert.ToInt64(value);
-                }
+                    return new Result(Convert.ToInt64(value));
             }
 
-            return null;
+            return Result.Invalid;
         }
     }
 }

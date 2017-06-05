@@ -55,9 +55,9 @@
 
         private GraphQLBaseType GetEffectiveType(GraphQLBaseType type, GraphQLVariableDefinition definition)
         {
-            return definition.DefaultValue == null || type is Type.GraphQLNonNullType
+            return definition.DefaultValue == null || type is GraphQLNonNull
                 ? type
-                : new Type.GraphQLNonNullType(type);
+                : new GraphQLNonNull(type);
         }
 
         private void VerifyUsage(VariableUsage usage)

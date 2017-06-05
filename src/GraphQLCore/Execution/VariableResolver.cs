@@ -46,29 +46,35 @@ namespace GraphQLCore.Execution
             return resultObject;
         }
 
-        public object GetValue(string variableName)
+        public Result GetValue(string variableName)
         {
             var variableDefinition = this.GetVariableDefinition(variableName);
+            if (variableDefinition == null)
+                return new Result(null);
+
             var typeDefinition = this.GetTypeDefinition(variableDefinition.Type);
 
             object variableValue;
-            this.variables.TryGetValue(variableName, out variableValue);
 
-            if (variableValue != null)
-                return this.TranslatePerDefinition(variableValue, typeDefinition);
+            if (this.variables.TryGetValue(variableName, out variableValue))
+                return new Result(this.TranslatePerDefinition(variableValue, typeDefinition));
+            
+            if (variableDefinition.DefaultValue != null)
+                return ((GraphQLInputType)typeDefinition).GetValueFromAst(variableDefinition.DefaultValue,
+                    this.schemaRepository);
 
-            if (typeDefinition is Type.GraphQLNonNullType)
-                throw new GraphQLException($"Type \"{typeDefinition.ToString()}\" is non-nullable and cannot be null.");
+            if (typeDefinition is GraphQLNonNull)
+                throw new GraphQLException($"Type \"{typeDefinition}\" is non-nullable and cannot be null.");
 
-            return null;
+            return new Result(null);
         }
 
-        public object GetValue(GraphQLVariable value) => this.GetValue(value.Name.Value);
+        public Result GetValue(GraphQLVariable value) => this.GetValue(value.Name.Value);
 
         public object TranslatePerDefinition(object inputObject, GraphQLBaseType typeDefinition)
         {
-            if (typeDefinition is Type.GraphQLNonNullType)
-                return this.TranslatePerDefinition(inputObject, ((Type.GraphQLNonNullType)typeDefinition).UnderlyingNullableType);
+            if (typeDefinition is GraphQLNonNull)
+                return this.TranslatePerDefinition(inputObject, ((GraphQLNonNull)typeDefinition).UnderlyingNullableType);
 
             if (typeDefinition is GraphQLInputObjectType)
                 return this.CreateObjectFromDynamic((GraphQLInputObjectType)typeDefinition, (ExpandoObject)inputObject);
@@ -79,7 +85,7 @@ namespace GraphQLCore.Execution
                     return null;
 
                 if (ReflectionUtilities.IsCollection(inputObject.GetType()))
-                    return this.CreateList((IEnumerable)inputObject, (GraphQLList)typeDefinition);
+                    return ReflectionUtilities.ChangeValueType(this.CreateList((IEnumerable)inputObject, (GraphQLList)typeDefinition), this.schemaRepository.GetInputSystemTypeFor(typeDefinition));
 
                 return this.CreateSingleValueList(inputObject, (GraphQLList)typeDefinition);
             }
@@ -133,8 +139,8 @@ namespace GraphQLCore.Execution
             if (typeDefinition is GraphQLNamedType)
                 return this.schemaRepository.GetSchemaInputTypeByName(((GraphQLNamedType)typeDefinition).Name.Value);
 
-            if (typeDefinition is Language.AST.GraphQLNonNullType)
-                return new Type.GraphQLNonNullType(this.GetTypeDefinition(((Language.AST.GraphQLNonNullType)typeDefinition).Type));
+            if (typeDefinition is GraphQLNonNullType)
+                return new GraphQLNonNull(this.GetTypeDefinition(((GraphQLNonNullType)typeDefinition).Type));
 
             if (typeDefinition is GraphQLListType)
                 return new GraphQLList(this.GetTypeDefinition(((GraphQLListType)typeDefinition).Type));

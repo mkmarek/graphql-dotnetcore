@@ -4,7 +4,7 @@
     using Language.AST;
     using Translation;
 
-    public class GraphQLNonNullType : GraphQLInputType
+    public class GraphQLNonNull : GraphQLInputType
     {
         public override bool IsLeafType
         {
@@ -14,7 +14,7 @@
             }
         }
 
-        public GraphQLNonNullType(GraphQLBaseType nullableType) : base(null, null)
+        public GraphQLNonNull(GraphQLBaseType nullableType) : base(null, null)
         {
             this.UnderlyingNullableType = nullableType;
 
@@ -24,12 +24,16 @@
 
         public GraphQLBaseType UnderlyingNullableType { get; private set; }
 
-        public override object GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
+        public override Result GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
             if (this.UnderlyingNullableType is GraphQLInputType)
-                return ((GraphQLInputType)this.UnderlyingNullableType).GetFromAst(astValue, schemaRepository);
+            {
+                var result = ((GraphQLInputType)this.UnderlyingNullableType).GetFromAst(astValue, schemaRepository);
 
-            return null;
+                return result.Value != null ? result : Result.Invalid;
+            }
+
+            return Result.Invalid;
         }
 
         public override IntrospectedType Introspect(ISchemaRepository schemaRepository)

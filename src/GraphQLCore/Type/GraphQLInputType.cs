@@ -18,16 +18,21 @@
         {
         }
 
-        public abstract object GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository);
+        public abstract Result GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository);
 
-        public object GetFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
+        public Result GetFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
-            if (astValue.Kind == ASTNodeKind.Variable)
-            {
-                var value = schemaRepository.VariableResolver.GetValue((GraphQLVariable)astValue);
-                value = ReflectionUtilities.ChangeValueType(value, schemaRepository.GetInputSystemTypeFor(this));
+            if (!(this is GraphQLNonNull) && (astValue == null || astValue.Kind == ASTNodeKind.NullValue))
+                return new Result(null);
 
-                return value;
+            if (astValue?.Kind == ASTNodeKind.Variable)
+            {
+                var result = schemaRepository.VariableResolver.GetValue((GraphQLVariable)astValue);
+
+                if (result.Value == null && this is GraphQLNonNull)
+                    return Result.Invalid;
+
+                return result;
             }
 
             return this.GetValueFromAst(astValue, schemaRepository);

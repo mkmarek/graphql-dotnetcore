@@ -18,5 +18,13 @@
                 return context.Parse();
             }
         }
+
+        public GraphQLValue ParseValue(ISource source)
+        {
+            using (var context = new ParserContext(source, this.lexer))
+            {
+                return context.ParseValueLiteral(false);
+            }
+        }
     }
 }

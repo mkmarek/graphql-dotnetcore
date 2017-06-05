@@ -6,7 +6,7 @@ namespace GraphQLCore.Type.Complex
     public static class SubscriptionFieldDefinitionBuilderExtensions
     {
         public static SubscriptionFieldDefinitionBuilder<TEntity> WithSubscriptionFilter<TEntity, T1>(this SubscriptionFieldDefinitionBuilder<TEntity> @this, Expression<Func<T1, bool>> filter) => @this.WithSubscriptionFilter(filter);
-        
+
         public static SubscriptionFieldDefinitionBuilder<TEntity> WithSubscriptionFilter<TEntity, T1, T2>(this SubscriptionFieldDefinitionBuilder<TEntity> @this, Expression<Func<T1, T2, bool>> filter) => @this.WithSubscriptionFilter(filter);
         /*
         public static SubscriptionFieldDefinitionBuilder<T3> WithFilter<T1, T2, T3>(this SubscriptionFieldDefinitionBuilder @this, string name, Expression<Func<T1, T2, T3>> filter) => @this.WithFilter<T3>(name, filter);

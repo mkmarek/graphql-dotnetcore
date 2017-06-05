@@ -2,6 +2,7 @@
 {
     using Exceptions;
     using GraphQLCore.Type;
+    using GraphQLCore.Type.Scalar;
     using NUnit.Framework;
     using Schemas;
     using System.Collections.Generic;
@@ -504,9 +505,9 @@
         [Test]
         public void Execute_WithoutNonNullArgument_ReturnsError()
         {
-            var query = @"query getnonNullIntListArg($nullArgVar: Int!) {
+            var query = @"query getnonNullIntListArg($notExistingVariable: Int!) {
                             complicatedArgs {
-                                nonNullIntArgField(nonNullIntArg: $nullArgVar)
+                                nonNullIntArgField(nonNullIntArg: $notExistingVariable)
                             }
                         }";
 
@@ -515,6 +516,19 @@
                 this.schema.Execute(query, variables);
             },
             "Type \"Int!\" is non-nullable and cannot be null.");
+        }
+
+        [Test]
+        public void Execute_WithID_ParsesAndReturnsCorrectValue()
+        {
+            var query = @"
+            query insertObject($idArgVar: ID!) {
+                idArg(id: $idArgVar)
+            }";
+
+            var result = this.schema.Execute(query, variables);
+
+            Assert.AreEqual("123", result.idArg);
         }
 
         [SetUp]
@@ -535,6 +549,7 @@
             this.variables.complicatedObjectArgVar.nested = CreateComplicatedDynamicObject();
             this.variables.complicatedObjectArgWithArrayVar = CreateComplicatedDynamicObjectWithArray();
             this.variables.nullArgVar = null;
+            this.variables.idArgVar = (ID)123;
 
             this.schema = new TestSchema();
         }

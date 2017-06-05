@@ -15,17 +15,17 @@
 
         public Type SystemType { get; protected set; }
 
-        public override object GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
+        public override Result GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
             if (astValue.Kind != ASTNodeKind.EnumValue)
-                return null;
+                return Result.Invalid;
 
             string value = ((GraphQLScalarValue)astValue).Value;
 
             if (!Enum.IsDefined(this.SystemType, value))
-                return null;
+                return Result.Invalid;
 
-            return Enum.Parse(this.SystemType, value);
+            return new Result(Enum.Parse(this.SystemType, value));
         }
 
         public override IntrospectedType Introspect(ISchemaRepository schemaRepository)

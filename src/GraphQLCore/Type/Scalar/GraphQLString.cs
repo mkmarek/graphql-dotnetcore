@@ -2,6 +2,7 @@
 {
     using Language.AST;
     using Translation;
+
     public class GraphQLString : GraphQLScalarType
     {
         public GraphQLString() : base(
@@ -12,12 +13,12 @@
         {
         }
 
-        public override object GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
+        public override Result GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
             if (astValue.Kind == ASTNodeKind.StringValue)
-                return ((GraphQLScalarValue)astValue).Value;
+                return new Result(((GraphQLScalarValue)astValue).Value);
 
-            return null;
+            return Result.Invalid;
         }
     }
 }

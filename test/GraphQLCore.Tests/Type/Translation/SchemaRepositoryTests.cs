@@ -30,8 +30,8 @@
 
             var objectType = this.schemaRepository.GetSchemaTypeFor(typeof(FurColor));
 
-            Assert.IsInstanceOf<GraphQLNonNullType>(objectType);
-            Assert.IsInstanceOf<FurColorEnum>(((GraphQLNonNullType)objectType).UnderlyingNullableType);
+            Assert.IsInstanceOf<GraphQLNonNull>(objectType);
+            Assert.IsInstanceOf<FurColorEnum>(((GraphQLNonNull)objectType).UnderlyingNullableType);
         }
 
         [Test]
@@ -109,7 +109,7 @@
         {
             this.schemaRepository.AddKnownType(new FurColorEnum());
 
-            var inputType = this.schemaRepository.GetInputSystemTypeFor(new GraphQLNonNullType(new FurColorEnum()));
+            var inputType = this.schemaRepository.GetInputSystemTypeFor(new GraphQLNonNull(new FurColorEnum()));
 
             Assert.AreEqual(typeof(FurColor), inputType);
         }
@@ -128,11 +128,11 @@
         public void GetInputSystemTypeFor_NonNullableList_ReturnsCorrectSystemType()
         {
             var inputType = this.schemaRepository.GetInputSystemTypeFor(
-                new GraphQLNonNullType(
+                new GraphQLNonNull(
                     new GraphQLList(
-                        new GraphQLNonNullType(
+                        new GraphQLNonNull(
                             new GraphQLList(
-                                new GraphQLNonNullType(
+                                new GraphQLNonNull(
                                     new GraphQLInt()
                                 )
                             )

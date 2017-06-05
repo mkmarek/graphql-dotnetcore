@@ -95,7 +95,7 @@
         [Test]
         public void GetFromAst_ReturnsCorrectType()
         {
-            Assert.IsInstanceOf<TestModel>(this.type.GetFromAst(new GraphQLObjectValue(), null));
+            Assert.IsInstanceOf<TestModel>(this.type.GetFromAst(new GraphQLObjectValue(), null).Value);
         }
 
         [Test]
@@ -113,7 +113,7 @@
                         Name = new GraphQLName() { Value = "stringValue" },
                         Value = new GraphQLScalarValue(ASTNodeKind.StringValue) { Value = "Foo" } }
                 }
-            }, schemaRepository)).StringValue);
+            }, schemaRepository).Value).StringValue);
         }
 
         [Test]

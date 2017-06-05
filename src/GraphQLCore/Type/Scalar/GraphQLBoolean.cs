@@ -12,12 +12,12 @@
         {
         }
 
-        public override object GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
+        public override Result GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
             if (astValue.Kind == ASTNodeKind.BooleanValue)
-                return ((GraphQLScalarValue)astValue).Value.ParseBoolOrGiveNull();
+                return new Result(((GraphQLScalarValue)astValue).Value.ParseBoolOrGiveNull());
 
-            return null;
+            return Result.Invalid;
         }
     }
 }

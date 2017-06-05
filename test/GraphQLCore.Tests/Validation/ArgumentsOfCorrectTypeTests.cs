@@ -588,6 +588,90 @@
         }
 
         [Test]
+        public void StringIntoID_ExpectsNoError()
+        {
+            var errors = Validate(@"
+            {
+                complicatedArgs {
+                    idArgField(idArg: ""someIdString"")
+                }
+            }
+            ");
+
+            Assert.IsEmpty(errors);
+        }
+
+        [Test]
+        public void IntIntoID_ExpectsNoError()
+        {
+            var errors = Validate(@"
+            {
+                complicatedArgs {
+                    idArgField(idArg: 1)
+                }
+            }
+            ");
+
+            Assert.IsEmpty(errors);
+        }
+
+        [Test]
+        public void BigIntIntoID_ExpectsNoError()
+        {
+            var errors = Validate(@"
+            {
+                complicatedArgs {
+                    idArgField(idArg: 829384293849283498239482938)
+                }
+            }
+            ");
+
+            Assert.IsEmpty(errors);
+        }
+
+        [Test]
+        public void FloatIntoID_ExpectsSingleError()
+        {
+            var errors = Validate(@"
+            {
+                complicatedArgs {
+                    idArgField(idArg: 1.0)
+                }
+            }
+            ");
+
+            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"idArg\" has invalid value 1.0."));
+        }
+
+        [Test]
+        public void BooleanIntoID_ExpectsSingleError()
+        {
+            var errors = Validate(@"
+            {
+                complicatedArgs {
+                    idArgField(idArg: true)
+                }
+            }
+            ");
+
+            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"idArg\" has invalid value true."));
+        }
+
+        [Test]
+        public void UnquotedStringIntoID_ExpectsSingleError()
+        {
+            var errors = Validate(@"
+            {
+                complicatedArgs {
+                    idArgField(idArg: SOMETHING)
+                }
+            }
+            ");
+
+            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"idArg\" has invalid value SOMETHING."));
+        }
+
+        [Test]
         public void DirectivesOfCorrectTypes_ExpectsNoError()
         {
             var errors = Validate(@"

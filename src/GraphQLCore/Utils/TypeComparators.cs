@@ -17,23 +17,23 @@ namespace GraphQLCore.Utils
             }
 
             // If superType is non-null, maybeSubType must also be nullable.
-            if (superType is GraphQLNonNullType)
+            if (superType is GraphQLNonNull)
             {
-                if (possibleSubtype is GraphQLNonNullType)
+                if (possibleSubtype is GraphQLNonNull)
                 {
                     return IsSubtypeOf(
-                        ((GraphQLNonNullType)possibleSubtype).UnderlyingNullableType,
-                        ((GraphQLNonNullType)superType).UnderlyingNullableType,
+                        ((GraphQLNonNull)possibleSubtype).UnderlyingNullableType,
+                        ((GraphQLNonNull)superType).UnderlyingNullableType,
                         schemaRepository);
                 }
 
                 return false;
             }
-            else if (possibleSubtype is GraphQLNonNullType)
+            else if (possibleSubtype is GraphQLNonNull)
             {
                 // If superType is nullable, maybeSubType may be non-null.
                 return IsSubtypeOf(
-                        ((GraphQLNonNullType)possibleSubtype).UnderlyingNullableType,
+                        ((GraphQLNonNull)possibleSubtype).UnderlyingNullableType,
                         superType,
                         schemaRepository);
             }

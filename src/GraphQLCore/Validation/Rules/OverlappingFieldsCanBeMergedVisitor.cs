@@ -434,7 +434,7 @@
         {
             if (type1 is GraphQLList)
             {
-                return type2 is GraphQLList 
+                return type2 is GraphQLList
                     ? this.DoTypesConflict(
                         ((GraphQLList)type1).MemberType,
                         ((GraphQLList)type2).MemberType)
@@ -450,21 +450,21 @@
                     : true;
             }
 
-            if (type1 is GraphQLCore.Type.GraphQLNonNullType)
+            if (type1 is GraphQLNonNull)
             {
-                return type2 is GraphQLCore.Type.GraphQLNonNullType
+                return type2 is GraphQLNonNull
                     ? this.DoTypesConflict(
-                        ((GraphQLCore.Type.GraphQLNonNullType)type1).UnderlyingNullableType,
-                        ((GraphQLCore.Type.GraphQLNonNullType)type2).UnderlyingNullableType)
+                        ((GraphQLNonNull)type1).UnderlyingNullableType,
+                        ((GraphQLNonNull)type2).UnderlyingNullableType)
                     : true;
             }
 
-            if (type2 is GraphQLCore.Type.GraphQLNonNullType)
+            if (type2 is GraphQLNonNull)
             {
-                return type1 is GraphQLCore.Type.GraphQLNonNullType
+                return type1 is GraphQLNonNull
                     ? this.DoTypesConflict(
-                        ((GraphQLCore.Type.GraphQLNonNullType)type1).UnderlyingNullableType,
-                        ((GraphQLCore.Type.GraphQLNonNullType)type2).UnderlyingNullableType)
+                        ((GraphQLNonNull)type1).UnderlyingNullableType,
+                        ((GraphQLNonNull)type2).UnderlyingNullableType)
                     : true;
             }
 

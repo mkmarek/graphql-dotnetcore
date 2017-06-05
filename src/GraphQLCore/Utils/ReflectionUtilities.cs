@@ -1,12 +1,13 @@
 ﻿namespace GraphQLCore.Utils
 {
-    using GraphQLCore.Type;
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
+    using Type;
+    using Type.Scalar;
 
     public class ReflectionUtilities
     {
@@ -34,37 +35,52 @@
 
         public static object ChangeValueType(object input, Type target)
         {
+            return ChangeValueTypeWithResult(input, target).Value;
+        }
+
+        public static Result ChangeValueTypeWithResult(object input, Type target)
+        {
             if (input == null || target == null)
-                return null;
+                return new Result(null);
 
             if (input.GetType() == target)
-                return input;
+                return new Result(input);
 
             if (input is long && target == typeof(int))
             {
                 int result;
                 if (int.TryParse(input.ToString(), out result))
-                    return result;
+                    return new Result(result);
             }
 
             var underlyingNonNullableType = NonNullable.GetUnderlyingType(target);
             if (underlyingNonNullableType != null)
             {
-                var underlyingValue = ChangeValueType(input, underlyingNonNullableType);
-                return Activator.CreateInstance(target, underlyingValue);
+                var underlyingValueResult = ChangeValueTypeWithResult(input, underlyingNonNullableType);
+
+                if (!underlyingValueResult.IsValid)
+                    return underlyingValueResult;
+
+                return new Result(Activator.CreateInstance(target, underlyingValueResult.Value));
             }
 
             var underlyingNullableType = Nullable.GetUnderlyingType(target);
             if (underlyingNullableType != null)
-                return ChangeValueType(input, underlyingNullableType);
+                return ChangeValueTypeWithResult(input, underlyingNullableType);
 
             if (IsCollection(target) && IsCollection(input.GetType()))
-                return ChangeToCollection(input, target);
+                return new Result(ChangeToCollection(input, target));
 
             if (IsEnum(target) && input is string)
-                return Enum.Parse(target, input as string);
+                return new Result(Enum.Parse(target, input as string));
 
-            return null;
+            if (target == typeof(ID))
+            {
+                if (input is string)
+                    return new Result(new ID(input as string));
+            }
+
+            return Result.Invalid;
         }
 
         internal static bool IsDescendant(Type parent, Type descendant)

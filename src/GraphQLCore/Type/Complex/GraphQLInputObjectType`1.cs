@@ -33,10 +33,10 @@
             this.Fields.Add(fieldName, GraphQLInputObjectTypeFieldInfo.CreateAccessorFieldInfo(fieldName, accessor));
         }
 
-        public override object GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
+        public override Result GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
             if (!(astValue is GraphQLObjectValue))
-                return null;
+                return Result.Invalid;
 
             var objectAstValue = (GraphQLObjectValue)astValue;
             var result = new T();
@@ -44,16 +44,15 @@
             foreach (var field in this.Fields)
             {
                 var astField = GetFieldFromAstObjectValue(objectAstValue, field.Key);
-
-                if (astField == null)
-                    continue;
-
                 var value = this.GetField(astField, field.Value, schemaRepository);
 
-                this.AssignValueToObjectField(result, field.Value, value);
+                if (!value.IsValid)
+                    return Result.Invalid;
+
+                this.AssignValueToObjectField(result, field.Value, value.Value);
             }
 
-            return result;
+            return new Result(result);
         }
 
         private static GraphQLObjectField GetFieldFromAstObjectValue(GraphQLObjectValue objectAstValue, string fieldName)
@@ -61,7 +60,7 @@
             return objectAstValue.Fields.FirstOrDefault(e => e.Name.Value == fieldName);
         }
 
-        private object GetField(GraphQLObjectField astField, GraphQLInputObjectTypeFieldInfo fieldInfo, ISchemaRepository schemaRepository)
+        private Result GetField(GraphQLObjectField astField, GraphQLInputObjectTypeFieldInfo fieldInfo, ISchemaRepository schemaRepository)
         {
             return this.GetValueFromField(schemaRepository, fieldInfo, astField);
         }
@@ -74,15 +73,15 @@
                     .DynamicInvoke(result, value);
         }
 
-        private object GetValueFromField(
+        private Result GetValueFromField(
             ISchemaRepository schemaRepository,
             GraphQLFieldInfo field,
             GraphQLObjectField astField)
         {
             var graphQLType = schemaRepository.GetSchemaInputTypeFor(field.SystemType);
-            var value = graphQLType.GetFromAst(astField.Value, schemaRepository);
+            var result = graphQLType.GetFromAst(astField?.Value, schemaRepository);
 
-            return value;
+            return result;
         }
 
         private bool IsInterfaceOrCollectionOfInterfaces(Type type)

@@ -33,7 +33,6 @@
 
                 this.ValidateInlineFragmentTypes(fragmentType, parentType);
             }
-
             else if (fragmentType != null &&
                 parentType != null &&
                 !this.DoTypesOverlap(fragmentType, parentType))

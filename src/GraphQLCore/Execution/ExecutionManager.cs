@@ -105,7 +105,7 @@
                 new NoUnusedFragments(),
                 new NoFragmentCycles(),
                 new KnownFragmentNames(),
-                new KnownArgumentNames(), 
+                new KnownArgumentNames(),
                 new FieldsOnCorrectType(),
                 new KnownDirectives(),
                 new FragmentsOnCompositeTypes(),
@@ -199,7 +199,7 @@
         {
             var fieldInfo = type.GetFieldInfo(fieldSelection.Name.Value) as GraphQLSubscriptionTypeFieldInfo;
 
-            Expression<Func<object, bool>> filter 
+            Expression<Func<object, bool>> filter
                 = entity => (bool)scope.InvokeWithArguments(fieldSelection.Arguments.ToList(), fieldInfo.Filter, entity);
 
             type.EventBus.Subscribe(EventBusSubscription.Create(
@@ -219,7 +219,6 @@
             IFieldCollector fieldCollector,
             FieldScope scope)
         {
-   
             var fields = fieldCollector.CollectFields(type, selectionSet);
             var resultObject = scope.GetObject(fields);
 

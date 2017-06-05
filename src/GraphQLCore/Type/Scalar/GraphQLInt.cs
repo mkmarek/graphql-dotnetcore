@@ -11,21 +11,19 @@
         {
         }
 
-        public override object GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
+        public override Result GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
             if (astValue.Kind == ASTNodeKind.IntValue)
             {
                 decimal value;
                 if (!decimal.TryParse(((GraphQLScalarValue)astValue).Value, out value))
-                    return null;
+                    return Result.Invalid;
 
                 if (value <= int.MaxValue && value >= int.MinValue)
-                {
-                    return Convert.ToInt32(value);
-                }
+                    return new Result(Convert.ToInt32(value));
             }
 
-            return null;
+            return Result.Invalid;
         }
     }
 }

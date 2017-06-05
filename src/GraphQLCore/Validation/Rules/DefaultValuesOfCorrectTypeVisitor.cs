@@ -22,9 +22,9 @@
             var defaultValue = node.DefaultValue;
             var type = this.GetInputType(node.Type);
 
-            if (type is Type.GraphQLNonNullType && defaultValue != null)
+            if (type is GraphQLNonNull && defaultValue != null)
             {
-                var guessType = ((Type.GraphQLNonNullType)type).UnderlyingNullableType;
+                var guessType = ((GraphQLNonNull)type).UnderlyingNullableType;
                 this.Errors.Add(new GraphQLException(this.ComposeDefaultForNonNullArgMessage(name, type, guessType)));
             }
 

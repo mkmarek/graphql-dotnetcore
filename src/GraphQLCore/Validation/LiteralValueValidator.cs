@@ -24,8 +24,8 @@
             if (astValue is GraphQLNullValue || astValue == null)
                 return this.ValidateNullType(type, astValue);
 
-            if (type is Type.GraphQLNonNullType)
-                return this.IsValid(((Type.GraphQLNonNullType)type).UnderlyingNullableType, astValue);
+            if (type is GraphQLNonNull)
+                return this.IsValid(((GraphQLNonNull)type).UnderlyingNullableType, astValue);
 
             if (type is GraphQLList)
                 return this.ValidateListType(type, astValue);
@@ -38,12 +38,12 @@
 
         private IEnumerable<GraphQLException> ValidateInputType(GraphQLBaseType type, GraphQLValue astValue)
         {
-            var value = ((GraphQLInputType)type).GetFromAst(astValue, this.schemaRepository);
+            var result = ((GraphQLInputType)type).GetFromAst(astValue, this.schemaRepository);
 
             if (type is GraphQLInputObjectType)
                 return this.ValidateObjectFields((GraphQLInputObjectType)type, (GraphQLObjectValue)astValue);
 
-            if (value == null)
+            if (!result.IsValid)
             {
                 return new GraphQLException[]
                 {
@@ -92,7 +92,7 @@
 
         private IEnumerable<GraphQLException> ValidateNullType(GraphQLBaseType type, GraphQLValue astValue)
         {
-            if (type is Type.GraphQLNonNullType)
+            if (type is GraphQLNonNull)
             {
                 return new GraphQLException[]
                 {

@@ -29,6 +29,25 @@
             return this.ParseDocument();
         }
 
+        public GraphQLValue ParseValueLiteral(bool isConstant)
+        {
+            var token = this.currentToken;
+
+            switch (token.Kind)
+            {
+                case TokenKind.BRACKET_L: return this.ParseList(isConstant);
+                case TokenKind.BRACE_L: return this.ParseObject(isConstant);
+                case TokenKind.INT: return this.ParseInt(isConstant);
+                case TokenKind.FLOAT: return this.ParseFloat(isConstant);
+                case TokenKind.STRING: return this.ParseString(isConstant);
+                case TokenKind.NAME: return this.ParseNameValue(isConstant);
+                case TokenKind.DOLLAR: if (!isConstant) return this.ParseVariable(); break;
+            }
+
+            throw new GraphQLSyntaxErrorException(
+                $"Unexpected {this.currentToken}", this.source, this.currentToken.Start);
+        }
+
         private void Advance()
         {
             this.currentToken = this.lexer.Lex(this.source, this.currentToken.End);
@@ -853,25 +872,6 @@
                 Types = types,
                 Location = this.GetLocation(start)
             };
-        }
-
-        private GraphQLValue ParseValueLiteral(bool isConstant)
-        {
-            var token = this.currentToken;
-
-            switch (token.Kind)
-            {
-                case TokenKind.BRACKET_L: return this.ParseList(isConstant);
-                case TokenKind.BRACE_L: return this.ParseObject(isConstant);
-                case TokenKind.INT: return this.ParseInt(isConstant);
-                case TokenKind.FLOAT: return this.ParseFloat(isConstant);
-                case TokenKind.STRING: return this.ParseString(isConstant);
-                case TokenKind.NAME: return this.ParseNameValue(isConstant);
-                case TokenKind.DOLLAR: if (!isConstant) return this.ParseVariable(); break;
-            }
-
-            throw new GraphQLSyntaxErrorException(
-                    $"Unexpected {this.currentToken}", this.source, this.currentToken.Start);
         }
 
         private GraphQLValue ParseValueValue()

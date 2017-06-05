@@ -34,10 +34,10 @@
             return output;
         }
 
-        public override object GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
+        public override Result GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
-            if (!(this.MemberType is GraphQLInputType) || astValue.Kind == ASTNodeKind.NullValue)
-                return null;
+            if (astValue.Kind == ASTNodeKind.NullValue)
+                return new Result(null);
 
             var inputType = this.MemberType as GraphQLInputType;
             var output = CreateOutputList(inputType, schemaRepository);
@@ -45,22 +45,28 @@
             if (astValue.Kind != ASTNodeKind.ListValue)
             {
                 var value = inputType.GetFromAst(astValue, schemaRepository);
-                output.Add(value);
-                return output;
+
+                if (!value.IsValid)
+                    return Result.Invalid;
+
+                output.Add(value.Value);
+
+                return new Result(output);
             }
 
             var list = ((GraphQLListValue)astValue).Values;
 
             foreach (var item in list)
             {
-                var value = inputType.GetFromAst(item, schemaRepository);
-                if (value == null && inputType is GraphQLNonNullType)
-                    return null;
+                var result = inputType.GetFromAst(item, schemaRepository);
 
-                output.Add(value);
+                if (!result.IsValid)
+                    return Result.Invalid;
+                
+                output.Add(result.Value);
             }
 
-            return output;
+            return new Result(output);
         }
 
         public override IntrospectedType Introspect(ISchemaRepository schemaRepository)

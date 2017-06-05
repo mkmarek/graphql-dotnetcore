@@ -12,7 +12,7 @@
     public class GraphQLObjectTypeFieldInfo : GraphQLInputObjectTypeFieldInfo
     {
         public bool IsResolver { get; set; }
-        public string Channel {get; set;}
+        public string Channel { get; set; }
 
         public static new GraphQLObjectTypeFieldInfo CreateAccessorFieldInfo(string fieldName, LambdaExpression accessor)
         {
@@ -38,11 +38,6 @@
             };
         }
 
-        protected override GraphQLBaseType GetSchemaType(Type type, ISchemaRepository schemaRepository)
-        {
-            return schemaRepository.GetSchemaTypeFor(type);
-        }
-
         protected static Dictionary<string, GraphQLObjectTypeArgumentInfo> GetArguments(LambdaExpression resolver)
         {
             var contextType = typeof(IContext<>);
@@ -50,10 +45,15 @@
             return resolver.Parameters
                 .Where(e => !(e.Type.GetTypeInfo().IsGenericType && e.Type.GetGenericTypeDefinition() == contextType))
                 .Select(e => new GraphQLObjectTypeArgumentInfo()
-            {
-                Name = e.Name,
-                SystemType = e.Type
-            }).ToDictionary(e => e.Name);
+                {
+                    Name = e.Name,
+                    SystemType = e.Type
+                }).ToDictionary(e => e.Name);
+        }
+
+        protected override GraphQLBaseType GetSchemaType(Type type, ISchemaRepository schemaRepository)
+        {
+            return schemaRepository.GetSchemaTypeFor(type);
         }
     }
 }

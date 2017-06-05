@@ -15,22 +15,22 @@
         {
         }
 
-        public override object GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
+        public override Result GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
             if (astValue.Kind == ASTNodeKind.FloatValue)
-                return ((GraphQLScalarValue)astValue).Value.ParseFloatOrGiveNull();
+                return new Result(((GraphQLScalarValue)astValue).Value.ParseFloatOrGiveNull());
 
             if (astValue.Kind == ASTNodeKind.IntValue)
             {
                 object integerValue = ((GraphQLScalarValue)astValue).Value.ParseIntOrGiveNull();
 
                 if (integerValue == null)
-                    return null;
+                    return new Result(null);
 
-                return Convert.ToSingle(integerValue);
+                return new Result(Convert.ToSingle(integerValue));
             }
 
-            return null;
+            return Result.Invalid;
         }
     }
 }

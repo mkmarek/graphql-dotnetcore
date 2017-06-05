@@ -31,6 +31,7 @@
             var graphQLFloat = new GraphQLFloat();
             var graphQLBoolean = new GraphQLBoolean();
             var graphQLString = new GraphQLString();
+            var graphQLID = new GraphQLID();
 
             this.outputBindings.Add(typeof(string), graphQLString);
             this.inputBindings.Add(typeof(string), graphQLString);
@@ -44,6 +45,9 @@
             this.inputBindings.Add(typeof(long), graphQLLong);
             this.inputBindings.Add(typeof(float), graphQLFloat);
             this.inputBindings.Add(typeof(bool), graphQLBoolean);
+
+            this.outputBindings.Add(typeof(ID), graphQLID);
+            this.inputBindings.Add(typeof(ID), graphQLID);
         }
 
         public void AddOrReplaceDirective(GraphQLDirectiveType directive)
@@ -94,8 +98,8 @@
 
         public Type GetInputSystemTypeFor(GraphQLBaseType type)
         {
-            if (type is GraphQLNonNullType)
-                return this.GetNonNullInputSystemTypeFor(((GraphQLNonNullType)type).UnderlyingNullableType);
+            if (type is GraphQLNonNull)
+                return this.GetNonNullInputSystemTypeFor(((GraphQLNonNull)type).UnderlyingNullableType);
 
             var inputType = ReflectionUtilities.CreateNullableType(
                 this.GetSystemTypeFor(type));
@@ -163,7 +167,7 @@
         {
             return this.GetOutputKnownComplexTypes()
                     .Where(e => unionType.PossibleTypes.Contains(e.SystemType) ||
-                        unionType.PossibleTypes.Contains(e.GetType())) 
+                        unionType.PossibleTypes.Contains(e.GetType()))
                     .Select(e => e as GraphQLComplexType)
                     .ToArray();
         }
@@ -191,7 +195,7 @@
             var underlyingNonNullableType = NonNullable.GetUnderlyingType(type);
             if (underlyingNonNullableType != null)
             {
-                return new GraphQLNonNullType(
+                return new GraphQLNonNull(
                     this.GetSchemaInputTypeFor(underlyingNonNullableType));
             }
 
@@ -206,7 +210,7 @@
                 throw new GraphQLException($"Unknown input type {type} have you added it to known types?");
 
             if (ReflectionUtilities.IsValueType(type))
-                return new GraphQLNonNullType(inputType);
+                return new GraphQLNonNull(inputType);
 
             return inputType;
         }
@@ -276,11 +280,11 @@
         {
             if (ReflectionUtilities.IsCollection(type))
                 return this.CreateList(type);
-            
+
             var underlyingNonNullableType = NonNullable.GetUnderlyingType(type);
             if (underlyingNonNullableType != null)
             {
-                return new GraphQLNonNullType(
+                return new GraphQLNonNull(
                     this.GetSchemaTypeForWithNoError(underlyingNonNullableType));
             }
 
@@ -289,7 +293,7 @@
                 return this.GetSchemaTypeFor(underlyingNullableType, underlyingNullableType);
 
             if (ReflectionUtilities.IsValueType(type))
-                return new GraphQLNonNullType(this.GetSchemaTypeFor(type, type));
+                return new GraphQLNonNull(this.GetSchemaTypeFor(type, type));
 
             return this.GetSchemaTypeFor(type, type);
         }

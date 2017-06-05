@@ -25,7 +25,6 @@
             {
                 this.Errors.Add(new GraphQLException(
                     this.NoScalarSubselection(selection.Name.Value, type)));
-                    
             }
             else if (!type.IsLeafType && selection?.SelectionSet == null)
             {

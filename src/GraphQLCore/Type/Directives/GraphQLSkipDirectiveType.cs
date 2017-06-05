@@ -24,12 +24,12 @@
             GraphQLDirective directive,
             ISchemaRepository schemaRepository)
         {
-             var argument = directive.Arguments.Single(e => e.Name.Value == "if");
+            var argument = directive.Arguments.Single(e => e.Name.Value == "if");
             var booleanType = new GraphQLBoolean();
 
-            var value = booleanType.GetFromAst(argument.Value, schemaRepository);
+            var result = booleanType.GetFromAst(argument.Value, schemaRepository);
 
-            return !(bool)value;
+            return !(bool)result.Value;
         }
 
         public override LambdaExpression GetResolver(object value, object parentValue)

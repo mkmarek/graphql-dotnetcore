@@ -21,8 +21,8 @@
             if (type is GraphQLNamedType)
                 return this.GetOutputTypeFromNamedType((GraphQLNamedType)type);
 
-            if (type is Language.AST.GraphQLNonNullType)
-                return this.GetOutputType(((Language.AST.GraphQLNonNullType)type).Type);
+            if (type is GraphQLNonNullType)
+                return this.GetOutputType(((GraphQLNonNullType)type).Type);
 
             if (type is GraphQLListType)
                 return this.GetOutputType(((GraphQLListType)type).Type);
@@ -45,14 +45,14 @@
             if (type is GraphQLNamedType)
                 return this.GetInputTypeFromNamedType((GraphQLNamedType)type);
 
-            if (type is Language.AST.GraphQLNonNullType)
+            if (type is GraphQLNonNullType)
             {
-                var inputType = this.GetInputType(((Language.AST.GraphQLNonNullType)type).Type);
+                var inputType = this.GetInputType(((GraphQLNonNullType)type).Type);
 
                 if (inputType == null)
                     return null;
 
-                return new GraphQLCore.Type.GraphQLNonNullType(inputType);
+                return new GraphQLNonNull(inputType);
             }
 
             if (type is GraphQLListType)

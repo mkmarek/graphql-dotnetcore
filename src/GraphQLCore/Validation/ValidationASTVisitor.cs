@@ -174,8 +174,8 @@
                     return this.GetIntrospectedTypeField();
             }
 
-            if (type is GraphQLCore.Type.GraphQLNonNullType)
-                return this.GetField(((GraphQLCore.Type.GraphQLNonNullType)type).UnderlyingNullableType, fieldName);
+            if (type is GraphQLNonNull)
+                return this.GetField(((GraphQLNonNull)type).UnderlyingNullableType, fieldName);
 
             if (type is GraphQLInputObjectType)
                 return ((GraphQLInputObjectType)type).GetFieldInfo(fieldName);

@@ -1,11 +1,12 @@
 ﻿namespace GraphQLCore.Execution
 {
-    using GraphQLCore.Language.AST;
+    using Language.AST;
+    using Type;
 
     public interface IVariableResolver
     {
-        object GetValue(string variableName);
+        Result GetValue(string variableName);
 
-        object GetValue(GraphQLVariable value);
+        Result GetValue(GraphQLVariable value);
     }
 }

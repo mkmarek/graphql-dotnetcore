@@ -41,7 +41,7 @@
             var providedArgument = providedArguments.FirstOrDefault(e => e.Name.Value == argument.Name);
             var argumentType = argument.GetGraphQLType(this.SchemaRepository);
 
-            if (providedArgument == null && argumentType is Type.GraphQLNonNullType)
+            if (providedArgument == null && argumentType is GraphQLNonNull)
             {
                 this.Errors.Add(
                     new GraphQLException(
