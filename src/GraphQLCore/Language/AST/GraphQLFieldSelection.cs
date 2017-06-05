@@ -2,7 +2,7 @@
 
 namespace GraphQLCore.Language.AST
 {
-    public class GraphQLFieldSelection : ASTNode
+    public class GraphQLFieldSelection : ASTNode, IWithDirectives
     {
         public GraphQLName Alias { get; set; }
 

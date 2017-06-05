@@ -49,6 +49,7 @@
                     new ArgumentsOfCorrectType(),
                     new KnownDirectives(),
                     new FragmentsOnCompositeTypes(),
+                    new UniqueDirectivesPerLocation()
                 });
         }
     }

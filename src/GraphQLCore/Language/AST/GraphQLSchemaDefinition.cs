@@ -2,7 +2,7 @@
 
 namespace GraphQLCore.Language.AST
 {
-    public class GraphQLSchemaDefinition : ASTNode
+    public class GraphQLSchemaDefinition : ASTNode, IWithDirectives
     {
         public IEnumerable<GraphQLDirective> Directives { get; set; }
 

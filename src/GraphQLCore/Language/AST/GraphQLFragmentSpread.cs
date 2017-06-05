@@ -2,7 +2,7 @@
 
 namespace GraphQLCore.Language.AST
 {
-    public class GraphQLFragmentSpread : ASTNode
+    public class GraphQLFragmentSpread : ASTNode, IWithDirectives
     {
         public IEnumerable<GraphQLDirective> Directives { get; set; }
 

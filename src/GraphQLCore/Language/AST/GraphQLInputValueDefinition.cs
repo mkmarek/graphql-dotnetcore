@@ -2,7 +2,7 @@
 
 namespace GraphQLCore.Language.AST
 {
-    public class GraphQLInputValueDefinition : GraphQLTypeDefinition
+    public class GraphQLInputValueDefinition : GraphQLTypeDefinition, IWithDirectives
     {
         public GraphQLValue DefaultValue { get; set; }
 

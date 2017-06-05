@@ -2,7 +2,7 @@
 {
     using System.Collections.Generic;
 
-    public class GraphQLInlineFragment : ASTNode
+    public class GraphQLInlineFragment : ASTNode, IWithDirectives
     {
         public IEnumerable<GraphQLDirective> Directives { get; set; }
 

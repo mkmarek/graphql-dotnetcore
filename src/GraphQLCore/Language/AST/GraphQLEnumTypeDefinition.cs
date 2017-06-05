@@ -2,7 +2,7 @@
 
 namespace GraphQLCore.Language.AST
 {
-    public class GraphQLEnumTypeDefinition : GraphQLTypeDefinition
+    public class GraphQLEnumTypeDefinition : GraphQLTypeDefinition, IWithDirectives
     {
         public IEnumerable<GraphQLDirective> Directives { get; set; }
 
