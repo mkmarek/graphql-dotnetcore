@@ -1,10 +1,9 @@
 ﻿namespace GraphQLCore.Tests.Execution
 {
-    using GraphQLCore.Type;
     using NUnit.Framework;
+    using GraphQLCore.Exceptions;
     using GraphQLCore.Execution;
-    using System;
-    using Exceptions;
+    using GraphQLCore.Type;
 
     public class ExecutionContext_ThisInResolver
     {

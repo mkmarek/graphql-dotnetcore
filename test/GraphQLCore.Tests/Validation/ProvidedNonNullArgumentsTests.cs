@@ -1,12 +1,8 @@
 ﻿namespace GraphQLCore.Tests.Validation
 {
-    using Exceptions;
-    using GraphQLCore.Language;
-    using GraphQLCore.Language.AST;
-    using GraphQLCore.Validation;
+    using GraphQLCore.Exceptions;
     using GraphQLCore.Validation.Rules;
     using NUnit.Framework;
-    using Schemas;
     using System.Linq;
 
     [TestFixture]
@@ -65,6 +61,72 @@
 
             Assert.AreEqual("Field \"nonNullIntMultipleArgsField\" argument \"arg2\" of type \"Int!\" is required but not provided.",
                 error1.Message);
+        }
+
+        [Test]
+        public void UnknownArguments_ReportsNoError()
+        {
+            var errors = Validate(@"
+            {
+                complicatedArgs {
+                    intArgField(unknownArgument: true)
+                }
+            }
+            ");
+
+            Assert.IsEmpty(errors);
+        }
+
+        [Test]
+        public void UnknownDirectives_ReportsNoError()
+        {
+            var errors = Validate(@"
+            {
+                foo @unknown
+            }
+            ");
+
+            Assert.IsEmpty(errors);
+        }
+
+        [Test]
+        public void DirectivesOfValidTypes_ReportsNoError()
+        {
+            var errors = Validate(@"
+            {
+                foo @include(if: true)
+                bar @skip(if: false)
+            }
+            ");
+
+            Assert.IsEmpty(errors);
+        }
+
+        [Test]
+        public void DirectivesWithMissingTypes_ReportsErrors()
+        {
+            var errors = Validate(@"
+            {
+                complicatedArgs @include {
+                    intArgField @skip
+                }
+            }
+            ");
+
+            Assert.AreEqual(2, errors.Count());
+            Assert.AreEqual("Directive \"include\" argument \"if\" of type \"Boolean!\" is required but not provided.", errors.ElementAt(0).Message);
+            Assert.AreEqual("Directive \"skip\" argument \"if\" of type \"Boolean!\" is required but not provided.", errors.ElementAt(1).Message);
+        }
+
+        protected override GraphQLException[] Validate(string body)
+        {
+            return validationContext.Validate(
+                GetAst(body),
+                this.validationTestSchema,
+                new IValidationRule[]
+                {
+                    new ProvidedNonNullArguments()
+                });
         }
     }
 }

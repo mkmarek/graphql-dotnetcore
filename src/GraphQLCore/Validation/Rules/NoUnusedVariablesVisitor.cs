@@ -28,7 +28,8 @@
                 var variableName = variableDefinition.Variable.Name.Value;
                 if (!variableUsages.Any(e => e.Variable.Name.Value == variableName))
                 {
-                    this.Errors.Add(new GraphQLException(this.GetUnusedVariablesMessage(variableName, operationName)));
+                    this.Errors.Add(new GraphQLException(this.GetUnusedVariablesMessage(variableName, operationName),
+                        new[] { variableDefinition }));
                 }
             }
 

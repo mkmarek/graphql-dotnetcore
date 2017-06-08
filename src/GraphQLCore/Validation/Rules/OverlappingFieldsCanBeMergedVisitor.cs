@@ -25,7 +25,8 @@
 
             foreach (var conflict in conflicts)
             {
-                this.Errors.Add(new GraphQLException(this.FieldsConflictMessage(conflict)));
+                this.Errors.Add(new GraphQLException(this.FieldsConflictMessage(conflict),
+                    conflict.Field1.Concat(conflict.Field2)));
             }
 
             return base.BeginVisitSelectionSet(node);
@@ -282,8 +283,8 @@
                     {
                         ResponseName = responseName,
                         Reason = $"{name1} and {name2} are different fields",
-                        Field1 = new GraphQLName[] { field1.Selection.Name },
-                        Field2 = new GraphQLName[] { field2.Selection.Name }
+                        Field1 = new[] { field1.Selection },
+                        Field2 = new[] { field2.Selection }
                     };
                 }
 
@@ -293,8 +294,8 @@
                     {
                         ResponseName = responseName,
                         Reason = "they have differing arguments",
-                        Field1 = new GraphQLName[] { field1.Selection.Name },
-                        Field2 = new GraphQLName[] { field2.Selection.Name }
+                        Field1 = new[] { field1.Selection },
+                        Field2 = new[] { field2.Selection }
                     };
                 }
             }
@@ -305,8 +306,8 @@
                 {
                     ResponseName = responseName,
                     Reason = $"they return conflicting types {type1} and {type2}",
-                    Field1 = new GraphQLName[] { field1.Selection.Name },
-                    Field2 = new GraphQLName[] { field2.Selection.Name }
+                    Field1 = new[] { field1.Selection },
+                    Field2 = new[] { field2.Selection }
                 };
             }
 
@@ -351,10 +352,10 @@
             NodeAndDefinitions field2)
         {
             var field1List = conflicts.SelectMany(e => e.Field1).ToList();
-            field1List.Add(field1.Selection.Name);
+            field1List.Add(field1.Selection);
 
             var field2List = conflicts.SelectMany(e => e.Field2).ToList();
-            field2List.Add(field2.Selection.Name);
+            field2List.Add(field2.Selection);
 
             var fields = new Dictionary<string, Conflict>();
 

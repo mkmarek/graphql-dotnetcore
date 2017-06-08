@@ -7,7 +7,7 @@
 
     public class UniqueArgumentsVisitor : ValidationASTVisitor
     {
-        private Dictionary<string, bool> knownArgumentNames;
+        private Dictionary<string, GraphQLName> knownArgumentNames;
 
         public UniqueArgumentsVisitor(IGraphQLSchema schema) : base(schema)
         {
@@ -18,14 +18,14 @@
 
         public override GraphQLFieldSelection BeginVisitFieldSelection(GraphQLFieldSelection selection)
         {
-            this.knownArgumentNames = new Dictionary<string, bool>();
+            this.knownArgumentNames = new Dictionary<string, GraphQLName>();
 
             return base.BeginVisitFieldSelection(selection);
         }
 
         public override GraphQLDirective BeginVisitDirective(GraphQLDirective directive)
         {
-            this.knownArgumentNames = new Dictionary<string, bool>();
+            this.knownArgumentNames = new Dictionary<string, GraphQLName>();
 
             return base.BeginVisitDirective(directive);
         }
@@ -35,16 +35,17 @@
             var argumentName = argument.Name.Value;
 
             if (this.knownArgumentNames.ContainsKey(argumentName))
-                this.ReportDuplicateArgumentsError(argumentName);
+                this.ReportDuplicateArgumentsError(argumentName, new[] { this.knownArgumentNames[argumentName], argument.Name });
             else
-                this.knownArgumentNames.Add(argumentName, true);
+                this.knownArgumentNames.Add(argumentName, argument.Name);
 
             return base.BeginVisitArgument(argument);
         }
 
-        private void ReportDuplicateArgumentsError(string argumentName)
+        private void ReportDuplicateArgumentsError(string argumentName, IEnumerable<ASTNode> nodes)
         {
-            this.Errors.Add(new GraphQLException($"There can be only one argument named \"{argumentName}\"."));
+            this.Errors.Add(new GraphQLException($"There can be only one argument named \"{argumentName}\".",
+                nodes));
         }
     }
 }

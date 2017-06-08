@@ -23,7 +23,7 @@
 
         public override ASTNode BeginVisitNode(ASTNode node)
         {
-            var appliedDirectives = new List<string>();
+            var appliedDirectives = new Dictionary<string, GraphQLDirective>();
             if (node is IWithDirectives)
             {
                 var nodeWithDirectives = node as IWithDirectives;
@@ -32,13 +32,14 @@
                 {
                     var directiveName = directive.Name.Value;
 
-                    if (appliedDirectives.Contains(directiveName))
+                    if (appliedDirectives.ContainsKey(directiveName))
                     {
-                        this.Errors.Add(new GraphQLException(this.DuplicateDirectiveMessage(directiveName)));
+                        this.Errors.Add(new GraphQLException(this.DuplicateDirectiveMessage(directiveName),
+                            new[] { appliedDirectives[directiveName], directive }));
                     }
                     else
                     {
-                        appliedDirectives.Add(directiveName);
+                        appliedDirectives.Add(directiveName, directive);
                     }
                 }
             }

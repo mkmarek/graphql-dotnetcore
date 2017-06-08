@@ -38,7 +38,7 @@
                         suggestedTypeNames,
                         suggestedFieldNames);
 
-                    this.Errors.Add(new GraphQLException(errorMessage));
+                    this.Errors.Add(new GraphQLException(errorMessage, new[] { selection }));
                 }
             }
 

@@ -39,6 +39,8 @@
             return true;
         }
 
+        private LambdaExpression GetResolverInfo() => this.GetResolver(null, null);
+
         public abstract LambdaExpression GetResolver(object value, object parentValue);
 
         public IntrospectedDirective Introspect(ISchemaRepository schemaRepository)
@@ -54,7 +56,7 @@
 
         public IEnumerable<GraphQLObjectTypeArgumentInfo> GetArguments()
         {
-            return this.GetResolver(null, null).Parameters.Select(e => new GraphQLObjectTypeArgumentInfo()
+            return this.GetResolverInfo().Parameters.Select(e => new GraphQLObjectTypeArgumentInfo()
             {
                 Name = e.Name,
                 SystemType = e.Type
@@ -63,7 +65,7 @@
 
         public GraphQLObjectTypeArgumentInfo GetArgument(string name)
         {
-            var parameter = this.GetResolver(null, null).Parameters.FirstOrDefault(e => e.Name == name);
+            var parameter = this.GetResolverInfo().Parameters.FirstOrDefault(e => e.Name == name);
 
             if (parameter == null)
                 return null;

@@ -30,7 +30,7 @@
         {
             if (definition.Name == null && this.operationCount > 1)
             {
-                this.Errors.Add(new GraphQLException("This anonymous operation must be the only defined operation."));
+                this.Errors.Add(new GraphQLException("This anonymous operation must be the only defined operation.", new[] { definition }));
             }
 
             return definition;

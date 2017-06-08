@@ -8,6 +8,8 @@
 
     public class UniqueFragmentNamesVisitor : ValidationASTVisitor
     {
+        private Dictionary<string, GraphQLName> knownFragmentNames = new Dictionary<string, GraphQLName>();
+
         public UniqueFragmentNamesVisitor(IGraphQLSchema schema) : base(schema)
         {
             this.Errors = new List<GraphQLException>();
@@ -15,21 +17,22 @@
 
         public List<GraphQLException> Errors { get; private set; }
 
-        public override void Visit(GraphQLDocument ast)
+        public override GraphQLFragmentDefinition BeginVisitFragmentDefinition(GraphQLFragmentDefinition node)
         {
-            this.Errors = ast.Definitions
-                .Where(x => x.Kind == ASTNodeKind.FragmentDefinition)
-                .Select(x => ((GraphQLFragmentDefinition)x).Name.Value)
-                .GroupBy(x => x)
-                .Where(g => g.Count() > 1)
-                .Select(x => x.Key)
-                .Select(this.GetFragmentNameError)
-                .ToList();
+            var fragmentName = node.Name.Value;
+
+            if (this.knownFragmentNames.ContainsKey(fragmentName))
+                this.Errors.Add(this.GetFragmentNameError(fragmentName,
+                    new ASTNode[] { this.knownFragmentNames[fragmentName], node.Name }));
+            else
+                this.knownFragmentNames.Add(node.Name.Value, node.Name);
+
+            return base.BeginVisitFragmentDefinition(node);
         }
 
-        private GraphQLException GetFragmentNameError(string variableName)
+        private GraphQLException GetFragmentNameError(string variableName, IEnumerable<ASTNode> nodes)
         {
-            return new GraphQLException($"There can be only one fragment named \"{variableName}\".");
+            return new GraphQLException($"There can be only one fragment named \"{variableName}\".", nodes);
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace GraphQLCore.Tests.Validation
 {
-    using Exceptions;
+    using GraphQLCore.Exceptions;
     using GraphQLCore.Validation.Rules;
     using NUnit.Framework;
     using System.Linq;

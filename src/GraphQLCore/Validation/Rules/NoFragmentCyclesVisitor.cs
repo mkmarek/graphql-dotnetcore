@@ -90,7 +90,8 @@
                     this.Errors.Add(new GraphQLException(
                         this.GetErrorMessage(
                             spreadName,
-                            cyclePath.Select(e => e.Name.Value))));
+                            cyclePath.Select(e => e.Name.Value)),
+                        cyclePath.Append(spreadNode)));
                 }
             }
 
@@ -136,7 +137,7 @@
 
         private string GetErrorMessage(string fragmentName, IEnumerable<string> spreadNames)
         {
-            var via = spreadNames.Count() > 0 ? " via " + string.Join(", ", spreadNames) : string.Empty;
+            var via = spreadNames.Any() ? " via " + string.Join(", ", spreadNames) : string.Empty;
               return $"Cannot spread fragment \"{fragmentName}\" within itself{via}.";
         }
     }

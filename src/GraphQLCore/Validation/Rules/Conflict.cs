@@ -7,7 +7,7 @@ namespace GraphQLCore.Validation.Rules
         public string ResponseName { get; set; }
         public string Reason { get; set; }
         public Conflict[] Subreasons { get; set; }
-        public GraphQLName[] Field1 { get; internal set; }
-        public GraphQLName[] Field2 { get; internal set; }
+        public GraphQLFieldSelection[] Field1 { get; internal set; }
+        public GraphQLFieldSelection[] Field2 { get; internal set; }
     }
 }

@@ -7,8 +7,8 @@
 
     public class UniqueInputFieldNamesVisitor : ValidationASTVisitor
     {
-        private Stack<Dictionary<string, bool>> knownNameStack = new Stack<Dictionary<string, bool>>();
-        private Dictionary<string, bool> knownNames = new Dictionary<string, bool>();
+        private Stack<Dictionary<string, GraphQLName>> knownNameStack = new Stack<Dictionary<string, GraphQLName>>();
+        private Dictionary<string, GraphQLName> knownNames = new Dictionary<string, GraphQLName>();
 
         public UniqueInputFieldNamesVisitor(IGraphQLSchema schema) : base(schema)
         {
@@ -20,7 +20,7 @@
         public override GraphQLObjectValue BeginVisitObjectValue(GraphQLObjectValue node)
         {
             this.knownNameStack.Push(this.knownNames);
-            this.knownNames = new Dictionary<string, bool>();
+            this.knownNames = new Dictionary<string, GraphQLName>();
 
             return base.BeginVisitObjectValue(node);
         }
@@ -37,9 +37,10 @@
             string fieldName = node.Name.Value;
 
             if (this.knownNames.ContainsKey(fieldName))
-                this.Errors.Add(new GraphQLException(this.DuplicateInputFieldMessage(fieldName)));
+                this.Errors.Add(new GraphQLException(this.DuplicateInputFieldMessage(fieldName),
+                    new[] { this.knownNames[fieldName], node.Name }));
             else
-                this.knownNames.Add(fieldName, true);
+                this.knownNames.Add(fieldName, node.Name);
 
             return base.BeginVisitObjectField(node);
         }

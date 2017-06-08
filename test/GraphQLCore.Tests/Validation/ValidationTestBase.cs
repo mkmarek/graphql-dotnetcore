@@ -1,12 +1,12 @@
 ﻿namespace GraphQLCore.Tests.Validation
 {
-    using Exceptions;
+    using GraphQLCore.Exceptions;
     using GraphQLCore.Language;
     using GraphQLCore.Language.AST;
-    using Schemas;
     using GraphQLCore.Validation;
     using GraphQLCore.Validation.Rules;
     using NUnit.Framework;
+    using Schemas;
 
     public class ValidationTestBase
     {

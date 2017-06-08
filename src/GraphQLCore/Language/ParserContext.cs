@@ -198,7 +198,8 @@
             return new GraphQLLocation()
             {
                 Start = start,
-                End = this.currentToken.End
+                End = this.currentToken.End,
+                Source = this.source
             };
         }
 
@@ -893,12 +894,14 @@
 
         private GraphQLVariableDefinition ParseVariableDefinition()
         {
-            int start = this.currentToken.Start;
+            var start = this.currentToken.Start;
+
             return new GraphQLVariableDefinition()
             {
                 Variable = this.ParseVariable(),
                 Type = this.AdvanceThroughColonAndParseType(),
-                DefaultValue = this.SkipEqualsAndParseValueLiteral()
+                DefaultValue = this.SkipEqualsAndParseValueLiteral(),
+                Location = this.GetLocation(start)
             };
         }
 

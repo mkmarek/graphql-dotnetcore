@@ -40,7 +40,7 @@
             {
                 var errorMessage = this.ComposeUnknownDirectiveMessage(directive.Name.Value);
 
-                this.Errors.Add(new GraphQLException(errorMessage));
+                this.Errors.Add(new GraphQLException(errorMessage, new[] { directive }));
             }
             else
             {
@@ -49,7 +49,7 @@
                 if (!directiveDefinition.Locations.Contains(candidateLocation))
                 {
                     var errorMessage = this.ComposeMisplacedDirectiveMessage(directive.Name.Value, candidateLocation.ToString());
-                    this.Errors.Add(new GraphQLException(errorMessage));
+                    this.Errors.Add(new GraphQLException(errorMessage, new[] { directive }));
                 }
             }
 

@@ -21,7 +21,8 @@
             var inputType = this.GetOutputType(variableDefinition.Type);
 
             if (inputType != null)
-                this.Errors.Add(new GraphQLException($"Variable \"${variableName}\" cannot be non-input type \"{variableDefinition.Type}\"."));
+                this.Errors.Add(new GraphQLException($"Variable \"${variableName}\" cannot be non-input type \"{variableDefinition.Type}\".",
+                    new[] { variableDefinition.Type }));
 
             return variableDefinition;
         }

@@ -31,7 +31,7 @@
         public override GraphQLFragmentSpread BeginVisitFragmentSpread(GraphQLFragmentSpread node)
         {
             if (this.GetFragment(node.Name.Value) == null)
-                this.Errors.Add(new GraphQLException(this.GetErrorMessage(node.Name.Value)));
+                this.Errors.Add(new GraphQLException(this.GetErrorMessage(node.Name.Value), new[] { node.Name }));
 
             return base.BeginVisitFragmentSpread(node);
         }

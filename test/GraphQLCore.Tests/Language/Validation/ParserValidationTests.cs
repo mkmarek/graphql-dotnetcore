@@ -1,6 +1,6 @@
 ﻿namespace GraphQLCore.Tests.Language.Validation
 {
-    using Exceptions;
+    using GraphQLCore.Exceptions;
     using GraphQLCore.Language;
     using NUnit.Framework;
     using System;

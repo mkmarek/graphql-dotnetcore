@@ -1,6 +1,6 @@
 ﻿namespace GraphQLCore.Tests.Execution
 {
-    using Exceptions;
+    using GraphQLCore.Exceptions;
     using GraphQLCore.Type;
     using GraphQLCore.Type.Scalar;
     using NUnit.Framework;

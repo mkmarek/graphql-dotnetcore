@@ -36,7 +36,7 @@
                 return this.Json(
                     new
                     {
-                        errors = ex.Errors.Select(e => new { message = e.Message })
+                        errors = ex.Errors
                     }
                 );
             }

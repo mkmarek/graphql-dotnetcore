@@ -31,20 +31,20 @@
             {
                 var directiveDefinition = this.schemaRepository.GetDirective(directive.Name.Value);
 
-                this.CheckDirectiveArgument(directiveDefinition, argumentName);
+                this.CheckDirectiveArgument(argument, directiveDefinition, argumentName);
             }
             else
             {
                 var fieldDefinition = this.GetLastField();
 
                 if (fieldDefinition != null)
-                    this.CheckFieldArgument(fieldDefinition, argumentName);
+                    this.CheckFieldArgument(argument, fieldDefinition, argumentName);
             }
 
             return base.BeginVisitArgument(argument);
         }
 
-        private void CheckDirectiveArgument(GraphQLDirectiveType directiveType, string argumentName)
+        private void CheckDirectiveArgument(GraphQLArgument node, GraphQLDirectiveType directiveType, string argumentName)
         {
             var arguments = directiveType.GetArguments();
 
@@ -56,10 +56,10 @@
                 directiveType.Name,
                 StringUtils.SuggestionList(argumentName, arguments.Select(e => e.Name)));
 
-            this.Errors.Add(new GraphQLException(errorMessage));
+            this.Errors.Add(new GraphQLException(errorMessage, new[] { node }));
         }
 
-        private void CheckFieldArgument(GraphQLFieldInfo fieldInfo, string argumentName)
+        private void CheckFieldArgument(GraphQLArgument node, GraphQLFieldInfo fieldInfo, string argumentName)
         {
             if (!fieldInfo.Arguments.ContainsKey(argumentName))
             {
@@ -71,7 +71,7 @@
                     parentType,
                     StringUtils.SuggestionList(argumentName, fieldInfo.Arguments.Select(e => e.Value.Name)));
 
-                this.Errors.Add(new GraphQLException(errorMessage));
+                this.Errors.Add(new GraphQLException(errorMessage, new[] { node }));
             }
         }
 

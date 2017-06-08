@@ -29,7 +29,7 @@
             if (type == null)
             {
                 this.Errors.Add(
-                    new GraphQLException(this.ComposeErrorMessage(typeName)));
+                    new GraphQLException(this.ComposeErrorMessage(typeName), new[] { namedType }));
             }
 
             return base.BeginVisitNamedType(namedType);

@@ -20,18 +20,18 @@
             var fragmentType = this.GetLastType();
             var parentType = this.GetParentType();
 
-            this.ValidateInlineFragmentTypes(fragmentType, parentType);
+            this.ValidateInlineFragmentTypes(inlineFragment, fragmentType, parentType);
 
             return base.EndVisitInlineFragment(inlineFragment);
         }
 
-        private void ValidateInlineFragmentTypes(GraphQLBaseType fragmentType, GraphQLBaseType parentType)
+        private void ValidateInlineFragmentTypes(GraphQLInlineFragment node, GraphQLBaseType fragmentType, GraphQLBaseType parentType)
         {
             if (parentType is GraphQLList)
             {
                 parentType = ((GraphQLList)parentType).MemberType;
 
-                this.ValidateInlineFragmentTypes(fragmentType, parentType);
+                this.ValidateInlineFragmentTypes(node, fragmentType, parentType);
             }
             else if (fragmentType != null &&
                 parentType != null &&
@@ -39,7 +39,8 @@
             {
                 this.Errors.Add(
                     new GraphQLException(
-                        this.GetIncompatibleTypeInAnonymousFragmentMessage(fragmentType, parentType)));
+                        this.GetIncompatibleTypeInAnonymousFragmentMessage(fragmentType, parentType),
+                        new[] { node }));
             }
         }
 
@@ -58,7 +59,8 @@
                     this.Errors.Add(
                         new GraphQLException(
                             this.GetIncompatibleTypeInFragmentMessage(
-                                fragmentType, parentType, fragmentSpread.Name.Value)));
+                                fragmentType, parentType, fragmentSpread.Name.Value),
+                            new[] { fragmentSpread }));
                 }
             }
 

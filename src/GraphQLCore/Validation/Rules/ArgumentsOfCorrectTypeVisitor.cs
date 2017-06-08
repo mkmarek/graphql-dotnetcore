@@ -23,17 +23,17 @@
             var errors = this.LiteralValueValidator.IsValid(argumentType, astValue);
 
             if (errors.Any())
-                this.Errors.Add(this.ComposeErrorMessage(argument, astValue, errors));
+                this.Errors.Add(this.ComposeError(argument, astValue, errors));
 
             return base.EndVisitArgument(argument);
         }
 
-        private GraphQLException ComposeErrorMessage(GraphQLArgument argument, GraphQLValue astValue, IEnumerable<GraphQLException> innerExceptions)
+        private GraphQLException ComposeError(GraphQLArgument argument, GraphQLValue astValue, IEnumerable<GraphQLException> innerExceptions)
         {
             var innerMessage = string.Join("\n", innerExceptions.Select(e => e.Message));
             var exceptionMessage = $"Argument \"{argument.Name.Value}\" has invalid value {astValue}.\n{innerMessage}";
 
-            return new GraphQLException(exceptionMessage);
+            return new GraphQLException(exceptionMessage, new[] { argument.Value });
         }
     }
 }

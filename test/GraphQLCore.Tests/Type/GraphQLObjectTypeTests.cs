@@ -1,6 +1,6 @@
 ﻿namespace GraphQLCore.Tests.Type
 {
-    using Exceptions;
+    using GraphQLCore.Exceptions;
     using GraphQLCore.Type;
     using NUnit.Framework;
     using System.Linq;

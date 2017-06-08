@@ -41,7 +41,7 @@
             var variableUsages = VariableUsagesProvider.Get(definition, this.document, this.Schema);
 
             foreach (var usage in variableUsages)
-                this.VerifyUsage(usage, definition.Name?.Value);
+                this.VerifyUsage(definition, usage, definition.Name?.Value);
 
             return base.EndVisitOperationDefinition(definition);
         }
@@ -53,12 +53,13 @@
             base.Visit(ast);
         }
 
-        private void VerifyUsage(VariableUsage usage, string opName)
+        private void VerifyUsage(GraphQLOperationDefinition operation, VariableUsage usage, string opName)
         {
             var variableName = usage.Variable.Name.Value;
 
             if (!this.variableDefinitions.Contains(variableName))
-                this.Errors.Add(new GraphQLException(this.ComposeUndefinedVarMessage(variableName, opName)));
+                this.Errors.Add(new GraphQLException(this.ComposeUndefinedVarMessage(variableName, opName),
+                    new ASTNode[] { usage.Variable, operation } ));
         }
 
         private string ComposeUndefinedVarMessage(string varName, string opName)

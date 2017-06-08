@@ -24,12 +24,14 @@
             if (type.IsLeafType && selection?.SelectionSet != null)
             {
                 this.Errors.Add(new GraphQLException(
-                    this.NoScalarSubselection(selection.Name.Value, type)));
+                    this.NoScalarSubselection(selection.Name.Value, type),
+                    new[] { selection.SelectionSet }));
             }
             else if (!type.IsLeafType && selection?.SelectionSet == null)
             {
                 this.Errors.Add(new GraphQLException(
-                    this.RequiredSubselectionMessage(selection.Name.Value, type)));
+                    this.RequiredSubselectionMessage(selection.Name.Value, type),
+                    new[] { selection }));
             }
 
             return base.EndVisitFieldSelection(selection);

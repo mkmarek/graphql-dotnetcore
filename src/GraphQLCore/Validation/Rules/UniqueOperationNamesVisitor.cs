@@ -7,7 +7,7 @@
 
     public class UniqueOperationNamesVisitor : ValidationASTVisitor
     {
-        private Dictionary<string, bool> knownOperationNames = new Dictionary<string, bool>();
+        private Dictionary<string, GraphQLName> knownOperationNames = new Dictionary<string, GraphQLName>();
 
         public UniqueOperationNamesVisitor(IGraphQLSchema schema) : base(schema)
         {
@@ -23,17 +23,17 @@
             if (!string.IsNullOrWhiteSpace(operationName))
             {
                 if (this.knownOperationNames.ContainsKey(operationName))
-                    this.ReportOperationNameError(operationName);
+                    this.ReportOperationNameError(operationName, new[] { this.knownOperationNames[operationName], definition.Name });
                 else
-                    this.knownOperationNames.Add(operationName, true);
+                    this.knownOperationNames.Add(operationName, definition.Name);
             }
 
             return definition;
         }
 
-        private void ReportOperationNameError(string operationName)
+        private void ReportOperationNameError(string operationName, IEnumerable<ASTNode> nodes)
         {
-            this.Errors.Add(new GraphQLException($"There can only be one operation named \"{operationName}\"."));
+            this.Errors.Add(new GraphQLException($"There can only be one operation named \"{operationName}\".", nodes));
         }
     }
 }

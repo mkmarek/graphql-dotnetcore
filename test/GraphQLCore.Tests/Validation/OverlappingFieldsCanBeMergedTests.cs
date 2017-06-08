@@ -1,13 +1,9 @@
 namespace GraphQLCore.Tests.Validation
 {
-    using Exceptions;
+    using GraphQLCore.Exceptions;
     using GraphQLCore.Validation.Rules;
     using NUnit.Framework;
-    using System;
-    using System.Collections.Generic;
     using System.Linq;
-    using System.Threading.Tasks;
-
 
     [TestFixture]
     public class OverlappingFieldsCanBeMergedTests : ValidationTestBase

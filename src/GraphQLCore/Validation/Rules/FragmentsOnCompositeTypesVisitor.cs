@@ -27,7 +27,7 @@
                 if (type != null)
                 {
                     var errorMessage = this.ComposeInlineFragmentOnNonCompositeErrorMessage(type);
-                    this.Errors.Add(new GraphQLException(errorMessage));
+                    this.Errors.Add(new GraphQLException(errorMessage, new[] { inlineFragment.TypeCondition }));
                 }
             }
 
@@ -41,7 +41,7 @@
             if (type != null)
             {
                 var errorMessage = this.ComposeFragmentOnNonCompositeErrorMessage(node.Name.Value, type);
-                this.Errors.Add(new GraphQLException(errorMessage));
+                this.Errors.Add(new GraphQLException(errorMessage, new[] { node.TypeCondition }));
             }
 
             return base.BeginVisitFragmentDefinition(node);

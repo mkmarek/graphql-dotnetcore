@@ -1,8 +1,9 @@
 ﻿namespace GraphQLCore.Language
 {
+    using System.Runtime.Serialization;
     using System.Text.RegularExpressions;
 
-    public class Location
+    public class Location : ISerializable
     {
         public Location(ISource source, int position)
         {
@@ -21,7 +22,13 @@
             }
         }
 
-        public int Column { get; private set; }
-        public int Line { get; private set; }
+        public int Column { get; }
+        public int Line { get; }
+
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("line", this.Line);
+            info.AddValue("column", this.Column);
+        }
     }
 }

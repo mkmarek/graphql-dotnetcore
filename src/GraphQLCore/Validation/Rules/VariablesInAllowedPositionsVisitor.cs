@@ -76,7 +76,8 @@
                 {
                     this.Errors.Add(new GraphQLException(
                         $"Variable \"${variableName}\" of type \"{variableType}\" used in " +
-                        $"position expecting type \"{usage.ArgumentType}\"."));
+                        $"position expecting type \"{usage.ArgumentType}\".",
+                        new ASTNode[] { variableDefinition, usage.Variable }));
                 }
             }
         }

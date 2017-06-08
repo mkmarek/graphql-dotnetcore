@@ -50,7 +50,8 @@
 
             foreach (var unusedFragment in this.fragmentDefinitions)
             {
-                this.Errors.Add(new GraphQLException($"Fragment \"{unusedFragment.Key}\" is never used."));
+                this.Errors.Add(new GraphQLException($"Fragment \"{unusedFragment.Key}\" is never used.",
+                    new[] { unusedFragment.Value }));
             }
         }
     }

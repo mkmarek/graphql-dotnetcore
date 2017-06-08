@@ -4,5 +4,6 @@
     {
         public int End { get; set; }
         public int Start { get; set; }
+        public ISource Source { get; set; }
     }
 }
