@@ -6,6 +6,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using Type;
+    using Utils;
 
     public class FieldCollector : IFieldCollector
     {
@@ -80,7 +81,8 @@
             if (fragment.TypeCondition == null)
                 return true;
 
-            if (fragment.TypeCondition.Name.Value == runtimeType.Name)
+            var type = this.schemaRepository.GetSchemaOutputTypeByName(fragment.TypeCondition.Name.Value);
+            if (type == runtimeType || TypeComparators.IsPossibleType(runtimeType, type, this.schemaRepository))
                 return true;
 
             return false;
