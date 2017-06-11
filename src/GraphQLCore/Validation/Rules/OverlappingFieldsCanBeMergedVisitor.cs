@@ -143,14 +143,20 @@
         private IEnumerable<Conflict> CollectConflictsBetweenFieldsAndFragment(
             IDictionary<string, ICollection<NodeAndDefinitions>> fieldMap,
             string fragmentName,
-            bool areMutuallyExclusive)
+            bool areMutuallyExclusive,
+            string[] visitedFragmentsChain = null)
         {
             var conflicts = new List<Conflict>();
+            var visitedFragments = (visitedFragmentsChain ?? new string[] { }).ToList();
 
             if (!this.Fragments.ContainsKey(fragmentName))
                 return conflicts;
 
+            if (visitedFragments.Contains(fragmentName))
+                return conflicts;
+
             var fragment = this.Fragments[fragmentName];
+            visitedFragments.Add(fragmentName);
 
             var fieldMap2 = new Dictionary<string, ICollection<NodeAndDefinitions>>();
             var fragmentNames2 = new List<string>();
@@ -165,7 +171,7 @@
             foreach (var fragmentName2 in fragmentNames2)
             {
                 conflicts.AddRange(this.CollectConflictsBetweenFieldsAndFragment(
-                    fieldMap, fragmentName2, areMutuallyExclusive));
+                    fieldMap, fragmentName2, areMutuallyExclusive, visitedFragments.ToArray()));
             }
 
             return conflicts;

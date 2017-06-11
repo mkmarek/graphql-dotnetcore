@@ -9,6 +9,20 @@ namespace GraphQLCore.Tests.Validation
     public class OverlappingFieldsCanBeMergedTests : ValidationTestBase
     {
         [Test]
+        public void FragmentCycles_NoError()
+        {
+            var errors = Validate(@"
+                fragment uniqueFields on Dog {
+                    name
+                    nickname
+                    ...uniqueFields
+                }
+            ");
+
+            Assert.IsEmpty(errors);
+        }
+
+        [Test]
         public void UniqueFields_ReportsNoError()
         {
             var errors = Validate(@"
