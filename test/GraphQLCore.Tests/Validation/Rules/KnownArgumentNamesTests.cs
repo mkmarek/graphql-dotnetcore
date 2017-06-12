@@ -1,4 +1,4 @@
-﻿namespace GraphQLCore.Tests.Validation
+﻿namespace GraphQLCore.Tests.Validation.Rules
 {
     using GraphQLCore.Exceptions;
     using GraphQLCore.Validation.Rules;
@@ -110,7 +110,8 @@
             }
             ");
 
-            Assert.AreEqual("Unknown argument \"gif\" on directive \"skip\". Did you mean \"if\"?", errors.Single().Message);
+            ErrorAssert.AreEqual("Unknown argument \"gif\" on directive \"skip\". Did you mean \"if\"?",
+                errors.Single(), 3, 27);
         }
 
         [Test]
@@ -122,7 +123,8 @@
             }
             ");
 
-            Assert.AreEqual("Unknown argument \"unknown\" on field \"enumArgField\" of type \"ComplicatedArgs\".", errors.Single().Message);
+            ErrorAssert.AreEqual("Unknown argument \"unknown\" on field \"enumArgField\" of type \"ComplicatedArgs\".",
+                errors.Single(), 3, 30);
         }
 
         [Test]
@@ -135,8 +137,11 @@
             ");
 
             Assert.AreEqual(2, errors.Count());
-            Assert.AreEqual("Unknown argument \"whoknows\" on field \"nonNullIntArgField\" of type \"ComplicatedArgs\".", errors.ElementAt(0).Message);
-            Assert.AreEqual("Unknown argument \"unknown\" on field \"nonNullIntArgField\" of type \"ComplicatedArgs\".", errors.ElementAt(1).Message);
+
+            ErrorAssert.AreEqual("Unknown argument \"whoknows\" on field \"nonNullIntArgField\" of type \"ComplicatedArgs\".",
+                errors.ElementAt(0), 3, 36);
+            ErrorAssert.AreEqual("Unknown argument \"unknown\" on field \"nonNullIntArgField\" of type \"ComplicatedArgs\".",
+                errors.ElementAt(1), 3, 69);
         }
 
         [Test]
@@ -160,9 +165,13 @@
             ");
 
             Assert.AreEqual(3, errors.Count());
-            Assert.AreEqual("Unknown argument \"unknown\" on field \"enumArgField\" of type \"ComplicatedArgs\".", errors.ElementAt(0).Message);
-            Assert.AreEqual("Unknown argument \"ab\" on field \"field\" of type \"QueryRoot\". Did you mean \"a\" or \"b\"?", errors.ElementAt(1).Message);
-            Assert.AreEqual("Unknown argument \"unknown\" on field \"enumArgField\" of type \"ComplicatedArgs\".", errors.ElementAt(2).Message);
+            
+            ErrorAssert.AreEqual("Unknown argument \"unknown\" on field \"enumArgField\" of type \"ComplicatedArgs\".",
+                errors.ElementAt(0), 4, 34);
+            ErrorAssert.AreEqual("Unknown argument \"ab\" on field \"field\" of type \"QueryRoot\". Did you mean \"a\" or \"b\"?",
+                errors.ElementAt(1), 6, 23);
+            ErrorAssert.AreEqual("Unknown argument \"unknown\" on field \"enumArgField\" of type \"ComplicatedArgs\".",
+                errors.ElementAt(2), 10, 46);
         }
 
         protected override GraphQLException[] Validate(string body)

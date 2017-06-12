@@ -1,4 +1,4 @@
-﻿namespace GraphQLCore.Tests.Validation
+﻿namespace GraphQLCore.Tests.Validation.Rules
 {
     using GraphQLCore.Exceptions;
     using GraphQLCore.Validation.Rules;
@@ -19,9 +19,8 @@
             }
             ");
 
-            var error = errors.Single();
-            Assert.AreEqual("Field \"nonNullIntArgField\" argument \"nonNullIntArg\" of type \"Int!\" is required but not provided.",
-                error.Message);
+            ErrorAssert.AreEqual("Field \"nonNullIntArgField\" argument \"nonNullIntArg\" of type \"Int!\" is required but not provided.",
+                errors.Single(), 4, 21);
         }
 
         [Test]
@@ -37,13 +36,10 @@
 
             Assert.AreEqual(2, errors.Count());
 
-            var error1 = errors.ElementAt(0);
-            var error2 = errors.ElementAt(1);
-
-            Assert.AreEqual("Field \"nonNullIntMultipleArgsField\" argument \"arg1\" of type \"Int!\" is required but not provided.",
-                error1.Message);
-            Assert.AreEqual("Field \"nonNullIntMultipleArgsField\" argument \"arg2\" of type \"Int!\" is required but not provided.",
-                error2.Message);
+            ErrorAssert.AreEqual("Field \"nonNullIntMultipleArgsField\" argument \"arg1\" of type \"Int!\" is required but not provided.",
+                errors.ElementAt(0), 4, 21);
+            ErrorAssert.AreEqual("Field \"nonNullIntMultipleArgsField\" argument \"arg2\" of type \"Int!\" is required but not provided.",
+                errors.ElementAt(1), 4, 21);
         }
 
         [Test]
@@ -57,10 +53,8 @@
             }
             ");
 
-            var error1 = errors.ElementAt(0);
-
-            Assert.AreEqual("Field \"nonNullIntMultipleArgsField\" argument \"arg2\" of type \"Int!\" is required but not provided.",
-                error1.Message);
+            ErrorAssert.AreEqual("Field \"nonNullIntMultipleArgsField\" argument \"arg2\" of type \"Int!\" is required but not provided.",
+                errors.Single(), 4, 21);
         }
 
         [Test]
@@ -114,8 +108,11 @@
             ");
 
             Assert.AreEqual(2, errors.Count());
-            Assert.AreEqual("Directive \"include\" argument \"if\" of type \"Boolean!\" is required but not provided.", errors.ElementAt(0).Message);
-            Assert.AreEqual("Directive \"skip\" argument \"if\" of type \"Boolean!\" is required but not provided.", errors.ElementAt(1).Message);
+
+            ErrorAssert.AreEqual("Directive \"include\" argument \"if\" of type \"Boolean!\" is required but not provided.",
+                errors.ElementAt(0), 3, 33);
+            ErrorAssert.AreEqual("Directive \"skip\" argument \"if\" of type \"Boolean!\" is required but not provided.",
+                errors.ElementAt(1), 4, 33);
         }
 
         protected override GraphQLException[] Validate(string body)

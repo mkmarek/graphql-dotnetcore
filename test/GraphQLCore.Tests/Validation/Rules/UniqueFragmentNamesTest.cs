@@ -1,11 +1,7 @@
-﻿using System.Linq;
-
-namespace GraphQLCore.Tests.Validation
+﻿namespace GraphQLCore.Tests.Validation.Rules
 {
     using NUnit.Framework;
-    using Exceptions;
-    using System.Collections.Generic;
-    using GraphQLCore.Validation.Rules;
+    using System.Linq;
 
     [TestFixture]
     public class UniqueFragmentNamesTest : ValidationTestBase
@@ -35,8 +31,9 @@ namespace GraphQLCore.Tests.Validation
                     booleanField
                 }
             ");
-            Assert.AreEqual("There can be only one fragment named \"Foo\".", errors.ElementAt(0).Message);
-            Assert.AreEqual(1, errors.Count());
+
+            ErrorAssert.AreEqual("There can be only one fragment named \"Foo\".",
+                errors.Single(), new[] { 2, 26 }, new[] { 5, 26 });
         }
     }
 }

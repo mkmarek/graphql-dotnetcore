@@ -64,7 +64,8 @@ namespace GraphQLCore.Execution
                     this.schemaRepository);
 
             if (typeDefinition is GraphQLNonNull)
-                throw new GraphQLException($"Type \"{typeDefinition}\" is non-nullable and cannot be null.");
+                throw new GraphQLException($"Variable \"{variableName}\" of required type \"{typeDefinition}\" was not provided.",
+                    new[] { variableDefinition });
 
             return new Result(null);
         }

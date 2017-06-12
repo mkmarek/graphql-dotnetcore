@@ -1,4 +1,4 @@
-﻿namespace GraphQLCore.Tests.Validation
+﻿namespace GraphQLCore.Tests.Validation.Rules
 {
     using NUnit.Framework;
     using System.Linq;
@@ -25,11 +25,12 @@
             var badgerError = errors.ElementAt(1);
             var complicatedObjectArgFieldddddddError = errors.ElementAt(2);
 
-            Assert.AreEqual("Unknown type \"JumbledUpLetters\"", jumbledUpLettersError.Message);
-            Assert.IsTrue(badgerError.Message.StartsWith("Unknown type \"Badger\""));
-            Assert.IsTrue(
-                complicatedObjectArgFieldddddddError.Message.StartsWith(
-                    "Unknown type \"ComplicatedObjectTypeee\" Did you mean \"ComplicatedObjectType\""));
+            ErrorAssert.StartsWith("Unknown type \"JumbledUpLetters\".",
+                jumbledUpLettersError, 2, 31);
+            ErrorAssert.StartsWith("Unknown type \"Badger\".",
+                badgerError, 5, 54);
+            ErrorAssert.StartsWith("Unknown type \"ComplicatedObjectTypeee\". Did you mean \"ComplicatedObjectType\"",
+                complicatedObjectArgFieldddddddError, 8, 39);
         }
 
         [Test]
@@ -52,7 +53,7 @@
                     }
                 }");
 
-            Assert.AreEqual("Unknown type \"NotInTheSchema\"", errors.Single().Message);
+            ErrorAssert.AreEqual("Unknown type \"NotInTheSchema\".", errors.Single(), 12, 33);
         }
     }
 }

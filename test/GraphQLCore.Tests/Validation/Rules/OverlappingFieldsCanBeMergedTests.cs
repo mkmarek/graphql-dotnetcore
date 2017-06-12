@@ -1,4 +1,4 @@
-namespace GraphQLCore.Tests.Validation
+namespace GraphQLCore.Tests.Validation.Rules
 {
     using GraphQLCore.Exceptions;
     using GraphQLCore.Validation.Rules;
@@ -123,11 +123,11 @@ namespace GraphQLCore.Tests.Validation
                 }
             ");
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fields \"fido\" conflict because name and nickname are different fields" +
                 ". Use different aliases on the fields to fetch both if this was " +
                 "intentional.", 
-                errors.Single().Message);
+                errors.Single(), new[] { 3, 21 }, new[] { 4, 21 });
         }
 
         [Test]
@@ -157,11 +157,11 @@ namespace GraphQLCore.Tests.Validation
                 }
             ");
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fields \"name\" conflict because nickname and name are different fields" +
                 ". Use different aliases on the fields to fetch both if this was " +
                 "intentional.", 
-                errors.Single().Message);
+                errors.Single(), new[] { 3, 21 }, new[] { 4, 21 });
         }
 
         [Test]
@@ -174,11 +174,11 @@ namespace GraphQLCore.Tests.Validation
                 }
             ");
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fields \"doesKnowCommand\" conflict because they have differing arguments" +
                 ". Use different aliases on the fields to fetch both if this was " +
                 "intentional.", 
-                errors.Single().Message);
+                errors.Single(), new[] { 3, 21 }, new[] { 4, 21 });
         }
 
         [Test]
@@ -191,11 +191,11 @@ namespace GraphQLCore.Tests.Validation
                 }
             ");
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fields \"doesKnowCommand\" conflict because they have differing arguments" +
                 ". Use different aliases on the fields to fetch both if this was " +
                 "intentional.", 
-                errors.Single().Message);
+                errors.Single(), new[] { 3, 21 }, new[] { 4, 21 });
         }
 
         [Test]
@@ -208,11 +208,11 @@ namespace GraphQLCore.Tests.Validation
                 }
             ");
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fields \"doesKnowCommand\" conflict because they have differing arguments" +
                 ". Use different aliases on the fields to fetch both if this was " +
                 "intentional.", 
-                errors.Single().Message);
+                errors.Single(), new[] { 3, 21 }, new [] { 4, 21 });
         }
 
         [Test]
@@ -248,11 +248,11 @@ namespace GraphQLCore.Tests.Validation
                 }
             ");
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fields \"x\" conflict because a and b are different fields" +
                 ". Use different aliases on the fields to fetch both if this was " +
                 "intentional.", 
-                errors.Single().Message);
+                errors.Single(), new[] { 7, 21 }, new[] { 10, 21 });
         }
 
         [Test]
@@ -284,23 +284,23 @@ namespace GraphQLCore.Tests.Validation
 
             Assert.AreEqual(3, errors.Count());
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fields \"x\" conflict because a and b are different fields" +
                 ". Use different aliases on the fields to fetch both if this was " +
                 "intentional.", 
-                errors.ElementAt(0).Message);
+                errors.ElementAt(0), new[] { 18, 21 }, new[] { 21, 21 });
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fields \"x\" conflict because c and a are different fields" +
                 ". Use different aliases on the fields to fetch both if this was " +
                 "intentional.", 
-                errors.ElementAt(1).Message);
+                errors.ElementAt(1), new[] { 14, 25 }, new[] { 18, 21 });
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fields \"x\" conflict because c and b are different fields" +
                 ". Use different aliases on the fields to fetch both if this was " +
                 "intentional.", 
-                errors.ElementAt(2).Message);
+                errors.ElementAt(2), new[] { 14, 25 }, new[] { 21, 21 });
         }
 
         [Test]
@@ -317,11 +317,15 @@ namespace GraphQLCore.Tests.Validation
                 }
             ");
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fields \"field\" conflict because subfields \"x\" conflict because a and b are different fields" +
                 ". Use different aliases on the fields to fetch both if this was " +
                 "intentional.", 
-                errors.Single().Message);
+                errors.Single(),
+                new[] { 3, 21 },
+                new[] { 4, 25 },
+                new[] { 6, 21 },
+                new[] { 7, 25 });
         }
 
         [Test]
@@ -329,22 +333,28 @@ namespace GraphQLCore.Tests.Validation
         {
             var errors = Validate(@"
                 {
-                field {
-                    x: a
-                    y: c
-                },
-                field {
-                    x: b
-                    y: d
+                    field {
+                        x: a
+                        y: c
+                    },
+                    field {
+                        x: b
+                        y: d
+                    }
                 }
-            }
             ");
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fields \"field\" conflict because subfields \"x\" conflict because a and b are different fields and subfields \"y\" conflict because c and d are different fields" +
                 ". Use different aliases on the fields to fetch both if this was " +
                 "intentional.", 
-                errors.Single().Message);
+                errors.Single(),
+                new[] { 3, 21 },
+                new[] { 4, 25 },
+                new[] { 5, 25 },
+                new[] { 7, 21 },
+                new[] { 8, 25 },
+                new[] { 9, 25 });
         }
 
         [Test]
@@ -365,11 +375,17 @@ namespace GraphQLCore.Tests.Validation
                 }
             ");
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fields \"field\" conflict because subfields \"deepField\" conflict because subfields \"x\" conflict because a and b are different fields" +
                 ". Use different aliases on the fields to fetch both if this was " +
                 "intentional.", 
-                errors.Single().Message);
+                errors.Single(),
+                new[] { 3, 21 },
+                new[] { 4, 25 },
+                new[] { 5, 29 },
+                new[] { 8, 21 },
+                new[] { 9, 25 },
+                new[] { 10, 29 });
         }
 
         [Test]
@@ -393,11 +409,15 @@ namespace GraphQLCore.Tests.Validation
                 }
             ");
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fields \"deepField\" conflict because subfields \"x\" conflict because a and b are different fields" +
                 ". Use different aliases on the fields to fetch both if this was " +
                 "intentional.", 
-                errors.Single().Message);
+                errors.Single(),
+                new[] { 4, 25 },
+                new[] { 5, 29 },
+                new[] { 7, 25 },
+                new[] { 8, 29 });
         }
 
         [Test]
@@ -429,10 +449,14 @@ namespace GraphQLCore.Tests.Validation
                 }
             ");
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fields \"deeperField\" conflict because subfields \"x\" conflict because"+
                 " a and b are different fields. Use different aliases on the fields to fetch both if this was intentional.",
-                errors.Single().Message);
+                errors.Single(),
+                new[] { 12, 25 },
+                new[] { 13, 29 },
+                new[] { 15, 25 },
+                new[] { 16, 29 });
         }
 
         [Test]
@@ -463,11 +487,17 @@ namespace GraphQLCore.Tests.Validation
                 }
             ");
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fields \"field\" conflict because subfields \"x\" conflict because a and b are " +
                 "different fields and subfields \"y\" conflict because c and d are different fields. " +
                 "Use different aliases on the fields to fetch both if this was intentional.",
-                errors.Single().Message);
+                errors.Single(),
+                new[] { 3, 21 },
+                new[] { 11, 21 },
+                new[] { 15, 21 },
+                new[] { 6, 21 },
+                new[] { 22, 21 },
+                new[] { 18, 21 });
         }
 
         [Test]
@@ -504,10 +534,10 @@ namespace GraphQLCore.Tests.Validation
                 }
             ");
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fields \"scalar\" conflict because they return conflicting types Int and String. " +
                 "Use different aliases on the fields to fetch both if this was intentional.",
-                errors.Single().Message);
+                errors.Single(), new[] { 5, 23 }, new[] { 8, 23 });
         }
 
         [Test]
@@ -558,10 +588,14 @@ namespace GraphQLCore.Tests.Validation
                 }
             ");
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fields \"other\" conflict because subfields \"scalar\" conflict because scalar and unrelatedField are different fields." +
                 " Use different aliases on the fields to fetch both if this was intentional.",
-                errors.Single().Message);
+                errors.Single(),
+                new[] { 31, 19 },
+                new[] { 39, 19 },
+                new[] { 34, 19 },
+                new[] { 42, 19 });
         }
 
         [Test]
@@ -580,10 +614,10 @@ namespace GraphQLCore.Tests.Validation
                 }
             ");
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fields \"scalar\" conflict because they return conflicting types String! and String. " +
                 "Use different aliases on the fields to fetch both if this was intentional.",
-                errors.Single().Message);
+                errors.Single(), new[] { 5, 23 }, new[] { 8, 23 });
         }
 
         [Test]
@@ -606,10 +640,10 @@ namespace GraphQLCore.Tests.Validation
                 }
             ");
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fields \"box\" conflict because they return conflicting types [StringBox] and StringBox. " +
                 "Use different aliases on the fields to fetch both if this was intentional.",
-                errors.Single().Message);
+                errors.Single(), new[] { 5, 23 }, new[] { 10, 23 });
         }
 
         [Test]
@@ -632,10 +666,10 @@ namespace GraphQLCore.Tests.Validation
                 }
             ");
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fields \"box\" conflict because they return conflicting types StringBox and [StringBox]. " +
                 "Use different aliases on the fields to fetch both if this was intentional.",
-                errors.Single().Message);
+                errors.Single(), new[] { 5, 23 }, new[] { 10, 23 });
         }
 
         [Test]
@@ -659,10 +693,10 @@ namespace GraphQLCore.Tests.Validation
                 }
             ");
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fields \"val\" conflict because scalar and unrelatedField are different fields. " +
                 "Use different aliases on the fields to fetch both if this was intentional.",
-                errors.Single().Message);
+                errors.Single(), new[] { 6, 25 }, new[] { 7, 25 });
         }
 
         [Test]
@@ -685,10 +719,14 @@ namespace GraphQLCore.Tests.Validation
                 }
             ");
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fields \"box\" conflict because subfields \"scalar\" conflict because they return conflicting types String and Int. " +
                 "Use different aliases on the fields to fetch both if this was intentional.",
-                errors.Single().Message);
+                errors.Single(),
+                new[] { 5, 23 },
+                new[] { 6, 25 },
+                new[] { 10, 23 },
+                new[] { 11, 25 });
         }
 
         [Test]
@@ -767,11 +805,17 @@ namespace GraphQLCore.Tests.Validation
                 }
             ");
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fields \"edges\" conflict because subfields \"node\" conflict because subfields \"id\""+
                 " conflict because name and id are different fields. " +
                 "Use different aliases on the fields to fetch both if this was intentional.",
-                errors.Single().Message);
+                errors.Single(),
+                new[] { 5, 21 },
+                new[] { 6, 23 },
+                new[] { 7, 25 },
+                new[] { 13, 19 },
+                new[] { 14, 21 },
+                new[] { 15, 23 });
         }
 
         [Test]

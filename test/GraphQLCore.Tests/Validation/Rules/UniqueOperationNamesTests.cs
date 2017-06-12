@@ -1,10 +1,7 @@
-﻿namespace GraphQLCore.Tests.Validation
+﻿namespace GraphQLCore.Tests.Validation.Rules
 {
     using NUnit.Framework;
-    using System;
-    using System.Collections.Generic;
     using System.Linq;
-    using System.Threading.Tasks;
 
     [TestFixture]
     public class UniqueOperationNamesTests : ValidationTestBase
@@ -98,7 +95,8 @@
                 foo
             }");
 
-            Assert.AreEqual("There can only be one operation named \"Foo\".", errors.Single().Message);
+            ErrorAssert.AreEqual("There can only be one operation named \"Foo\".",
+                errors.Single(), new[] { 2, 19 }, new[] { 5, 19 });
         }
 
         [Test]
@@ -112,7 +110,8 @@
                 foo
             }");
 
-            Assert.AreEqual("There can only be one operation named \"Foo\".", errors.Single().Message);
+            ErrorAssert.AreEqual("There can only be one operation named \"Foo\".",
+                errors.Single(), new[] { 2, 19 }, new[] { 5, 22 });
         }
 
         [Test]
@@ -126,7 +125,8 @@
                 foo
             }");
 
-            Assert.AreEqual("There can only be one operation named \"Foo\".", errors.Single().Message);
+            ErrorAssert.AreEqual("There can only be one operation named \"Foo\".",
+                errors.Single(), new[] { 2, 19 }, new[] { 5, 26 });
         }
     }
 }

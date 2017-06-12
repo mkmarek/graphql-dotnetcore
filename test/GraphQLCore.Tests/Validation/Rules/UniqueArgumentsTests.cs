@@ -1,4 +1,4 @@
-﻿namespace GraphQLCore.Tests.Validation
+﻿namespace GraphQLCore.Tests.Validation.Rules
 {
     using NUnit.Framework;
     using System.Linq;
@@ -114,7 +114,8 @@
                 foo(a: 1, a: 2)
             }");
 
-            Assert.AreEqual("There can be only one argument named \"a\".", errors.Single().Message);
+            ErrorAssert.AreEqual("There can be only one argument named \"a\".",
+                errors.Single(), new[] { 3, 21 }, new[] { 3, 27 });
         }
 
         [Test]
@@ -124,9 +125,13 @@
             {
                 foo(a: 1, a: 2, a : 3)
             }");
+            
+            Assert.AreEqual(2, errors.Count());
 
-            Assert.AreEqual("There can be only one argument named \"a\".", errors.ElementAt(0).Message);
-            Assert.AreEqual("There can be only one argument named \"a\".", errors.ElementAt(1).Message);
+            ErrorAssert.AreEqual("There can be only one argument named \"a\".",
+                errors.ElementAt(0), new[] { 3, 21 }, new[] { 3, 27 });
+            ErrorAssert.AreEqual("There can be only one argument named \"a\".",
+                errors.ElementAt(1), new[] { 3, 21 }, new [] { 3, 33 });
         }
 
         [Test]
@@ -137,7 +142,8 @@
                 foo @directive(a: 1, a: 2)
             }");
 
-            Assert.AreEqual("There can be only one argument named \"a\".", errors.Single().Message);
+            ErrorAssert.AreEqual("There can be only one argument named \"a\".",
+                errors.Single(), new[] { 3, 32 }, new[] { 3, 38 });
         }
 
         [Test]
@@ -148,8 +154,12 @@
                 foo @directive(a: 1, a: 2, a: 3)
             }");
 
-            Assert.AreEqual("There can be only one argument named \"a\".", errors.ElementAt(0).Message);
-            Assert.AreEqual("There can be only one argument named \"a\".", errors.ElementAt(1).Message);
+            Assert.AreEqual(2, errors.Count());
+
+            ErrorAssert.AreEqual("There can be only one argument named \"a\".",
+                errors.ElementAt(0), new[] { 3, 32 }, new[] { 3, 38 });
+            ErrorAssert.AreEqual("There can be only one argument named \"a\".",
+                errors.ElementAt(1), new[] { 3, 32 }, new[] { 3, 44 });
         }
     }
 }

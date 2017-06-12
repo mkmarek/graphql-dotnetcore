@@ -50,16 +50,16 @@
             return base.BeginVisitVariableDefinition(node);
         }
 
-        public string ComposeDefaultForNonNullArgMessage(string varName, GraphQLBaseType type, GraphQLBaseType guessType)
+        private string ComposeDefaultForNonNullArgMessage(string varName, GraphQLBaseType type, GraphQLBaseType guessType)
         {
             return $"Variable \"${varName}\" of type \"{type}\" is required and " +
             "will not use the default value. " +
             $"Perhaps you meant to use type \"{guessType}\".";
         }
 
-        public string ComposeBadValueForDefaultArgMessage(string varName, GraphQLBaseType type, string value, string[] verboseErrors = null)
+        private string ComposeBadValueForDefaultArgMessage(string varName, GraphQLBaseType type, string value, string[] verboseErrors = null)
         {
-            var message = verboseErrors.Length > 0 ? " \n" + string.Join("\n", verboseErrors) : string.Empty;
+            var message = verboseErrors.Length > 0 ? "\n" + string.Join("\n", verboseErrors) : string.Empty;
 
             return $"Variable \"${varName}\" of type \"{type}\" has invalid " +
             $"default value {value}.{message}";

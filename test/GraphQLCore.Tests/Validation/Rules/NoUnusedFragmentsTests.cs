@@ -1,4 +1,4 @@
-﻿namespace GraphQLCore.Tests.Validation
+﻿namespace GraphQLCore.Tests.Validation.Rules
 {
     using GraphQLCore.Exceptions;
     using GraphQLCore.Validation.Rules;
@@ -96,8 +96,10 @@
               }
             ");
 
-            Assert.AreEqual("Fragment \"Unused1\" is never used.", errors.First().Message);
-            Assert.AreEqual("Fragment \"Unused2\" is never used.", errors.Last().Message);
+            Assert.AreEqual(2, errors.Count());
+
+            ErrorAssert.AreEqual("Fragment \"Unused1\" is never used.", errors.ElementAt(0), 22, 15);
+            ErrorAssert.AreEqual("Fragment \"Unused2\" is never used.", errors.ElementAt(1), 25, 15);
         }
 
         [Test]
@@ -134,12 +136,14 @@
                   }
             ");
 
-            Assert.AreEqual("Fragment \"Unused1\" is never used.", errors.First().Message);
-            Assert.AreEqual("Fragment \"Unused2\" is never used.", errors.Last().Message);
+            Assert.AreEqual(2, errors.Count());
+
+            ErrorAssert.AreEqual("Fragment \"Unused1\" is never used.", errors.ElementAt(0), 22, 19);
+            ErrorAssert.AreEqual("Fragment \"Unused2\" is never used.", errors.ElementAt(1), 26, 19);
         }
 
         [Test]
-        public void ContainsUnknownAndUndefFragments_ReportsTwoErrors()
+        public void ContainsUnknownAndUndefFragments_ReportsSingleError()
         {
             var errors = Validate(@"
                query Foo {
@@ -152,7 +156,7 @@
               }
             ");
 
-            Assert.AreEqual("Fragment \"foo\" is never used.", errors.Single().Message);
+            ErrorAssert.AreEqual("Fragment \"foo\" is never used.", errors.Single(), 7, 15);
         }
 
 

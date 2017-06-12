@@ -34,7 +34,7 @@
 
         public override GraphQLObjectField BeginVisitObjectField(GraphQLObjectField node)
         {
-            string fieldName = node.Name.Value;
+            var fieldName = node.Name.Value;
 
             if (this.knownNames.ContainsKey(fieldName))
                 this.Errors.Add(new GraphQLException(this.DuplicateInputFieldMessage(fieldName),

@@ -358,10 +358,10 @@
 
             var exception = Assert.Throws<GraphQLException>(() =>
             {
-                var result = this.schema.Execute(query, variables);
+                this.schema.Execute(query, variables);
             });
 
-            Assert.AreEqual("Type \"Int!\" is non-nullable and cannot be null.", exception.Message);
+            Assert.AreEqual("Variable \"intArgVar\" of required type \"Int!\" was not provided.", exception.Message);
         }
 
         [Test]

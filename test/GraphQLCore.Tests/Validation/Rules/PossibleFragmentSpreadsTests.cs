@@ -1,4 +1,4 @@
-﻿namespace GraphQLCore.Tests.Validation
+﻿namespace GraphQLCore.Tests.Validation.Rules
 {
     using NUnit.Framework;
     using System.Linq;
@@ -104,12 +104,10 @@
                 fragment invalidObjectWithinObject on ComplicatedObjectType { ...otherObject }
                 fragment otherObject on SimpleObjectType { booleanField }");
 
-            var error = errors.Single();
-
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fragment otherObject cannot be spread here as objects of " +
                 "type \"ComplicatedObjectType\" can never be of type \"SimpleObjectType\".",
-                error.Message);
+                errors.Single(), 2, 79);
         }
 
         [Test]
@@ -119,12 +117,10 @@
                 fragment invalidObjectWithinObject on ComplicatedObjectType { 
                     ... on SimpleObjectType { booleanField } }");
 
-            var error = errors.Single();
-
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fragment cannot be spread here as objects of " +
                 "type \"ComplicatedObjectType\" can never be of type \"SimpleObjectType\".",
-                error.Message);
+                errors.Single(), 3, 21);
         }
 
         [Test]
@@ -134,12 +130,10 @@
                 fragment invalidObjectWithinInterface on ComplicatedInterfaceType { 
                     ... on SimpleObjectType { booleanField } }");
 
-            var error = errors.Single();
-
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fragment cannot be spread here as objects of " +
                 "type \"ComplicatedInterfaceType\" can never be of type \"SimpleObjectType\".",
-                error.Message);
+                errors.Single(), 3, 21);
         }
 
         [Test]
@@ -149,12 +143,10 @@
                 fragment invalidInterfaceWithinObject on SimpleObjectType { 
                     ... on ComplicatedInterfaceType { booleanField } }");
 
-            var error = errors.Single();
-
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fragment cannot be spread here as objects of " +
                 "type \"SimpleObjectType\" can never be of type \"ComplicatedInterfaceType\".",
-                error.Message);
+                errors.Single(), 3, 21);
         }
 
         [Test]
@@ -164,12 +156,10 @@
                 fragment invalidInterfaceWithinInterface on SimpleInterfaceType { ...interfaceFrag }
                 fragment interfaceFrag on ComplicatedInterfaceType { booleanField }");
 
-            var error = errors.Single();
-
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fragment interfaceFrag cannot be spread here as objects of " +
                 "type \"SimpleInterfaceType\" can never be of type \"ComplicatedInterfaceType\".",
-                error.Message);
+                errors.Single(), 2, 83);
         }
 
         [Test]
@@ -179,12 +169,10 @@
                 fragment invalidInterfaceWithinInterface on SimpleInterfaceType { 
                     ... on ComplicatedInterfaceType { booleanField } }");
 
-            var error = errors.Single();
-
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Fragment cannot be spread here as objects of " +
                 "type \"SimpleInterfaceType\" can never be of type \"ComplicatedInterfaceType\".",
-                error.Message);
+                errors.Single(), 3, 21);
         }
     }
 }

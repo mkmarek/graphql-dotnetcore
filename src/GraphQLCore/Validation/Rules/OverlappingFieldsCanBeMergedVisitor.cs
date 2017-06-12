@@ -5,8 +5,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using Type;
-    using System;
-    using GraphQLCore.Type.Complex;
+    using Type.Complex;
 
     public class OverlappingFieldsCanBeMergedVisitor : ValidationASTVisitor
     {
@@ -357,11 +356,11 @@
             NodeAndDefinitions field1,
             NodeAndDefinitions field2)
         {
-            var field1List = conflicts.SelectMany(e => e.Field1).ToList();
-            field1List.Add(field1.Selection);
+            var field1List = new List<GraphQLFieldSelection> { field1.Selection };
+            field1List.AddRange(conflicts.SelectMany(e => e.Field1));
 
-            var field2List = conflicts.SelectMany(e => e.Field2).ToList();
-            field2List.Add(field2.Selection);
+            var field2List = new List<GraphQLFieldSelection> { field2.Selection };
+            field2List.AddRange(conflicts.SelectMany(e => e.Field2));
 
             var fields = new Dictionary<string, Conflict>();
 

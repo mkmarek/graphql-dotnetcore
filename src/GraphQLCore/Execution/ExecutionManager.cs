@@ -240,10 +240,24 @@
         {
             switch (this.Operation.Operation)
             {
-                case OperationType.Query: return this.graphQLSchema.QueryType;
-                case OperationType.Mutation: return this.graphQLSchema.MutationType;
-                case OperationType.Subscription: return this.graphQLSchema.SubscriptionType;
-                default: throw new Exception($"Can't execute type {this.Operation.Operation}");
+                case OperationType.Query:
+                    return this.graphQLSchema.QueryType;
+
+                case OperationType.Mutation:
+                    if (this.graphQLSchema.MutationType == null)
+                        throw new GraphQLException("Schema is not configured for mutations",
+                            new[] { this.Operation });
+                    return this.graphQLSchema.MutationType;
+
+                case OperationType.Subscription:
+                    if (this.graphQLSchema.SubscriptionType == null)
+                        throw new GraphQLException("Schema is not configured for subscriptions",
+                            new[] { this.Operation });
+                    return this.graphQLSchema.SubscriptionType;
+
+                default:
+                    throw new GraphQLException("Can only execute queries, mutations and subscriptions",
+                        new[] { this.Operation });
             }
         }
 
@@ -300,7 +314,8 @@
                     this.ResolveOperationDefinition(definition as GraphQLOperationDefinition, operationToExecute); break;
                 case ASTNodeKind.FragmentDefinition:
                     this.ResolveFragmentDefinition(definition as GraphQLFragmentDefinition); break;
-                default: throw new Exception($"GraphQL cannot execute a request containing a {definition.Kind}.");
+                default: throw new GraphQLException($"GraphQL cannot execute a request containing a {definition.Kind}.",
+                    new[] { definition });
             }
         }
 

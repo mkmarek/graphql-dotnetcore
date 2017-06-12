@@ -1,4 +1,4 @@
-﻿namespace GraphQLCore.Tests.Validation
+﻿namespace GraphQLCore.Tests.Validation.Rules
 {
     using NUnit.Framework;
     using System.Linq;
@@ -71,7 +71,8 @@
             }
             ");
 
-            Assert.AreEqual("There can be only one input field named \"f1\".", errors.Single().Message);
+            ErrorAssert.AreEqual("There can be only one input field named \"f1\".",
+                errors.Single(), new[] { 3, 30 }, new[] { 3, 43 });
         }
 
         [Test]
@@ -79,12 +80,16 @@
         {
             var errors = this.Validate(@"
             {
-                " + "field(arg: { f1: \"value\", f1: \"value\", f1: \"value\"})" + @"
+                " + "field(arg: { f1: \"value\", f1: \"value\", f1: \"value\"})" + @" { foo }
             }
             ");
 
-            Assert.AreEqual("There can be only one input field named \"f1\".", errors.ElementAt(0).Message);
-            Assert.AreEqual("There can be only one input field named \"f1\".", errors.ElementAt(1).Message);
+            Assert.AreEqual(2, errors.Count());
+
+            ErrorAssert.AreEqual("There can be only one input field named \"f1\".",
+                errors.ElementAt(0), new[] { 3, 30 }, new[] { 3, 43 });
+            ErrorAssert.AreEqual("There can be only one input field named \"f1\".",
+                errors.ElementAt(1), new[] { 3, 30 }, new[] { 3, 56 });
         }
     }
 }

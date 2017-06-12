@@ -1,4 +1,4 @@
-﻿namespace GraphQLCore.Tests.Validation
+﻿namespace GraphQLCore.Tests.Validation.Rules
 {
     using GraphQLCore.Exceptions;
     using GraphQLCore.Validation.Rules;
@@ -94,7 +94,8 @@
             }
             ");
 
-            Assert.AreEqual("Cannot query field \"unknown_object_field\" on type \"SimpleObjectType\".", errors.Single().Message);
+            ErrorAssert.AreEqual("Cannot query field \"unknown_object_field\" on type \"SimpleObjectType\".",
+                errors.Single(), 4, 21);
         }
 
         [Test]
@@ -106,7 +107,8 @@
             }
             ");
 
-            Assert.AreEqual("Cannot query field \"simple\" on type \"AnotherSimpleObjectType\". Did you mean \"sample\"?", errors.Single().Message);
+            ErrorAssert.AreEqual("Cannot query field \"simple\" on type \"AnotherSimpleObjectType\". Did you mean \"sample\"?",
+                errors.Single(), 3, 17);
         }
 
         [Test]
@@ -120,7 +122,8 @@
             }
             ");
 
-            Assert.AreEqual("Cannot query field \"unknown_field\" on type \"SimpleObjectType\".", errors.Single().Message);
+            ErrorAssert.AreEqual("Cannot query field \"unknown_field\" on type \"SimpleObjectType\".",
+                errors.Single(), 3, 17);
         }
 
         [Test]
@@ -134,7 +137,8 @@
             }
             ");
 
-            Assert.AreEqual("Cannot query field \"unknown_field\" on type \"ComplicatedObjectType\".", errors.Single().Message);
+            ErrorAssert.AreEqual("Cannot query field \"unknown_field\" on type \"ComplicatedObjectType\".",
+                errors.Single(), 4, 21);
         }
 
         [Test]
@@ -148,7 +152,8 @@
             }
             ");
 
-            Assert.AreEqual("Cannot query field \"sample\" on type \"SimpleObjectType\". Did you mean \"simple\"?", errors.Single().Message);
+            ErrorAssert.AreEqual("Cannot query field \"sample\" on type \"SimpleObjectType\". Did you mean \"simple\"?",
+                errors.Single(), 4, 21);
         }
 
         [Test]
@@ -160,7 +165,8 @@
             }
             ");
 
-            Assert.AreEqual("Cannot query field \"sample\" on type \"SimpleObjectType\". Did you mean \"simple\"?", errors.Single().Message);
+            ErrorAssert.AreEqual("Cannot query field \"sample\" on type \"SimpleObjectType\". Did you mean \"simple\"?",
+                errors.Single(), 3, 17);
         }
 
         [Test]
@@ -172,7 +178,8 @@
             }
             ");
 
-            Assert.AreEqual("Cannot query field \"sample\" on type \"SimpleObjectType\". Did you mean \"simple\"?", errors.Single().Message);
+            ErrorAssert.AreEqual("Cannot query field \"sample\" on type \"SimpleObjectType\". Did you mean \"simple\"?",
+                errors.Single(), 3, 17);
         }
 
         [Test]
@@ -184,7 +191,8 @@
             }
             ");
 
-            Assert.AreEqual("Cannot query field \"unknownInterfaceField\" on type \"SimpleInterfaceType\".", errors.Single().Message);
+            ErrorAssert.AreEqual("Cannot query field \"unknownInterfaceField\" on type \"SimpleInterfaceType\".",
+                errors.Single(), 3, 17);
         }
 
         [Test]
@@ -196,7 +204,9 @@
             }
             ");
 
-            Assert.AreEqual("Cannot query field \"notInterfaceField\" on type \"SimpleInterfaceType\". Did you mean to use an inline fragment on \"SimpleObjectType\" or \"AnotherSimpleObjectType\"?", errors.Single().Message);
+            ErrorAssert.AreEqual("Cannot query field \"notInterfaceField\" on type \"SimpleInterfaceType\". " +
+                "Did you mean to use an inline fragment on \"SimpleObjectType\" or \"AnotherSimpleObjectType\"?",
+                errors.Single(), 3, 17);
         }
 
         [Test]
@@ -220,7 +230,8 @@
             }
             ");
 
-            Assert.AreEqual("Cannot query field \"directField\" on type \"SimpleSampleUnionType\".", errors.Single().Message);
+            ErrorAssert.AreEqual("Cannot query field \"directField\" on type \"SimpleSampleUnionType\".",
+                errors.Single(), 3, 17);
         }
 
         [Test]
@@ -232,7 +243,9 @@
             }
             ");
 
-            Assert.AreEqual("Cannot query field \"booleanField\" on type \"SimpleSampleUnionType\". Did you mean to use an inline fragment on \"SimpleInterfaceType\", \"SimpleObjectType\", or \"AnotherSimpleObjectType\"?", errors.Single().Message);
+            ErrorAssert.AreEqual("Cannot query field \"booleanField\" on type \"SimpleSampleUnionType\". " +
+                "Did you mean to use an inline fragment on \"SimpleInterfaceType\", \"SimpleObjectType\", or \"AnotherSimpleObjectType\"?",
+                errors.Single(), 3, 17);
         }
 
         [Test]
@@ -261,7 +274,8 @@
             }
             ");
 
-            Assert.AreEqual("Cannot query field \"foo\" on type \"Boolean\".", errors.Single().Message);
+            ErrorAssert.AreEqual("Cannot query field \"foo\" on type \"Boolean\".",
+                errors.Single(), 3, 17);
         }
 
         protected override GraphQLException[] Validate(string body)

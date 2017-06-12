@@ -45,7 +45,7 @@
 
             var suggestedTypes = StringUtils.SuggestionList(typeName, schemaTypeNames);
 
-            return $"Unknown type \"{typeName}\"" +
+            return $"Unknown type \"{typeName}\"." +
                 (suggestedTypes.Any()
                     ? $" Did you mean {StringUtils.QuotedOrList(suggestedTypes)}?"
                     : string.Empty);

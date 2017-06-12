@@ -1,4 +1,4 @@
-﻿namespace GraphQLCore.Tests.Validation
+﻿namespace GraphQLCore.Tests.Validation.Rules
 {
     using GraphQLCore.Exceptions;
     using GraphQLCore.Validation.Rules;
@@ -78,8 +78,8 @@
                 }
             ");
 
-            Assert.AreEqual("The directive directive can only be used once at this location.",
-                errors.Single().Message);
+            ErrorAssert.AreEqual("The directive directive can only be used once at this location.",
+                errors.Single(), new[] { 3, 27 }, new[] { 3, 38 });
         }
 
         [Test]
@@ -91,10 +91,12 @@
                 }
             ");
 
-            Assert.AreEqual("The directive directive can only be used once at this location.",
-                errors.ElementAt(0).Message);
-            Assert.AreEqual("The directive directive can only be used once at this location.",
-                errors.ElementAt(1).Message);
+            Assert.AreEqual(2, errors.Count());
+
+            ErrorAssert.AreEqual("The directive directive can only be used once at this location.",
+                errors.ElementAt(0), new[] { 3, 27 }, new[] { 3, 38 });
+            ErrorAssert.AreEqual("The directive directive can only be used once at this location.",
+                errors.ElementAt(1), new[] { 3, 27 }, new[] { 3, 49 });
         }
 
         [Test]
@@ -106,10 +108,12 @@
                 }
             ");
 
-            Assert.AreEqual("The directive directiveA can only be used once at this location.",
-                errors.ElementAt(0).Message);
-            Assert.AreEqual("The directive directiveB can only be used once at this location.",
-                errors.ElementAt(1).Message);
+            Assert.AreEqual(2, errors.Count());
+
+            ErrorAssert.AreEqual("The directive directiveA can only be used once at this location.",
+                errors.ElementAt(0), new[] { 3, 27 }, new[] { 3, 51 });
+            ErrorAssert.AreEqual("The directive directiveB can only be used once at this location.",
+                errors.ElementAt(1), new[] { 3, 39 }, new[] { 3, 63 });
         }
 
         [Test]
@@ -121,10 +125,12 @@
                 }
             ");
 
-            Assert.AreEqual("The directive directive can only be used once at this location.",
-                errors.ElementAt(0).Message);
-            Assert.AreEqual("The directive directive can only be used once at this location.",
-                errors.ElementAt(1).Message);
+            Assert.AreEqual(2, errors.Count());
+
+            ErrorAssert.AreEqual("The directive directive can only be used once at this location.",
+                errors.ElementAt(0), new[] { 2, 39 }, new[] { 2, 50 });
+            ErrorAssert.AreEqual("The directive directive can only be used once at this location.",
+                errors.ElementAt(1), new[] { 3, 27 }, new[] { 3, 38 });
         }
 
         protected override GraphQLException[] Validate(string body)

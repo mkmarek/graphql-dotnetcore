@@ -40,6 +40,14 @@
                     }
                 );
             }
+            catch (GraphQLException ex)
+            {
+                return this.Json(
+                    new
+                    {
+                        errors = ex
+                    });
+            }
             catch (Exception ex)
             {
                 return this.Json(

@@ -1,4 +1,4 @@
-namespace GraphQLCore.Tests.Validation
+namespace GraphQLCore.Tests.Validation.Rules
 {
     using GraphQLCore.Exceptions;
     using GraphQLCore.Validation.Rules;
@@ -78,7 +78,7 @@ namespace GraphQLCore.Tests.Validation
                 fragment fragA on Human { relatives { ...fragA } }
             ");
 
-            Assert.AreEqual("Cannot spread fragment \"fragA\" within itself.", errors.Single().Message);
+            ErrorAssert.AreEqual("Cannot spread fragment \"fragA\" within itself.", errors.Single(), 2, 55);
         }
 
         [Test]
@@ -88,7 +88,7 @@ namespace GraphQLCore.Tests.Validation
                 fragment fragA on Dog { ...fragA }
             ");
 
-            Assert.AreEqual("Cannot spread fragment \"fragA\" within itself.", errors.Single().Message);
+            ErrorAssert.AreEqual("Cannot spread fragment \"fragA\" within itself.", errors.Single(), 2, 41);
         }
 
         [Test]
@@ -102,7 +102,7 @@ namespace GraphQLCore.Tests.Validation
                 }
             ");
 
-            Assert.AreEqual("Cannot spread fragment \"fragA\" within itself.", errors.Single().Message);
+            ErrorAssert.AreEqual("Cannot spread fragment \"fragA\" within itself.", errors.Single(), 4, 21);
         }
 
         [Test]
@@ -113,7 +113,8 @@ namespace GraphQLCore.Tests.Validation
                 fragment fragB on Dog { ...fragA }
             ");
 
-            Assert.AreEqual("Cannot spread fragment \"fragA\" within itself via fragB.", errors.Single().Message);
+            ErrorAssert.AreEqual("Cannot spread fragment \"fragA\" within itself via fragB.",
+                errors.Single(), new[] { 2, 41 }, new[] { 3, 41 });
         }
 
         [Test]
@@ -124,7 +125,8 @@ namespace GraphQLCore.Tests.Validation
                 fragment fragA on Dog { ...fragB }
             ");
 
-            Assert.AreEqual("Cannot spread fragment \"fragB\" within itself via fragA.", errors.Single().Message);
+            ErrorAssert.AreEqual("Cannot spread fragment \"fragB\" within itself via fragA.",
+                errors.Single(), new[] { 2, 41 }, new[] { 3, 41 });
         }
 
         [Test]
@@ -143,7 +145,8 @@ namespace GraphQLCore.Tests.Validation
                 }
             ");
 
-            Assert.AreEqual("Cannot spread fragment \"fragA\" within itself via fragB.", errors.Single().Message);
+            ErrorAssert.AreEqual("Cannot spread fragment \"fragA\" within itself via fragB.",
+                errors.Single(), new[] { 4, 21 }, new[] { 9, 21 });
         }
 
         [Test]
@@ -160,13 +163,23 @@ namespace GraphQLCore.Tests.Validation
                 fragment fragP on Dog { ...fragA, ...fragX }
             ");
 
-            Assert.AreEqual(
-                "Cannot spread fragment \"fragA\" within itself via fragB, fragC, fragO, fragP.", 
-                errors.First().Message);
+            Assert.AreEqual(2, errors.Count());
 
-            Assert.AreEqual(
-                "Cannot spread fragment \"fragO\" within itself via fragP, fragX, fragY, fragZ.", 
-                errors.Last().Message);
+            ErrorAssert.AreEqual("Cannot spread fragment \"fragA\" within itself via fragB, fragC, fragO, fragP.",
+                errors.ElementAt(0),
+                new[] { 2, 41 },
+                new[] { 3, 41 },
+                new[] { 4, 41 },
+                new[] { 8, 41 },
+                new[] { 9, 41 });
+
+            ErrorAssert.AreEqual("Cannot spread fragment \"fragO\" within itself via fragP, fragX, fragY, fragZ.",
+                errors.ElementAt(1),
+                new[] { 8, 41 },
+                new[] { 9, 51 },
+                new[] { 5, 41 },
+                new[] { 6, 41 },
+                new[] { 7, 41 });
         }
 
         [Test]
@@ -178,13 +191,12 @@ namespace GraphQLCore.Tests.Validation
                 fragment fragC on Dog { ...fragA }
             ");
 
-            Assert.AreEqual(
-                "Cannot spread fragment \"fragA\" within itself via fragB.", 
-                errors.First().Message);
+            Assert.AreEqual(2, errors.Count());
 
-            Assert.AreEqual(
-                "Cannot spread fragment \"fragA\" within itself via fragC.", 
-                errors.Last().Message);
+            ErrorAssert.AreEqual("Cannot spread fragment \"fragA\" within itself via fragB.",
+                errors.ElementAt(0), new[] { 2, 41 }, new[] { 3, 41 });
+            ErrorAssert.AreEqual("Cannot spread fragment \"fragA\" within itself via fragC.",
+                errors.ElementAt(1), new[] { 2, 51 }, new[] { 4, 41 });
         }
 
         [Test]
@@ -196,13 +208,12 @@ namespace GraphQLCore.Tests.Validation
                 fragment fragC on Dog { ...fragA, ...fragB }
             ");
 
-            Assert.AreEqual(
-                "Cannot spread fragment \"fragA\" within itself via fragC.", 
-                errors.First().Message);
+            Assert.AreEqual(2, errors.Count());
 
-            Assert.AreEqual(
-                "Cannot spread fragment \"fragC\" within itself via fragB.", 
-                errors.Last().Message);
+            ErrorAssert.AreEqual("Cannot spread fragment \"fragA\" within itself via fragC.",
+                errors.ElementAt(0), new[] { 2, 41 }, new[] { 4, 41 });
+            ErrorAssert.AreEqual("Cannot spread fragment \"fragC\" within itself via fragB.",
+                errors.ElementAt(1), new[] { 4, 51 }, new[] { 3, 41 });
         }
 
         [Test]
@@ -214,17 +225,14 @@ namespace GraphQLCore.Tests.Validation
                 fragment fragC on Dog { ...fragA, ...fragB }
             ");
 
-            Assert.AreEqual(
-                "Cannot spread fragment \"fragB\" within itself.", 
-                errors.ElementAt(0).Message);
+            Assert.AreEqual(3, errors.Count());
 
-            Assert.AreEqual(
-                "Cannot spread fragment \"fragA\" within itself via fragB, fragC.", 
-                errors.ElementAt(1).Message);
-
-            Assert.AreEqual(
-                "Cannot spread fragment \"fragB\" within itself via fragC.", 
-                errors.ElementAt(2).Message);
+            ErrorAssert.AreEqual("Cannot spread fragment \"fragB\" within itself.",
+                errors.ElementAt(0), 3, 41);
+            ErrorAssert.AreEqual("Cannot spread fragment \"fragA\" within itself via fragB, fragC.",
+                errors.ElementAt(1), new[] { 2, 41 }, new[] { 3, 51 }, new[] { 4, 41 });
+            ErrorAssert.AreEqual("Cannot spread fragment \"fragB\" within itself via fragC.",
+                errors.ElementAt(2), new[] { 3, 51 }, new[] { 4, 51 });
         }
 
         protected override GraphQLException[] Validate(string body)

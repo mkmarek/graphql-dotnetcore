@@ -1,4 +1,4 @@
-namespace GraphQLCore.Tests.Validation
+namespace GraphQLCore.Tests.Validation.Rules
 {
     using GraphQLCore.Exceptions;
     using GraphQLCore.Validation.Rules;
@@ -56,9 +56,9 @@ namespace GraphQLCore.Tests.Validation
                 }
             ");
 
-            Assert.AreEqual("Unknown fragment \"UnknownFragment1\".", errors.ElementAt(0).Message);
-            Assert.AreEqual("Unknown fragment \"UnknownFragment2\".", errors.ElementAt(1).Message);
-            Assert.AreEqual("Unknown fragment \"UnknownFragment3\".", errors.ElementAt(2).Message);
+            ErrorAssert.AreEqual("Unknown fragment \"UnknownFragment1\".", errors.ElementAt(0), 4, 24);
+            ErrorAssert.AreEqual("Unknown fragment \"UnknownFragment2\".", errors.ElementAt(1), 6, 28);
+            ErrorAssert.AreEqual("Unknown fragment \"UnknownFragment3\".", errors.ElementAt(2), 12, 24);
         }
 
         protected override GraphQLException[] Validate(string body)

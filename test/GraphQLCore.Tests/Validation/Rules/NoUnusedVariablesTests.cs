@@ -1,4 +1,4 @@
-﻿namespace GraphQLCore.Tests.Validation
+﻿namespace GraphQLCore.Tests.Validation.Rules
 {
     using GraphQLCore.Exceptions;
     using GraphQLCore.Validation.Rules;
@@ -108,7 +108,7 @@
               }
             ");
 
-            Assert.AreEqual($"Variable \"$c\" is never used.", errors.Single().Message);
+            ErrorAssert.AreEqual($"Variable \"$c\" is never used.", errors.Single(), 2, 47);
         }
 
         [Test]
@@ -133,7 +133,7 @@
               }
             ");
 
-            Assert.AreEqual($"Variable \"$c\" is never used in operation \"Foo\".", errors.Single().Message);
+            ErrorAssert.AreEqual($"Variable \"$c\" is never used in operation \"Foo\".", errors.Single(), 2, 50);
         }
 
         [Test]
@@ -158,8 +158,10 @@
               }
             ");
 
-            Assert.AreEqual($"Variable \"$a\" is never used in operation \"Foo\".", errors.First().Message);
-            Assert.AreEqual($"Variable \"$c\" is never used in operation \"Foo\".", errors.Last().Message);
+            Assert.AreEqual(2, errors.Count());
+
+            ErrorAssert.AreEqual($"Variable \"$a\" is never used in operation \"Foo\".", errors.ElementAt(0), 2, 26);
+            ErrorAssert.AreEqual($"Variable \"$c\" is never used in operation \"Foo\".", errors.ElementAt(1), 2, 50);
         }
 
         [Test]
@@ -177,7 +179,7 @@
                 }
             ");
 
-            Assert.AreEqual($"Variable \"$b\" is never used in operation \"Foo\".", errors.Single().Message);
+            ErrorAssert.AreEqual($"Variable \"$b\" is never used in operation \"Foo\".", errors.Single(), 2, 26);
         }
 
         [Test]
@@ -198,8 +200,10 @@
               }
             ");
 
-            Assert.AreEqual($"Variable \"$b\" is never used in operation \"Foo\".", errors.First().Message);
-            Assert.AreEqual($"Variable \"$a\" is never used in operation \"Bar\".", errors.Last().Message);
+            Assert.AreEqual(2, errors.Count());
+
+            ErrorAssert.AreEqual($"Variable \"$b\" is never used in operation \"Foo\".", errors.ElementAt(0), 2, 26);
+            ErrorAssert.AreEqual($"Variable \"$a\" is never used in operation \"Bar\".", errors.ElementAt(1), 5, 25);
         }
 
         protected override GraphQLException[] Validate(string body)

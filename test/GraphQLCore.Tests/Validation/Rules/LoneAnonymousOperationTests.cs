@@ -1,4 +1,4 @@
-﻿namespace GraphQLCore.Tests.Validation
+﻿namespace GraphQLCore.Tests.Validation.Rules
 {
     using NUnit.Framework;
     using System.Linq;
@@ -24,14 +24,16 @@
         {
             var errors = this.Validate(@"
             {
-                field
+                field { foo }
             }
             {
-                field
+                field { foo }
             }");
 
-            Assert.AreEqual("This anonymous operation must be the only defined operation.", errors.ElementAt(0).Message);
-            Assert.AreEqual("This anonymous operation must be the only defined operation.", errors.ElementAt(1).Message);
+            Assert.AreEqual(2, errors.Count());
+
+            ErrorAssert.AreEqual("This anonymous operation must be the only defined operation.", errors.ElementAt(0), 2, 13);
+            ErrorAssert.AreEqual("This anonymous operation must be the only defined operation.", errors.ElementAt(1), 5, 13);
         }
 
         [Test]
@@ -45,7 +47,7 @@
                 field
             }");
 
-            Assert.AreEqual("This anonymous operation must be the only defined operation.", errors.Single().Message);
+            ErrorAssert.AreEqual("This anonymous operation must be the only defined operation.", errors.Single(), 2, 13);
         }
 
         [Test]
@@ -59,7 +61,7 @@
                 field { foo }
             }");
 
-            Assert.AreEqual("This anonymous operation must be the only defined operation.", errors.Single().Message);
+            ErrorAssert.AreEqual("This anonymous operation must be the only defined operation.", errors.Single(), 2, 13);
         }
     }
 }

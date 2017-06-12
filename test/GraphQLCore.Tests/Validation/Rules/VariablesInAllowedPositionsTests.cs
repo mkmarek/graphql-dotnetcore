@@ -1,4 +1,4 @@
-﻿namespace GraphQLCore.Tests.Validation
+﻿namespace GraphQLCore.Tests.Validation.Rules
 {
     using NUnit.Framework;
     using System.Linq;
@@ -174,10 +174,10 @@
             }
             ");
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Variable \"$intArg\" of type \"Int\"" +
                 " used in position expecting type \"Int!\".",
-                errors.Single().Message);
+                errors.Single(), new[] { 2, 25 }, new[] { 4, 55 });
         }
 
         [Test]
@@ -194,10 +194,10 @@
             }
             ");
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Variable \"$intArg\" of type \"Int\"" +
                 " used in position expecting type \"Int!\".",
-                errors.Single().Message);
+                errors.Single(), new[] { 5, 25 }, new[] { 3, 51 });
         }
 
         [Test]
@@ -217,10 +217,10 @@
             }
             ");
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Variable \"$intArg\" of type \"Int\"" +
                 " used in position expecting type \"Int!\".",
-                errors.Single().Message);
+                errors.Single(), new[] { 8, 25 }, new[] { 6, 51 });
         }
 
         [Test]
@@ -234,10 +234,10 @@
             }
             ");
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Variable \"$stringVar\" of type \"String\"" +
                 " used in position expecting type \"Boolean\".",
-                errors.Single().Message);
+                errors.Single(), new[] { 2, 25 }, new[] { 4, 49 });
         }
 
         [Test]
@@ -251,10 +251,10 @@
             }
             ");
 
-            Assert.AreEqual(
+            ErrorAssert.AreEqual(
                 "Variable \"$stringVar\" of type \"String\"" +
                 " used in position expecting type \"[String]\".",
-                errors.Single().Message);
+                errors.Single(), new[] { 2, 25 }, new[] { 4, 55 });
         }
     }
 }

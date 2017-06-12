@@ -1,4 +1,4 @@
-﻿namespace GraphQLCore.Tests.Validation
+﻿namespace GraphQLCore.Tests.Validation.Rules
 {
     using NUnit.Framework;
     using System.Linq;
@@ -17,7 +17,7 @@
             }
             ");
 
-            Assert.IsFalse(errors.Any());
+            Assert.IsEmpty(errors);
         }
 
         [Test]
@@ -31,7 +31,8 @@
             }
             ");
 
-            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"intArg\" has invalid value 829384293849283498239482938"));
+            ErrorAssert.AreEqual("Argument \"intArg\" has invalid value 829384293849283498239482938.\n" +
+                "Expected type \"Int\", found 829384293849283498239482938.", errors.Single(), 4, 41);
         }
 
         [Test]
@@ -45,7 +46,8 @@
             }
             ");
 
-            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"stringArg\" has invalid value true"));
+            ErrorAssert.AreEqual("Argument \"stringArg\" has invalid value true.\n" +
+                "Expected type \"String\", found true.", errors.Single(), 4, 47);
         }
 
         [Test]
@@ -59,7 +61,8 @@
             }
             ");
 
-            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"enumArg\" has invalid value true"));
+            ErrorAssert.AreEqual("Argument \"enumArg\" has invalid value true.\n" +
+                "Expected type \"FurColor\", found true.", errors.Single(), 4, 43);
         }
 
         [Test]
@@ -73,7 +76,8 @@
             }
             ");
 
-            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"floatArg\" has invalid value true"));
+            ErrorAssert.AreEqual("Argument \"floatArg\" has invalid value true.\n" +
+                "Expected type \"Float\", found true.", errors.Single(), 4, 45);
         }
 
         [Test]
@@ -89,7 +93,7 @@
             }
             ");
 
-            Assert.IsFalse(errors.Any());
+            Assert.IsEmpty(errors);
         }
 
         [Test]
@@ -105,7 +109,7 @@
             }
             ");
 
-            Assert.IsFalse(errors.Any());
+            Assert.IsEmpty(errors);
         }
 
         [Test]
@@ -119,7 +123,8 @@
             }
             ");
 
-            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"enumArg\" has invalid value TaN"));
+            ErrorAssert.AreEqual("Argument \"enumArg\" has invalid value TaN.\n" +
+                "Expected type \"FurColor\", found TaN.", errors.Single(), 4, 43);
         }
 
         [Test]
@@ -133,7 +138,7 @@
             }
             ");
 
-            Assert.IsFalse(errors.Any());
+            Assert.IsEmpty(errors);
         }
 
         [Test]
@@ -147,7 +152,8 @@
             }
             ");
 
-            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"booleanArg\" has invalid value 3.14"));
+            ErrorAssert.AreEqual("Argument \"booleanArg\" has invalid value 3.14.\n" +
+                "Expected type \"Boolean\", found 3.14.", errors.Single(), 4, 49);
         }
 
         [Test]
@@ -161,7 +167,8 @@
             }
             ");
 
-            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"enumArg\" has invalid value 3.14"));
+            ErrorAssert.AreEqual("Argument \"enumArg\" has invalid value 3.14.\n" +
+                "Expected type \"FurColor\", found 3.14.", errors.Single(), 4, 43);
         }
 
         [Test]
@@ -175,7 +182,8 @@
             }
             ");
 
-            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"intArg\" has invalid value 3.14"));
+            ErrorAssert.AreEqual("Argument \"intArg\" has invalid value 3.14.\n" +
+                "Expected type \"Int\", found 3.14.", errors.Single(), 4, 41);
         }
 
         [Test]
@@ -189,7 +197,8 @@
             }
             ");
 
-            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"stringArg\" has invalid value 3.14"));
+            ErrorAssert.AreEqual("Argument \"stringArg\" has invalid value 3.14.\n" +
+                "Expected type \"String\", found 3.14.", errors.Single(), 4, 47);
         }
 
         [Test]
@@ -203,7 +212,7 @@
             }
             ");
 
-            Assert.AreEqual(0, errors.Count());
+            Assert.IsEmpty(errors);
         }
 
         [Test]
@@ -217,7 +226,7 @@
             }
             ");
 
-            Assert.AreEqual(0, errors.Count());
+            Assert.IsEmpty(errors);
         }
 
         [Test]
@@ -231,7 +240,7 @@
             }
             ");
 
-            Assert.AreEqual(0, errors.Count());
+            Assert.IsEmpty(errors);
         }
 
         [Test]
@@ -245,7 +254,7 @@
             }
             ");
 
-            Assert.AreEqual(0, errors.Count());
+            Assert.IsEmpty(errors);
         }
 
         [Test]
@@ -259,7 +268,7 @@
             }
             ");
 
-            Assert.IsFalse(errors.Any());
+            Assert.IsEmpty(errors);
         }
 
         [Test]
@@ -273,7 +282,7 @@
             }
             ");
 
-            Assert.AreEqual(0, errors.Count());
+            Assert.IsEmpty(errors);
         }
 
         [Test]
@@ -287,8 +296,8 @@
             }
             ");
 
-            Assert.AreEqual("Argument \"stringListArg\" has invalid value [\"one\", 2].\nIn element #1: Expected type \"String\", found 2.",
-                errors.Single().Message);
+            ErrorAssert.AreEqual("Argument \"stringListArg\" has invalid value [\"one\", 2].\n" +
+                "In element #1: Expected type \"String\", found 2.", errors.Single(), 4, 55);
         }
 
         [Test]
@@ -302,7 +311,8 @@
             }
             ");
 
-            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"booleanArg\" has invalid value 1"));
+            ErrorAssert.AreEqual("Argument \"booleanArg\" has invalid value 1.\n" +
+                "Expected type \"Boolean\", found 1.", errors.Single(), 4, 49);
         }
 
         [Test]
@@ -316,7 +326,8 @@
             }
             ");
 
-            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"enumArg\" has invalid value 1"));
+            ErrorAssert.AreEqual("Argument \"enumArg\" has invalid value 1.\n" +
+                "Expected type \"FurColor\", found 1.", errors.Single(), 4, 43);
         }
 
         [Test]
@@ -330,7 +341,7 @@
             }
             ");
 
-            Assert.AreEqual(0, errors.Count());
+            Assert.IsEmpty(errors);
         }
 
         [Test]
@@ -344,7 +355,7 @@
             }
             ");
 
-            Assert.IsFalse(errors.Any());
+            Assert.IsEmpty(errors);
         }
 
         [Test]
@@ -358,7 +369,7 @@
             }
             ");
 
-            Assert.IsFalse(errors.Any());
+            Assert.IsEmpty(errors);
         }
 
         [Test]
@@ -372,7 +383,7 @@
             }
             ");
 
-            Assert.IsFalse(errors.Any());
+            Assert.IsEmpty(errors);
         }
 
         [Test]
@@ -386,7 +397,7 @@
             }
             ");
 
-            Assert.IsFalse(errors.Any());
+            Assert.IsEmpty(errors);
         }
 
         [Test]
@@ -400,7 +411,8 @@
             }
             ");
 
-            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"intArg\" has invalid value 3.0"));
+            ErrorAssert.AreEqual("Argument \"intArg\" has invalid value 3.0.\n" +
+                "Expected type \"Int\", found 3.0.", errors.Single(), 4, 41);
         }
 
         [Test]
@@ -414,7 +426,8 @@
             }
             ");
 
-            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"booleanArg\" has invalid value \"true\""));
+            ErrorAssert.AreEqual("Argument \"booleanArg\" has invalid value \"true\".\n" +
+                "Expected type \"Boolean\", found \"true\".", errors.Single(), 4, 49);
         }
 
         [Test]
@@ -428,7 +441,8 @@
             }
             ");
 
-            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"enumArg\" has invalid value \"BAR\""));
+            ErrorAssert.AreEqual("Argument \"enumArg\" has invalid value \"BAR\".\n" +
+                "Expected type \"FurColor\", found \"BAR\".", errors.Single(), 4, 43);
         }
 
         [Test]
@@ -442,7 +456,8 @@
             }
             ");
 
-            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"floatArg\" has invalid value \"BAR\""));
+            ErrorAssert.AreEqual("Argument \"floatArg\" has invalid value \"BAR\".\n" +
+                "Expected type \"Float\", found \"BAR\".", errors.Single(), 4, 45);
         }
 
         [Test]
@@ -456,7 +471,8 @@
             }
             ");
 
-            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"intArg\" has invalid value \"BAR\""));
+            ErrorAssert.AreEqual("Argument \"intArg\" has invalid value \"BAR\".\n" +
+                "Expected type \"Int\", found \"BAR\".", errors.Single(), 4, 41);
         }
 
         [Test]
@@ -470,7 +486,8 @@
             }
             ");
 
-            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"enumArg\" has invalid value NOT_KNOWN"));
+            ErrorAssert.AreEqual("Argument \"enumArg\" has invalid value NOT_KNOWN.\n" +
+                "Expected type \"FurColor\", found NOT_KNOWN.", errors.Single(), 4, 43);
         }
 
         [Test]
@@ -484,7 +501,8 @@
             }
             ");
 
-            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"booleanArg\" has invalid value TRUE"));
+            ErrorAssert.AreEqual("Argument \"booleanArg\" has invalid value TRUE.\n" +
+                "Expected type \"Boolean\", found TRUE.", errors.Single(), 4, 49);
         }
 
         [Test]
@@ -498,7 +516,8 @@
             }
             ");
 
-            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"floatArg\" has invalid value BAR"));
+            ErrorAssert.AreEqual("Argument \"floatArg\" has invalid value BAR.\n" +
+                "Expected type \"Float\", found BAR.", errors.Single(), 4, 45);
         }
 
         [Test]
@@ -512,7 +531,8 @@
             }
             ");
 
-            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"intArg\" has invalid value BAR"));
+            ErrorAssert.AreEqual("Argument \"intArg\" has invalid value BAR.\n" +
+                "Expected type \"Int\", found BAR.", errors.Single(), 4, 41);
         }
 
         [Test]
@@ -526,7 +546,8 @@
             }
             ");
 
-            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"stringArg\" has invalid value BAR"));
+            ErrorAssert.AreEqual("Argument \"stringArg\" has invalid value BAR.\n" +
+                "Expected type \"String\", found BAR.", errors.Single(), 4, 47);
         }
 
         [Test]
@@ -543,8 +564,8 @@
             }
             ");
 
-            Assert.AreEqual("Argument \"inputObject\" has invalid value {nonNullIntField: 0, intField: \"aaa\"}.\nIn field \"intField\": Expected type \"Int\", found \"aaa\".",
-                errors.Single().Message);
+            ErrorAssert.AreEqual("Argument \"inputObject\" has invalid value {nonNullIntField: 0, intField: \"aaa\"}.\n" +
+                "In field \"intField\": Expected type \"Int\", found \"aaa\".", errors.Single(), 3, 48);
         }
 
         [Test]
@@ -561,8 +582,10 @@
             }
             ");
 
-            Assert.AreEqual("Argument \"inputObject\" has invalid value {nonNullIntField: 0, stringListField: [null, 1, \"3\", [8, 5, 4]]}.\nIn field \"stringListField\": In element #1: Expected type \"String\", found 1.\nIn field \"stringListField\": In element #3: Expected type \"String\", found [8, 5, 4].",
-                errors.Single().Message);
+            ErrorAssert.AreEqual("Argument \"inputObject\" has invalid value {nonNullIntField: 0, stringListField: [null, 1, \"3\", [8, 5, 4]]}.\n" +
+                "In field \"stringListField\": In element #1: Expected type \"String\", found 1.\n" +
+                "In field \"stringListField\": In element #3: Expected type \"String\", found [8, 5, 4].",
+                errors.Single(), 3, 48);
         }
 
         [Test]
@@ -583,8 +606,9 @@
             }
             ");
 
-            Assert.AreEqual("Argument \"inputObject\" has invalid value {nonNullIntField: 0, nested: {nonNullIntField: null}}.\nIn field \"nested\": In field \"nonNullIntField\": Expected type \"Int!\", found null.",
-                errors.Single().Message);
+            ErrorAssert.AreEqual("Argument \"inputObject\" has invalid value {nonNullIntField: 0, nested: {nonNullIntField: null}}.\n" +
+                "In field \"nested\": In field \"nonNullIntField\": Expected type \"Int!\", found null.",
+                errors.Single(), 3, 48);
         }
 
         [Test]
@@ -640,7 +664,8 @@
             }
             ");
 
-            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"idArg\" has invalid value 1.0."));
+            ErrorAssert.AreEqual("Argument \"idArg\" has invalid value 1.0.\n" +
+                "Expected type \"ID\", found 1.0.", errors.Single(), 4, 39);
         }
 
         [Test]
@@ -654,7 +679,8 @@
             }
             ");
 
-            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"idArg\" has invalid value true."));
+            ErrorAssert.AreEqual("Argument \"idArg\" has invalid value true.\n" +
+                "Expected type \"ID\", found true.", errors.Single(), 4, 39);
         }
 
         [Test]
@@ -668,7 +694,8 @@
             }
             ");
 
-            Assert.IsTrue(errors.Single().Message.StartsWith("Argument \"idArg\" has invalid value SOMETHING."));
+            ErrorAssert.AreEqual("Argument \"idArg\" has invalid value SOMETHING.\n" +
+                "Expected type \"ID\", found SOMETHING.", errors.Single(), 4, 39);
         }
 
         [Test]
@@ -696,8 +723,11 @@
             ");
 
             Assert.AreEqual(2, errors.Count());
-            Assert.AreEqual("Argument \"if\" has invalid value \"yes\".\nExpected type \"Boolean\", found \"yes\".", errors.ElementAt(0).Message);
-            Assert.AreEqual("Argument \"if\" has invalid value ENUM.\nExpected type \"Boolean\", found ENUM.", errors.ElementAt(1).Message);
+
+            ErrorAssert.AreEqual("Argument \"if\" has invalid value \"yes\".\n" +
+                "Expected type \"Boolean\", found \"yes\".", errors.ElementAt(0), 3, 46);
+            ErrorAssert.AreEqual("Argument \"if\" has invalid value ENUM.\n" +
+                "Expected type \"Boolean\", found ENUM.", errors.ElementAt(1), 4, 46);
         }
     }
 }

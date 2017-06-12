@@ -1,4 +1,4 @@
-﻿namespace GraphQLCore.Tests.Validation
+﻿namespace GraphQLCore.Tests.Validation.Rules
 {
     using GraphQLCore.Exceptions;
     using GraphQLCore.Validation.Rules;
@@ -17,7 +17,7 @@
             }
             ");
 
-            Assert.IsFalse(errors.Any());
+            Assert.IsEmpty(errors);
         }
 
         [Test]
@@ -30,9 +30,13 @@
             ");
 
             Assert.AreEqual(3, errors.Count());
-            Assert.AreEqual("Variable \"$a\" cannot be non-input type \"ComplicatedObjectType\".", errors.ElementAt(0).Message);
-            Assert.AreEqual("Variable \"$b\" cannot be non-input type \"[[ComplicatedObjectType!]]!\".", errors.ElementAt(1).Message);
-            Assert.AreEqual("Variable \"$c\" cannot be non-input type \"ComplicatedInterfaceType\".", errors.ElementAt(2).Message);
+
+            ErrorAssert.AreEqual("Variable \"$a\" cannot be non-input type \"ComplicatedObjectType\".",
+                errors.ElementAt(0), 2, 27);
+            ErrorAssert.AreEqual("Variable \"$b\" cannot be non-input type \"[[ComplicatedObjectType!]]!\".",
+                errors.ElementAt(1), 2, 54);
+            ErrorAssert.AreEqual("Variable \"$c\" cannot be non-input type \"ComplicatedInterfaceType\".",
+                errors.ElementAt(2), 2, 87);
         }
 
         protected override GraphQLException[] Validate(string body)

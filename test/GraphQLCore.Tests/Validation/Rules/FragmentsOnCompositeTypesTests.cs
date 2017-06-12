@@ -1,4 +1,4 @@
-﻿namespace GraphQLCore.Tests.Validation
+﻿namespace GraphQLCore.Tests.Validation.Rules
 {
     using GraphQLCore.Exceptions;
     using GraphQLCore.Validation.Rules;
@@ -94,7 +94,8 @@
             }
             ");
 
-            Assert.AreEqual("Fragment \"scalarFragment\" cannot condition on non composite type \"Boolean\".", errors.Single().Message);
+            ErrorAssert.AreEqual("Fragment \"scalarFragment\" cannot condition on non composite type \"Boolean\".",
+                errors.Single(), 2, 40);
         }
 
         [Test]
@@ -106,7 +107,9 @@
             }
             ");
 
-            Assert.AreEqual("Fragment \"scalarFragment\" cannot condition on non composite type \"FurColor\".", errors.Single().Message);
+            ErrorAssert.AreEqual("Fragment \"scalarFragment\" cannot condition on non composite type \"FurColor\".",
+                errors.Single(), 2, 40);
+            
         }
 
         [Test]
@@ -118,7 +121,8 @@
             }
             ");
 
-            Assert.AreEqual("Fragment \"inputFragment\" cannot condition on non composite type \"ComplicatedInputObjectType\".", errors.Single().Message);
+            ErrorAssert.AreEqual("Fragment \"inputFragment\" cannot condition on non composite type \"ComplicatedInputObjectType\".",
+                errors.Single(), 2, 39);
         }
 
         [Test]
@@ -132,7 +136,8 @@
             }
             ");
 
-            Assert.AreEqual("Fragment cannot condition on non composite type \"String\".", errors.Single().Message);
+            ErrorAssert.AreEqual("Fragment cannot condition on non composite type \"String\".",
+                errors.Single(), 3, 24);
         }
 
         protected override GraphQLException[] Validate(string body)
