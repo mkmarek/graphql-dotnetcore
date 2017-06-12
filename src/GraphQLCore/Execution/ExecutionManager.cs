@@ -113,7 +113,8 @@
                 new KnownDirectives(),
                 new FragmentsOnCompositeTypes(),
                 new OverlappingFieldsCanBeMerged(),
-                new UniqueDirectivesPerLocation()
+                new UniqueDirectivesPerLocation(),
+                new SingleFieldSubscriptions(),
             };
         }
 
