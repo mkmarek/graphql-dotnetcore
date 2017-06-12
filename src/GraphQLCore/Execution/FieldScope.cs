@@ -8,6 +8,7 @@
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
+    using System.Threading.Tasks;
     using Type;
     using Type.Complex;
     using Type.Directives;
@@ -21,6 +22,8 @@
         private object parent;
         private GraphQLComplexType type;
 
+        private static Guid INVALID_RESULT = Guid.NewGuid();
+
         public FieldScope(
             ExecutionContext context,
             GraphQLComplexType type,
@@ -32,7 +35,7 @@
             this.context = context;
         }
 
-        public object CompleteValue(
+        public async Task<object> CompleteValue(
             object input,
             Type inputType,
             GraphQLFieldSelection selection,
@@ -41,17 +44,27 @@
             if (input == null || inputType == null)
                 return null;
 
-            var result = input;
+            var resolvers = new List<Func<object, Type, GraphQLFieldSelection, Task<object>>>()
+            {
+                this.TryResolveUnion,
+                this.TryResolveNonNull,
+                this.TryResolveObjectType,
+                this.TryResolveCollection,
+                this.TryResolveGraphQLObjectType,
+                this.TryResolveEnum
+            };
 
-            var resolved =
-                  this.TryResolveUnion(ref result, inputType, selection)
-               || this.TryResolveNonNull(ref result, inputType, selection)
-               || this.TryResolveObjectType(ref result, inputType, selection)
-               || this.TryResolveCollection(ref result, inputType, selection)
-               || this.TryResolveGraphQLObjectType(ref result, inputType, selection)
-               || this.TryResolveEnum(ref result, inputType);
+            foreach (var resolver in resolvers)
+            {
+                var result = await resolver(input, inputType, selection);
 
-            return resolved ? result : input;
+                if (!INVALID_RESULT.Equals(result))
+                {
+                    return result;
+                }
+            }
+
+            return input;
         }
 
         public object[] FetchArgumentValues(LambdaExpression expression, IList<GraphQLArgument> arguments, object parent)
@@ -71,29 +84,74 @@
             return type.GetFromAst(argument.Value, this.context.SchemaRepository).Value;
         }
 
-        public dynamic GetObject(Dictionary<string, IList<GraphQLFieldSelection>> fields)
+        public async Task<dynamic> GetObject(
+            Dictionary<string, IList<GraphQLFieldSelection>> fields)
+        {
+            var result = new ExpandoObject();
+            var dictionary = (IDictionary<string, object>)result;
+
+            await Task.WhenAll(fields.Select(
+                  field => this.AddFieldsFromSelectionToResultDictionary(dictionary, field.Key, field.Value)));
+
+            return result;
+        }
+
+        public async Task<dynamic> GetObjectSynchronously(
+            Dictionary<string, IList<GraphQLFieldSelection>> fields)
         {
             var result = new ExpandoObject();
             var dictionary = (IDictionary<string, object>)result;
 
             foreach (var field in fields)
-                this.AddFieldsFromSelectionToResultDictionary(dictionary, field.Key, field.Value);
+            {
+                await this.AddFieldsFromSelectionToResultDictionary(dictionary, field.Key, field.Value);
+            }
 
             return result;
         }
 
-        public object InvokeWithArguments(IList<GraphQLArgument> arguments, LambdaExpression expression, object parent = null)
+        public async Task<object> InvokeWithArguments(
+            IList<GraphQLArgument> arguments, LambdaExpression expression, object parent = null)
         {
             var argumentValues = this.FetchArgumentValues(expression, arguments, parent);
 
-            return expression.Compile().DynamicInvoke(argumentValues);
+            var result = expression.Compile().DynamicInvoke(argumentValues);
+
+            return await this.HandleAsyncTaskIfAsync(result);
         }
 
-        private void AddFieldsFromSelectionToResultDictionary(
+        public object InvokeWithArgumentsSync(
+            IList<GraphQLArgument> arguments, LambdaExpression expression, object parent = null)
+        {
+            return this.InvokeWithArguments(arguments, expression, parent).Result;
+        }
+
+        private async Task<object> HandleAsyncTaskIfAsync(object result)
+        {
+            if (
+                result is Task &&
+                (!result.GetType().GetTypeInfo().GetGenericArguments().Any() ||
+                    result.GetType().GetTypeInfo().GetGenericArguments()?.FirstOrDefault()?.Name == "VoidTaskResult"))
+            {
+                await (Task)result;
+
+                return null;
+            }
+            if (result is Task)
+            {
+                Task r = (Task)result;
+
+                return await Task.Run(() => ((dynamic)result).GetAwaiter().GetResult());
+            }
+
+            return await Task.FromResult(result);
+        }
+
+        private async Task AddFieldsFromSelectionToResultDictionary(
             IDictionary<string, object> dictionary, string fieldName, IList<GraphQLFieldSelection> fieldSelections)
         {
-            foreach (var selection in fieldSelections)
-                this.AddToResultDictionaryIfNotAlreadyPresent(dictionary, fieldName, selection);
+            await Task.WhenAll(fieldSelections.Select(
+                selection => this.AddToResultDictionaryIfNotAlreadyPresent(dictionary, fieldName, selection)));
 
             foreach (var selection in fieldSelections)
                 this.ApplyDirectives(dictionary, fieldName, selection);
@@ -149,29 +207,32 @@
             }
         }
 
-        private void AddToResultDictionaryIfNotAlreadyPresent(
+        private async Task AddToResultDictionaryIfNotAlreadyPresent(
             IDictionary<string, object> dictionary,
             string fieldName,
             GraphQLFieldSelection selection)
         {
-            if (!dictionary.ContainsKey(fieldName))
-            {
-                var fieldData = this.GetDefinitionAndExecuteField(this.type, selection, dictionary);
+            var fieldData = await this.GetDefinitionAndExecuteField(this.type, selection, dictionary);
 
-                dictionary.Add(fieldName, fieldData);
+            lock (dictionary)
+            {
+                if (!dictionary.ContainsKey(fieldName))
+                {
+                    dictionary.Add(fieldName, fieldData);
+                }
             }
         }
 
-        private object CompleteCollectionType(IEnumerable input, GraphQLFieldSelection selection, IList<GraphQLArgument> arguments)
+        private async Task<object> CompleteCollectionType(IEnumerable input, GraphQLFieldSelection selection, IList<GraphQLArgument> arguments)
         {
             var result = new List<object>();
             foreach (var element in input)
-                result.Add(this.CompleteValue(element, element?.GetType(), selection, arguments));
+                result.Add(await this.CompleteValue(element, element?.GetType(), selection, arguments));
 
             return result;
         }
 
-        private object CompleteObjectType(
+        private async Task<object> CompleteObjectType(
             GraphQLObjectType input,
             GraphQLFieldSelection selection,
             IList<GraphQLArgument> arguments,
@@ -182,7 +243,7 @@
                 arguments = arguments.ToList()
             };
 
-            return scope.GetObject(this.context.FieldCollector.CollectFields(input, selection.SelectionSet));
+            return await scope.GetObject(this.context.FieldCollector.CollectFields(input, selection.SelectionSet));
         }
 
         private List<GraphQLArgument> GetArgumentsFromSelection(GraphQLFieldSelection selection)
@@ -195,7 +256,7 @@
             return arguments;
         }
 
-        private object GetDefinitionAndExecuteField(
+        private async Task<object> GetDefinitionAndExecuteField(
             GraphQLComplexType type,
             GraphQLFieldSelection selection,
             IDictionary<string, object> dictionary)
@@ -204,25 +265,25 @@
             var fieldInfo = this.GetFieldInfo(type, selection);
             var directivesToUse = selection.Directives;
 
-            var result = this.ResolveField(fieldInfo, arguments, this.parent);
+            var result = await this.ResolveField(fieldInfo, arguments, this.parent);
 
-            this.PublishToEventChannel(fieldInfo, result);
+            await this.PublishToEventChannel(fieldInfo, result);
 
-            result = this.ApplyDirectivesToResult(selection, dictionary, result);
+            result = await this.ApplyDirectivesToResult(selection, dictionary, result);
             var resultType = this.GetResultType(type, fieldInfo, result);
 
-            return this.CompleteValue(result, resultType, selection, arguments);
+            return await this.CompleteValue(result, resultType, selection, arguments);
         }
 
-        private void PublishToEventChannel(GraphQLObjectTypeFieldInfo fieldInfo, object result)
+        private async Task PublishToEventChannel(GraphQLObjectTypeFieldInfo fieldInfo, object result)
         {
             if (!string.IsNullOrEmpty(fieldInfo?.Channel) && this.context.OperationType == OperationType.Mutation)
             {
-                this.context.Schema?.SubscriptionType?.EventBus?.Publish(result, fieldInfo.Channel);
+                await this.context.Schema?.SubscriptionType?.EventBus?.Publish(result, fieldInfo.Channel);
             }
         }
 
-        private object ApplyDirectivesToResult(GraphQLFieldSelection selection, IDictionary<string, object> dictionary, object result)
+        private async Task<object> ApplyDirectivesToResult(GraphQLFieldSelection selection, IDictionary<string, object> dictionary, object result)
         {
             foreach (var directive in selection.Directives)
             {
@@ -230,7 +291,7 @@
 
                 if (directiveType != null && directiveType.Locations.Any(l => l == DirectiveLocation.FIELD))
                 {
-                    result = this.InvokeWithArguments(
+                    result = await this.InvokeWithArguments(
                         directive.Arguments.ToList(),
                         directiveType.GetResolver(result, (ExpandoObject)dictionary));
                 }
@@ -273,90 +334,101 @@
             return input;
         }
 
-        private object ResolveField(
+        private async Task<object> ResolveField(
             GraphQLObjectTypeFieldInfo fieldInfo, IList<GraphQLArgument> arguments, object parent)
         {
             if (fieldInfo == null)
                 return null;
 
             if (fieldInfo.IsResolver)
-                return this.ProcessField(this.InvokeWithArguments(arguments, fieldInfo.Lambda));
-
-            return this.ProcessField(fieldInfo.Lambda.Compile().DynamicInvoke(new object[] { parent }));
-        }
-
-        private bool TryResolveEnum(ref object input, Type inputType)
-        {
-            if (ReflectionUtilities.IsEnum(inputType))
             {
-                input = input.ToString();
+                var resolverResult = await this.InvokeWithArguments(arguments, fieldInfo.Lambda);
 
-                return true;
+                return this.ProcessField(resolverResult);
             }
 
-            return false;
+            var accessorResult = fieldInfo.Lambda.Compile().DynamicInvoke(new object[] { parent });
+            accessorResult = await this.HandleAsyncTaskIfAsync(accessorResult);
+
+            return this.ProcessField(accessorResult);
         }
 
-        private bool TryResolveGraphQLObjectType(ref object input, Type inputType, GraphQLFieldSelection selection)
+        private async Task<object> TryResolveEnum(object input, Type inputType, GraphQLFieldSelection selection)
+        {
+            return await Task.Run(() =>
+            {
+
+                if (ReflectionUtilities.IsEnum(inputType))
+                {
+                    input = input.ToString();
+
+                    return input;
+                }
+
+                return INVALID_RESULT;
+            });
+        }
+
+        private async Task<object> TryResolveGraphQLObjectType(object input, Type inputType, GraphQLFieldSelection selection)
         {
             var schemaValue = this.context.SchemaRepository.GetSchemaTypeFor(inputType);
             if (schemaValue is GraphQLObjectType)
             {
-                input = this.CompleteObjectType((GraphQLObjectType)schemaValue, selection, this.arguments, input);
+                input = await this.CompleteObjectType((GraphQLObjectType)schemaValue, selection, this.arguments, input);
 
-                return true;
+                return input;
             }
 
-            return false;
+            return INVALID_RESULT;
         }
 
-        private bool TryResolveCollection(ref object input, Type inputType, GraphQLFieldSelection selection)
+        private async Task<object> TryResolveCollection(object input, Type inputType, GraphQLFieldSelection selection)
         {
             if (ReflectionUtilities.IsCollection(inputType))
             {
-                input = this.CompleteCollectionType((IEnumerable)input, selection, this.arguments);
+                input = await this.CompleteCollectionType((IEnumerable)input, selection, this.arguments);
 
-                return true;
+                return input;
             }
 
-            return false;
+            return INVALID_RESULT;
         }
 
-        private bool TryResolveObjectType(ref object input, Type inputType, GraphQLFieldSelection selection)
+        private async Task<object> TryResolveObjectType(object input, Type inputType, GraphQLFieldSelection selection)
         {
             if (ReflectionUtilities.IsDescendant(inputType, typeof(GraphQLObjectType)))
             {
-                input = this.CompleteObjectType((GraphQLObjectType)input, selection, this.arguments, this.parent);
-                return true;
+                input = await this.CompleteObjectType((GraphQLObjectType)input, selection, this.arguments, this.parent);
+                return input;
             }
 
-            return false;
+            return INVALID_RESULT;
         }
 
-        private bool TryResolveUnion(ref object input, Type inputType, GraphQLFieldSelection selection)
+        private async Task<object> TryResolveUnion(object input, Type inputType, GraphQLFieldSelection selection)
         {
             if (ReflectionUtilities.IsDescendant(inputType, typeof(GraphQLUnionType)))
             {
                 var unionSchemaType = this.context.SchemaRepository.GetSchemaTypeFor(inputType) as GraphQLUnionType;
-                input = this.CompleteValue(input, unionSchemaType.ResolveType(input), selection, this.arguments);
+                input = await this.CompleteValue(input, unionSchemaType.ResolveType(input), selection, this.arguments);
 
-                return true;
+                return input;
             }
 
-            return false;
+            return INVALID_RESULT;
         }
 
-        private bool TryResolveNonNull(ref object input, Type inputType, GraphQLFieldSelection selection)
+        private async Task<object> TryResolveNonNull(object input, Type inputType, GraphQLFieldSelection selection)
         {
             var underlyingType = NonNullable.GetUnderlyingType(inputType);
             if (underlyingType != null)
             {
-                input = this.CompleteValue(((INonNullable)input).GetValue(), underlyingType, selection, this.arguments);
+                input = await this.CompleteValue(((INonNullable)input).GetValue(), underlyingType, selection, this.arguments);
 
-                return true;
+                return input;
             }
 
-            return false;
+            return INVALID_RESULT;
         }
     }
 }

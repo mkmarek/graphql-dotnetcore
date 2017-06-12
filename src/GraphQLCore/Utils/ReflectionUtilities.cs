@@ -6,6 +6,7 @@
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
+    using System.Threading.Tasks;
     using Type;
     using Type.Scalar;
 
@@ -140,7 +141,17 @@
 
         public static Type GetReturnValueFromLambdaExpression(LambdaExpression expression)
         {
-            return expression.Type.GenericTypeArguments.LastOrDefault();
+            return GetTypeFromTask(expression.Type.GenericTypeArguments.LastOrDefault());
+        }
+
+        public static Type GetTypeFromTask(Type taskType)
+        {
+            if (typeof(Task).GetTypeInfo().IsAssignableFrom(taskType))
+            {
+                return taskType.GenericTypeArguments.FirstOrDefault();
+            }
+
+            return taskType;
         }
 
         public static bool IsEnum(Type type) => type.GetTypeInfo().IsEnum;

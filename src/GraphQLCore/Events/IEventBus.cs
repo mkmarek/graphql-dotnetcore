@@ -3,15 +3,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace GraphQLCore.Events
 {
-    public delegate void MessageReceived(OnMessageReceivedEventArgs args);
+    public delegate Task MessageReceived(OnMessageReceivedEventArgs args);
 
     public interface IEventBus
     {
         event MessageReceived OnMessageReceived;
-        void Publish(object data, string channel);
-        void Subscribe(EventBusSubscription eventBusSubscription);
+        Task Publish(object data, string channel);
+        Task Subscribe(EventBusSubscription eventBusSubscription);
     }
 }

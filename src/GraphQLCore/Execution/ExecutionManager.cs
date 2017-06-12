@@ -9,6 +9,7 @@
     using System.Dynamic;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Threading.Tasks;
     using Type;
     using Type.Introspection;
     using Validation;
@@ -43,12 +44,12 @@
         {
         }
 
-        public dynamic Execute()
+        public async Task<dynamic> ExecuteAsync()
         {
-            return this.Execute(null);
+            return await this.ExecuteAsync(null);
         }
 
-        public dynamic Execute(string operationToExecute)
+        public async Task<dynamic> ExecuteAsync(string operationToExecute)
         {
             foreach (var definition in this.ast.Definitions)
                 this.ResolveDefinition(definition, operationToExecute);
@@ -65,9 +66,11 @@
             var operationType = this.GetOperationRootType();
 
             if (this.Operation.Operation == OperationType.Subscription)
-                return this.ComposeResultForSubscriptions(operationType, this.Operation);
-            else
-                return this.ComposeResultForQueryAndMutation(operationType, this.Operation);
+                return await this.ComposeResultForSubscriptions(operationType, this.Operation);
+            else if (this.Operation.Operation == OperationType.Query)
+                return await this.ComposeResultForQuery(operationType, this.Operation);
+            else //Mutation
+                return await this.ComposeResultForMutation(operationType, this.Operation);
         }
 
         private void ValidateAstAndThrowErrorWhenFaulty()
@@ -114,11 +117,11 @@
             };
         }
 
-        private void AppendIntrospectionInfo(
+        private async Task AppendIntrospectionInfo(
             FieldScope scope, Dictionary<string, IList<GraphQLFieldSelection>> fields, dynamic resultObject)
         {
-            var introspectedSchema = this.IntrospectSchemaIfRequested(scope, fields);
-            var introspectedField = this.IntrospectTypeIfRequested(scope, fields);
+            var introspectedSchema = await this.IntrospectSchemaIfRequested(scope, fields);
+            var introspectedField = await this.IntrospectTypeIfRequested(scope, fields);
 
             if (introspectedSchema != null)
                 resultObject.__schema = introspectedSchema;
@@ -127,28 +130,44 @@
                 resultObject.__type = introspectedField;
         }
 
-        public dynamic ComposeResultForSubscriptions(GraphQLComplexType type, GraphQLOperationDefinition operationDefinition)
+        public async Task<dynamic> ComposeResultForSubscriptions(GraphQLComplexType type, GraphQLOperationDefinition operationDefinition)
         {
             var context = this.CreateExecutionContext(operationDefinition);
 
             var scope = new FieldScope(context, type, null);
 
-            return this.ProcessSubscriptions(
+            return await this.ProcessSubscriptions(
                     (GraphQLSubscriptionType)type,
                     context.FieldCollector,
                     scope);
         }
 
-        public dynamic ComposeResultForQueryAndMutation(GraphQLComplexType type, GraphQLOperationDefinition operationDefinition)
+        public async Task<dynamic> ComposeResultForQuery(
+            GraphQLComplexType type, GraphQLOperationDefinition operationDefinition)
         {
             var context = this.CreateExecutionContext(operationDefinition);
             var scope = new FieldScope(context, type, null);
 
-            return this.ResolveQueryAndMutationResult(
-                    type,
-                    operationDefinition.SelectionSet,
-                    context.FieldCollector,
-                    scope);
+            var fields = context.FieldCollector.CollectFields(type, operationDefinition.SelectionSet);
+            var resultObject = await scope.GetObject(fields);
+
+            await this.AppendIntrospectionInfo(scope, fields, resultObject);
+
+            return resultObject;
+        }
+
+        public async Task<dynamic> ComposeResultForMutation(
+            GraphQLComplexType type, GraphQLOperationDefinition operationDefinition)
+        {
+            var context = this.CreateExecutionContext(operationDefinition);
+            var scope = new FieldScope(context, type, null);
+
+            var fields = context.FieldCollector.CollectFields(type, operationDefinition.SelectionSet);
+            var resultObject = await scope.GetObjectSynchronously(fields);
+
+            await this.AppendIntrospectionInfo(scope, fields, resultObject);
+
+            return resultObject;
         }
 
         private ExecutionContext CreateExecutionContext(GraphQLOperationDefinition operationDefinition)
@@ -169,7 +188,7 @@
             };
         }
 
-        private ExpandoObject ProcessSubscriptions(
+        private async Task<ExpandoObject> ProcessSubscriptions(
             GraphQLSubscriptionType type,
             IFieldCollector fieldCollector,
             FieldScope scope)
@@ -180,7 +199,7 @@
 
             foreach (var field in fields)
             {
-                var subscriptionId = this.RegisterSubscription(
+                var subscriptionId = await this.RegisterSubscription(
                         field.Value.Single(),
                         type,
                         this.ast,
@@ -192,7 +211,7 @@
             return result;
         }
 
-        private long RegisterSubscription(
+        private async Task<long> RegisterSubscription(
             GraphQLFieldSelection fieldSelection,
             GraphQLSubscriptionType type,
             GraphQLDocument document,
@@ -201,9 +220,9 @@
             var fieldInfo = type.GetFieldInfo(fieldSelection.Name.Value) as GraphQLSubscriptionTypeFieldInfo;
 
             Expression<Func<object, bool>> filter
-                = entity => (bool)scope.InvokeWithArguments(fieldSelection.Arguments.ToList(), fieldInfo.Filter, entity);
+                = entity => (bool)scope.InvokeWithArgumentsSync(fieldSelection.Arguments.ToList(), fieldInfo.Filter, entity);
 
-            type.EventBus.Subscribe(EventBusSubscription.Create(
+            await type.EventBus.Subscribe(EventBusSubscription.Create(
                 fieldInfo.Channel,
                 Guid.NewGuid().ToString(),
                 this.Operation.Name.Value,
@@ -212,20 +231,6 @@
                 this.ast));
 
             return 5456;
-        }
-
-        private dynamic ResolveQueryAndMutationResult(
-            GraphQLComplexType type,
-            GraphQLSelectionSet selectionSet,
-            IFieldCollector fieldCollector,
-            FieldScope scope)
-        {
-            var fields = fieldCollector.CollectFields(type, selectionSet);
-            var resultObject = scope.GetObject(fields);
-
-            this.AppendIntrospectionInfo(scope, fields, resultObject);
-
-            return resultObject;
         }
 
         private VariableResolver CreateVariableResolver()
@@ -266,7 +271,7 @@
             return (string name) => this.graphQLSchema.IntrospectType(name);
         }
 
-        private object IntrospectSchemaIfRequested(
+        private async Task<object> IntrospectSchemaIfRequested(
             FieldScope scope, IDictionary<string, IList<GraphQLFieldSelection>> fields)
         {
             if (fields.ContainsKey("__schema"))
@@ -274,7 +279,7 @@
                 var field = fields["__schema"].Single();
                 fields.Remove("__schema");
 
-                return scope.CompleteValue(
+                return await scope.CompleteValue(
                     this.graphQLSchema.IntrospectedSchema,
                     this.graphQLSchema.IntrospectedSchema.GetType(),
                     field,
@@ -284,7 +289,7 @@
             return null;
         }
 
-        private object IntrospectTypeIfRequested(
+        private async Task<object> IntrospectTypeIfRequested(
             FieldScope scope, IDictionary<string, IList<GraphQLFieldSelection>> fields)
         {
             if (fields.ContainsKey("__type"))
@@ -292,11 +297,11 @@
                 var field = fields["__type"].Single();
                 fields.Remove("__type");
 
-                var value = scope.InvokeWithArguments(
+                var value = await scope.InvokeWithArguments(
                         field.Arguments.ToList(),
                         this.GetTypeIntrospectionLambda());
 
-                return scope.CompleteValue(
+                return await scope.CompleteValue(
                     value,
                     value.GetType(),
                     field,

@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Linq.Expressions;
     using System.Text;
+    using System.Threading.Tasks;
 
     public class InMemoryEventBus : IEventBus
     {
@@ -16,7 +17,7 @@
             this.subscriptions = new List<EventBusSubscription>();
         }
 
-        public void Publish(object data, string channel)
+        public async Task Publish(object data, string channel)
         {
             if (this.OnMessageReceived == null)
                 return;
@@ -25,7 +26,7 @@
             {
                 if ((bool)subscription.Filter.Compile().DynamicInvoke(data))
                 {
-                    this.OnMessageReceived(new OnMessageReceivedEventArgs()
+                    await this.OnMessageReceived(new OnMessageReceivedEventArgs()
                     {
                         ClientId = subscription.ClientId,
                         Channel = subscription.Channel,
@@ -35,8 +36,10 @@
             }
         }
 
-        public void Subscribe(EventBusSubscription subscription)
+        public async Task Subscribe(EventBusSubscription subscription)
         {
+            await Task.Yield();
+
             if (!this.subscriptions.Any(e =>
                 e.ClientId == subscription.ClientId &&
                 e.Filter.ToString() == e.Filter.ToString() &&

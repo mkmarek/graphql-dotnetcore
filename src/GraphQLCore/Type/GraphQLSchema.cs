@@ -9,9 +9,10 @@
     using Language.AST;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
     using Translation;
 
-    public delegate void SubscriptionMessageReceived(dynamic data);
+    public delegate Task SubscriptionMessageReceived(dynamic data);
 
     public class GraphQLSchema : IGraphQLSchema
     {
@@ -39,25 +40,40 @@
 
         public dynamic Execute(string expression)
         {
-            using (var context = new ExecutionManager(this, this.GetAst(expression)))
-            {
-                return context.Execute();
-            }
+            return this.ExecuteAsync(expression).GetAwaiter().GetResult();
         }
 
         public dynamic Execute(string expression, dynamic variables)
         {
-            using (var context = new ExecutionManager(this, this.GetAst(expression), variables))
-            {
-                return context.Execute();
-            }
+            return this.ExecuteAsync(expression, variables).GetAwaiter().GetResult();
         }
 
         public dynamic Execute(string expression, dynamic variables, string operationToExecute)
         {
+            return this.ExecuteAsync(expression, variables, operationToExecute).GetAwaiter().GetResult();
+        }
+
+        public async Task<dynamic> ExecuteAsync(string expression)
+        {
+            using (var context = new ExecutionManager(this, this.GetAst(expression)))
+            {
+                return await context.ExecuteAsync();
+            }
+        }
+
+        public async Task<dynamic> ExecuteAsync(string expression, dynamic variables)
+        {
             using (var context = new ExecutionManager(this, this.GetAst(expression), variables))
             {
-                return context.Execute(operationToExecute);
+                return await context.ExecuteAsync();
+            }
+        }
+
+        public async Task<dynamic> ExecuteAsync(string expression, dynamic variables, string operationToExecute)
+        {
+            using (var context = new ExecutionManager(this, this.GetAst(expression), variables))
+            {
+                return await context.ExecuteAsync(operationToExecute);
             }
         }
 
@@ -110,16 +126,16 @@
             this.SchemaRepository.AddOrReplaceDirective(new GraphQLSkipDirectiveType());
         }
 
-        private void InvokeSubscriptionMessageReceived(OnMessageReceivedEventArgs args)
+        private async Task InvokeSubscriptionMessageReceived(OnMessageReceivedEventArgs args)
         {
             using (var context = this.GetExecutionContext(args))
             {
                 foreach (var definition in args.Document.Definitions)
                     context.ResolveDefinition(definition, args.OperationToExecute);
 
-                var data = context.ComposeResultForQueryAndMutation(this.SubscriptionType, context.Operation);
+                var data = await context.ComposeResultForQuery(this.SubscriptionType, context.Operation);
 
-                this.OnSubscriptionMessageReceived?.Invoke(data);
+                await this.OnSubscriptionMessageReceived?.Invoke(data);
             }
         }
 

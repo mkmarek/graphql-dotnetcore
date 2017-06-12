@@ -6,6 +6,7 @@ using GraphQLCore.Type.Complex;
 using GraphQLCore.Events;
 using GraphQLCore.Execution;
 using GraphQLCore.Type;
+using System.Threading.Tasks;
 
 namespace GraphQLCore.Tests.Type
 {
@@ -97,7 +98,7 @@ namespace GraphQLCore.Tests.Type
         }
 
         [Test]
-        public void CallingSubscriptionFromGraphQLPropagatesSubscriptionToEventBus()
+        public async Task CallingSubscriptionFromGraphQLPropagatesSubscriptionToEventBus()
         {
             var result = this.schema.Execute(@"subscription wasub {
                 testSub(author : ""test"") {
@@ -107,19 +108,21 @@ namespace GraphQLCore.Tests.Type
 
             OnMessageReceivedEventArgs eventArgs = null;
 
-            this.eventBus.OnMessageReceived += (OnMessageReceivedEventArgs args) =>
+            this.eventBus.OnMessageReceived += async (OnMessageReceivedEventArgs args) =>
             {
+                await Task.Yield();
+
                 eventArgs = args;
             };
 
-            this.eventBus.Publish(new Message() { Author = "test", Content = "blabla" },
+            await this.eventBus.Publish(new Message() { Author = "test", Content = "blabla" },
                 "testingSsubscriptionChannel");
 
             Assert.IsNotNull(eventArgs);
         }
 
         [Test]
-        public void DoesNotFireWhenFilterIsNotEvaluatedToTrue()
+        public async Task DoesNotFireWhenFilterIsNotEvaluatedToTrue()
         {
             var result = this.schema.Execute(@"subscription wasub {
                 testSub(author : ""other"") {
@@ -129,12 +132,13 @@ namespace GraphQLCore.Tests.Type
 
             OnMessageReceivedEventArgs eventArgs = null;
 
-            this.eventBus.OnMessageReceived += (OnMessageReceivedEventArgs args) =>
+            this.eventBus.OnMessageReceived += async (OnMessageReceivedEventArgs args) =>
             {
+                await Task.Yield();
                 eventArgs = args;
             };
 
-            this.eventBus.Publish(new Message() { Author = "test", Content = "blabla" },
+            await this.eventBus.Publish(new Message() { Author = "test", Content = "blabla" },
                 "testingSsubscriptionChannel");
 
             Assert.IsNull(eventArgs);
@@ -151,8 +155,9 @@ namespace GraphQLCore.Tests.Type
 
             dynamic receivedData = null;
 
-            this.schema.OnSubscriptionMessageReceived += (dynamic data) =>
+            this.schema.OnSubscriptionMessageReceived += async (dynamic data) =>
             {
+                await Task.Yield();
                 receivedData = data;
             };
 
@@ -176,8 +181,9 @@ namespace GraphQLCore.Tests.Type
 
             var counter = 0;
 
-            this.schema.OnSubscriptionMessageReceived += (dynamic data) =>
+            this.schema.OnSubscriptionMessageReceived += async (dynamic data) =>
             {
+                await Task.Yield();
                 counter++;
             };
 
@@ -203,8 +209,9 @@ namespace GraphQLCore.Tests.Type
 
             var counter = 0;
 
-            this.schema.OnSubscriptionMessageReceived += (dynamic data) =>
+            this.schema.OnSubscriptionMessageReceived += async (dynamic data) =>
             {
+                await Task.Yield();
                 counter++;
             };
 

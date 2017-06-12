@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace GraphQLCore.Tests.Events
 {
@@ -35,9 +36,9 @@ namespace GraphQLCore.Tests.Events
         }
 
         [Test]
-        public void ShouldReceiveDataDefinedBySubscription()
+        public async Task ShouldReceiveDataDefinedBySubscription()
         {
-            this.eventBus.Subscribe(EventBusSubscription.Create<Message>(
+            await this.eventBus.Subscribe(EventBusSubscription.Create<Message>(
                 "testChannel",
                 "someClientId",
                 null,
@@ -47,37 +48,41 @@ namespace GraphQLCore.Tests.Events
 
             OnMessageReceivedEventArgs eventArgs = null;
 
-            this.eventBus.OnMessageReceived += (OnMessageReceivedEventArgs args) =>
+            this.eventBus.OnMessageReceived += async (OnMessageReceivedEventArgs args) =>
             {
+                await Task.Yield();
+
                 eventArgs = args;
             };
 
-            this.eventBus.Publish(new Message() { Author = "Bob", Content = "stuff" }, "testChannel");
+            await this.eventBus.Publish(new Message() { Author = "Bob", Content = "stuff" }, "testChannel");
 
 
             Assert.AreEqual("testChannel", eventArgs.Channel);
         }
 
         [Test]
-        public void ShouldNotReceiveAnythingIfNoSubscriptionIsDefined()
+        public async Task ShouldNotReceiveAnythingIfNoSubscriptionIsDefined()
         {
             OnMessageReceivedEventArgs eventArgs = null;
 
-            this.eventBus.OnMessageReceived += (OnMessageReceivedEventArgs args) =>
+            this.eventBus.OnMessageReceived += async (OnMessageReceivedEventArgs args) =>
             {
+                await Task.Yield();
+
                 eventArgs = args;
             };
 
-            this.eventBus.Publish(new Message() { Author = "Bob", Content = "stuff" }, "testChannel");
+            await this.eventBus.Publish(new Message() { Author = "Bob", Content = "stuff" }, "testChannel");
 
 
             Assert.IsNull(eventArgs);
         }
 
         [Test]
-        public void DoesntSendDataWhenNoSubscriptionMatchesTheFilter()
+        public async Task DoesntSendDataWhenNoSubscriptionMatchesTheFilter()
         {
-            this.eventBus.Subscribe(EventBusSubscription.Create<Message>(
+            await this.eventBus.Subscribe(EventBusSubscription.Create<Message>(
                 "testChannel",
                 "someClientId",
                 null,
@@ -87,21 +92,23 @@ namespace GraphQLCore.Tests.Events
 
             OnMessageReceivedEventArgs eventArgs = null;
 
-            this.eventBus.OnMessageReceived += (OnMessageReceivedEventArgs args) =>
+            this.eventBus.OnMessageReceived += async (OnMessageReceivedEventArgs args) =>
             {
+                await Task.Yield();
+
                 eventArgs = args;
             };
 
-            this.eventBus.Publish(new Message() { Author = "Bob", Content = "stuff" }, "testChannel");
+            await this.eventBus.Publish(new Message() { Author = "Bob", Content = "stuff" }, "testChannel");
 
 
             Assert.IsNull(eventArgs);
         }
 
         [Test]
-        public void InvokesOnMessageReceivedMultipleTimesIfMultipleSubscribersExists()
+        public async Task InvokesOnMessageReceivedMultipleTimesIfMultipleSubscribersExists()
         {
-            this.eventBus.Subscribe(EventBusSubscription.Create<Message>(
+            await this.eventBus.Subscribe(EventBusSubscription.Create<Message>(
                 "testChannel",
                 "someClientId",
                 null,
@@ -109,7 +116,7 @@ namespace GraphQLCore.Tests.Events
                 e => e.Author == "Sam",
                 operation));
 
-            this.eventBus.Subscribe(EventBusSubscription.Create<Message>(
+            await this.eventBus.Subscribe(EventBusSubscription.Create<Message>(
                 "testChannel",
                 "someAnotherClientId",
                 null,
@@ -119,21 +126,23 @@ namespace GraphQLCore.Tests.Events
 
             List<string> clientIds = new List<string>();
 
-            this.eventBus.OnMessageReceived += (OnMessageReceivedEventArgs args) =>
+            this.eventBus.OnMessageReceived += async (OnMessageReceivedEventArgs args) =>
             {
+                await Task.Yield();
+
                 clientIds.Add(args.ClientId);
             };
 
-            this.eventBus.Publish(new Message() { Author = "Sam", Content = "stuff" }, "testChannel");
+            await this.eventBus.Publish(new Message() { Author = "Sam", Content = "stuff" }, "testChannel");
 
 
             Assert.AreEqual(2, clientIds.Count);
         }
 
         [Test]
-        public void IgnoresMultipleSameSubscriptions()
+        public async Task IgnoresMultipleSameSubscriptions()
         {
-            this.eventBus.Subscribe(EventBusSubscription.Create<Message>(
+            await this.eventBus.Subscribe(EventBusSubscription.Create<Message>(
                 "testChannel",
                 "someClientId",
                 null,
@@ -141,7 +150,7 @@ namespace GraphQLCore.Tests.Events
                 e => e.Author == "Sam",
                 operation));
 
-            this.eventBus.Subscribe(EventBusSubscription.Create<Message>(
+            await this.eventBus.Subscribe(EventBusSubscription.Create<Message>(
                 "testChannel",
                 "someClientId",
                 null,
@@ -151,12 +160,13 @@ namespace GraphQLCore.Tests.Events
 
             List<string> clientIds = new List<string>();
 
-            this.eventBus.OnMessageReceived += (OnMessageReceivedEventArgs args) =>
+            this.eventBus.OnMessageReceived += async (OnMessageReceivedEventArgs args) =>
             {
+                await Task.Yield();
                 clientIds.Add(args.ClientId);
             };
 
-            this.eventBus.Publish(new Message() { Author = "Sam", Content = "stuff" }, "testChannel");
+            await this.eventBus.Publish(new Message() { Author = "Sam", Content = "stuff" }, "testChannel");
 
 
             Assert.AreEqual(1, clientIds.Count);
