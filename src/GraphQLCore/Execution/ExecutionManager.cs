@@ -37,7 +37,7 @@
         public ExecutionManager(GraphQLSchema graphQLSchema, GraphQLDocument ast, dynamic variables)
             : this(graphQLSchema, ast)
         {
-            this.variables = variables;
+            this.variables = variables ?? new ExpandoObject();
         }
 
         public void Dispose()
@@ -327,7 +327,8 @@
 
         private void ResolveFragmentDefinition(GraphQLFragmentDefinition graphQLFragmentDefinition)
         {
-            this.fragments.Add(graphQLFragmentDefinition.Name.Value, graphQLFragmentDefinition);
+            if (!this.fragments.ContainsKey(graphQLFragmentDefinition.Name.Value))
+                this.fragments.Add(graphQLFragmentDefinition.Name.Value, graphQLFragmentDefinition);
         }
 
         private void ResolveOperationDefinition(GraphQLOperationDefinition graphQLOperationDefinition, string operationToExecute)

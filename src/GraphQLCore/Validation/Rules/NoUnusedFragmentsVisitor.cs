@@ -41,10 +41,17 @@
 
         public override void Visit(GraphQLDocument ast)
         {
-            this.fragmentDefinitions = ast.Definitions
+            var fragments = ast.Definitions
                 .Where(e => e.Kind == ASTNodeKind.FragmentDefinition)
-                .Cast<GraphQLFragmentDefinition>()
-                .ToDictionary(e => e.Name.Value, e => e);
+                .Cast<GraphQLFragmentDefinition>();
+
+            foreach (var fragment in fragments)
+            {
+                if (!this.fragmentDefinitions.ContainsKey(fragment.Name.Value))
+                {
+                    this.fragmentDefinitions.Add(fragment.Name.Value, fragment);
+                }
+            }
 
             base.Visit(ast);
 

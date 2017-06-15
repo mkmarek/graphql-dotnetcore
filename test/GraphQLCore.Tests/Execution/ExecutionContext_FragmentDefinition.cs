@@ -1,5 +1,6 @@
 ﻿namespace GraphQLCore.Tests.Execution
 {
+    using GraphQLCore.Exceptions;
     using GraphQLCore.Type;
     using Microsoft.CSharp.RuntimeBinder;
     using NUnit.Framework;
@@ -28,6 +29,27 @@
             Assert.AreEqual("1", result.nested.a);
             Assert.AreEqual("2", result.nested.b);
         }
+
+        [Test]
+        public void Execute_DuplicateFragments_ShouldNotReportAnyOtherExectionThenValidationException()
+        {
+            Assert.Throws<GraphQLValidationException>(() => this.schema.Execute(@"
+            query fetch {
+                nested {
+                    ...frag
+                }
+            }
+
+            fragment frag on NestedQueryType {
+                a
+            }
+
+            fragment frag on NestedQueryType {
+                b
+            }
+            "));
+        }
+
 
         [Test]
         public void Execute_FragmentInFragment_ShouldResolveAndExecuteFragments()

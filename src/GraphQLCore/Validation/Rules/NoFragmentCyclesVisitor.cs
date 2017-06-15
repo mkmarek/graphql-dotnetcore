@@ -20,16 +20,24 @@
             this.visitedFragments = new List<string>();
             this.spreadPath = new Stack<GraphQLFragmentSpread>();
             this.spreadPathIndexByName = new Dictionary<string, int>();
+            this.fragmentDefinitions = new Dictionary<string, GraphQLFragmentDefinition>();
         }
 
         public List<GraphQLException> Errors { get; private set; }
 
         public override void Visit(GraphQLDocument document)
         {
-            this.fragmentDefinitions = document.Definitions
+            var fragments = document.Definitions
                 .Where(e => e.Kind == ASTNodeKind.FragmentDefinition)
-                .Cast<GraphQLFragmentDefinition>()
-                .ToDictionary(e => e.Name.Value, e => e);
+                .Cast<GraphQLFragmentDefinition>();
+
+            foreach (var fragment in fragments)
+            {
+                if (!this.fragmentDefinitions.ContainsKey(fragment.Name.Value))
+                {
+                    this.fragmentDefinitions.Add(fragment.Name.Value, fragment);
+                }
+            }
 
             base.Visit(document);
         }

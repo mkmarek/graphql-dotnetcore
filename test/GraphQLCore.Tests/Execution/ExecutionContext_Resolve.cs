@@ -1,9 +1,11 @@
 ﻿namespace GraphQLCore.Tests.Execution
 {
+    using GraphQLCore.Exceptions;
     using GraphQLCore.Type;
     using Microsoft.CSharp.RuntimeBinder;
     using NUnit.Framework;
     using System.Collections.Generic;
+    using System.Dynamic;
     using System.Linq;
 
     [TestFixture]
@@ -214,6 +216,30 @@
 
             Assert.AreEqual(null, value);
         }
+
+        [Test]
+        public void Execute_DuplicateOperations_ShouldNotReportAnyOtherExectionThenValidationException()
+        {
+            Assert.Throws<GraphQLValidationException>(() => this.schema.Execute(@"
+            query fetch {
+                nullableEnumWithNull
+            }
+
+            query fetch {
+                nullableEnumWithNull
+            }
+
+            mutation fetch {
+                nullableEnumWithNull
+            }
+
+            mutation fetch {
+                nullableEnumWithNull
+            }
+            ", null, "fetch"));
+        }
+
+
 
         [SetUp]
         public void SetUp()
