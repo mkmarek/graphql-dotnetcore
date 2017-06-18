@@ -49,7 +49,8 @@
                     new ArgumentsOfCorrectType(),
                     new KnownDirectives(),
                     new FragmentsOnCompositeTypes(),
-                    new UniqueDirectivesPerLocation()
+                    new UniqueDirectivesPerLocation(),
+                    new OverlappingFieldsCanBeMerged()
                 });
         }
     }

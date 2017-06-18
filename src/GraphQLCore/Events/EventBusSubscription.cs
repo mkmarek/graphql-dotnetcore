@@ -13,12 +13,14 @@
         public string OperationToExecute { get; private set; }
         public GraphQLDocument Document { get; private set; }
         public object Variables { get; private set; }
+        public int SubscriptionId { get; private set; }
 
         private EventBusSubscription() { }
 
         public static EventBusSubscription Create<EntityType>(
             string channel,
             string clientId,
+            int subscriptionId,
             string operationToExecute,
             object variables,
             Expression<Func<EntityType, bool>> filter,
@@ -29,6 +31,7 @@
             subscription.OperationToExecute = operationToExecute;
             subscription.Channel = channel;
             subscription.ClientId = clientId;
+            subscription.SubscriptionId = subscriptionId;
             subscription.Filter = filter;
             subscription.Document = document;
             subscription.Variables = variables;
@@ -39,6 +42,7 @@
         public static EventBusSubscription Create(
             string channel,
             string clientId,
+            int subscriptionId,
             string operationToExecute,
             object variables,
             LambdaExpression filter,
@@ -49,6 +53,7 @@
             subscription.OperationToExecute = operationToExecute;
             subscription.Channel = channel;
             subscription.ClientId = clientId;
+            subscription.SubscriptionId = subscriptionId;
             subscription.Filter = filter;
             subscription.Document = document;
             subscription.Variables = variables;

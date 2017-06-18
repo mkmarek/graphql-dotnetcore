@@ -9,12 +9,12 @@
 
     public class InMemoryEventBus : IEventBus
     {
-        private List<EventBusSubscription> subscriptions;
+        private Dictionary<string, EventBusSubscription> subscriptions;
         public event MessageReceived OnMessageReceived;
 
         public InMemoryEventBus()
         {
-            this.subscriptions = new List<EventBusSubscription>();
+            this.subscriptions = new Dictionary<string, EventBusSubscription>();
         }
 
         public async Task Publish(object data, string channel)
@@ -22,15 +22,17 @@
             if (this.OnMessageReceived == null)
                 return;
 
-            foreach (var subscription in this.subscriptions.Where(e => e.Channel == channel).ToList())
+            foreach (var subscription in this.subscriptions.Where(e => e.Value.Channel == channel).ToList())
             {
-                if ((bool)subscription.Filter.Compile().DynamicInvoke(data))
+                if (subscription.Value.Filter == null || (bool)subscription.Value.Filter.Compile().DynamicInvoke(data))
                 {
                     await this.OnMessageReceived(new OnMessageReceivedEventArgs()
                     {
-                        ClientId = subscription.ClientId,
-                        Channel = subscription.Channel,
-                        Document = subscription.Document
+                        Data = data,
+                        ClientId = subscription.Value.ClientId,
+                        SubscriptionId = subscription.Value.SubscriptionId,
+                        Channel = subscription.Value.Channel,
+                        Document = subscription.Value.Document
                     });
                 }
             }
@@ -40,11 +42,37 @@
         {
             await Task.Yield();
 
-            if (!this.subscriptions.Any(e =>
-                e.ClientId == subscription.ClientId &&
-                e.Filter.ToString() == e.Filter.ToString() &&
-                e.Channel == e.Channel)) //TODO create operation comparer
-                this.subscriptions.Add(subscription);
+            var key = this.BuildKey(subscription.ClientId, subscription.SubscriptionId);
+
+            if (!this.subscriptions.ContainsKey(key))
+            {
+                this.subscriptions.Add(key, subscription);
+            }
+        }
+
+        public void Unsubscribe(string clientId, int subscriptionId)
+        {
+            var key = this.BuildKey(clientId, subscriptionId);
+
+            if (this.subscriptions.ContainsKey(key))
+            {
+                this.subscriptions.Remove(key);
+            }
+        }
+
+        public void Unsubscribe(string clientId)
+        {
+            var selectedSubscriptions = this.subscriptions.Where(e => e.Value.ClientId == clientId).ToList();
+
+            foreach (var subscription in selectedSubscriptions)
+            {
+                this.subscriptions.Remove(subscription.Key);
+            }
+        }
+
+        private string BuildKey(string clientId, int subscriptionId)
+        {
+            return clientId + "_" + subscriptionId;
         }
     }
 }

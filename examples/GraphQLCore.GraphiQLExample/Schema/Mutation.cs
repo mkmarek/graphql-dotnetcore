@@ -10,7 +10,9 @@
 
         public Mutation() : base("Mutation", "")
         {
-            this.Field("addDroid", (NonNullable<Droid> droid) => this.CreateAndGet(droid));
+            this.Field("addDroid", (NonNullable<Droid> droid) => this.CreateAndGet(droid))
+                .OnChannel("characters")
+                .OnChannel("droid");
         }
 
         private Droid CreateAndGet(Droid droid)

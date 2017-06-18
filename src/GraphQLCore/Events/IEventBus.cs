@@ -14,5 +14,7 @@ namespace GraphQLCore.Events
         event MessageReceived OnMessageReceived;
         Task Publish(object data, string channel);
         Task Subscribe(EventBusSubscription eventBusSubscription);
+        void Unsubscribe(string clientId, int subscriptionId);
+        void Unsubscribe(string clientId);
     }
 }

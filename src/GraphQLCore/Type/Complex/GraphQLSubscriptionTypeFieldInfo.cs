@@ -11,7 +11,6 @@
 
     public class GraphQLSubscriptionTypeFieldInfo : GraphQLObjectTypeFieldInfo
     {
-        public Type SubscriptionReturnType { get; set; }
         public LambdaExpression Filter { get; set; }
 
         public new static GraphQLSubscriptionTypeFieldInfo CreateResolverFieldInfo(string fieldName, LambdaExpression resolver)
@@ -22,8 +21,7 @@
                 IsResolver = true,
                 Lambda = resolver,
                 Arguments = GetArguments(resolver),
-                SystemType = typeof(long),
-                SubscriptionReturnType = ReflectionUtilities.GetReturnValueFromLambdaExpression(resolver)
+                SystemType = ReflectionUtilities.GetReturnValueFromLambdaExpression(resolver),
             };
         }
     }

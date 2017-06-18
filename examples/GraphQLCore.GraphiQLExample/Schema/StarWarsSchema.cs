@@ -8,6 +8,7 @@
         {
             var rootQuery = new Query();
             var rootMutation = new Mutation();
+            var subscriptionType = new Subscription();
 
             this.AddKnownType(new GraphQLCharacterUnion());
             this.AddKnownType(new GraphQLCharacterInterface());
@@ -17,9 +18,11 @@
             this.AddKnownType(new GraphQLDroidInputObject());
             this.AddKnownType(rootQuery);
             this.AddKnownType(rootMutation);
+            this.AddKnownType(subscriptionType);
 
             this.Query(rootQuery);
             this.Mutation(rootMutation);
+            this.Subscription(subscriptionType);
         }
     }
 }

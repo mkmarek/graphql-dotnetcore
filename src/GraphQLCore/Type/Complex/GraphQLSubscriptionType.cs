@@ -33,8 +33,6 @@ namespace GraphQLCore.Type.Complex
             if (this.ContainsField(fieldName))
                 throw new GraphQLException("Can't insert two fields with the same name.");
 
-            this.ValidateResolver(resolver);
-
             var fieldInfo = this.CreateResolverFieldInfo(fieldName, resolver);
 
             this.Fields.Add(fieldName, fieldInfo);

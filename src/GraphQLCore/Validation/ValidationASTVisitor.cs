@@ -80,7 +80,7 @@
             {
                 case OperationType.Query: this.typeStack.Push(this.Schema.QueryType); break;
                 case OperationType.Mutation: this.typeStack.Push(this.Schema.MutationType); break;
-                case OperationType.Subscription: this.typeStack.Push(null); /* TODO: somehow resolve validation on subscriptions */ break;
+                case OperationType.Subscription: this.typeStack.Push(this.Schema.SubscriptionType); break;
                 default: throw new NotImplementedException();
             }
 

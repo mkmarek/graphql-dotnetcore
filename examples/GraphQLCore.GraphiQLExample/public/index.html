@@ -13,11 +13,13 @@
             height: 100vh;
         }
     </style>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/graphiql/0.9.3/graphiql.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/graphiql/0.10.2/graphiql.css" />
     <script src="//cdn.jsdelivr.net/fetch/0.9.0/fetch.min.js"></script>
     <script src="//cdn.jsdelivr.net/react/15.4.2/react.min.js"></script>
     <script src="//cdn.jsdelivr.net/react/15.4.2/react-dom.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/graphiql/0.9.3/graphiql.js"></script>
+    <script src="https://cdn.jsdelivr.net/graphiql/0.10.2/graphiql.js"></script>
+    <script src="subscrition-transport-ws.js"></script>
+    <script src="//unpkg.com/graphiql-subscriptions-fetcher@0.0.2/browser/client.js"></script>
 </head>
 <body>
     <div id="graphiql">Loading...</div>
@@ -73,6 +75,7 @@
         }).join('&');
         history.replaceState(null, null, newSearch);
       }
+
       // Defines a GraphQL fetcher using the fetch API.
       function graphQLFetcher(graphQLParams) {
         return fetch(window.location.origin + '/api/graphql', {
@@ -93,10 +96,16 @@
           }
         });
       }
+
+      var subscriptionsClient = new window.SubscriptionsTransportWs.SubscriptionClient(
+        'ws://' + window.location.host + '/graphql',
+        { reconnect: true });
+      var subscriptionsFetcher = window.GraphiQLSubscriptionsFetcher.graphQLFetcher(subscriptionsClient, graphQLFetcher);
+
       // Render <GraphiQL /> into the body.
       ReactDOM.render(
         React.createElement(GraphiQL, {
-          fetcher: graphQLFetcher,
+          fetcher: subscriptionsFetcher,
           query: parameters.query,
           variables: parameters.variables,
           operationName: parameters.operationName,

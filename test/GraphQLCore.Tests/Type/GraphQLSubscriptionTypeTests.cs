@@ -86,15 +86,15 @@ namespace GraphQLCore.Tests.Type
         }
 
         [Test]
-        public void SubscriptionReturnsSubscriptionIdentifierAsLongInt()
+        public void SubscriptionReturnsSubscriptionIdentifierAsInt()
         {
             var result = this.schema.Execute(@"subscription wasub {
                 testSub {
                     content
                 }
-            }");
+            }", null, null, "123", 0);
 
-            Assert.IsInstanceOf<long>(result.testSub);
+            Assert.IsInstanceOf<int>(result.subscriptionId);
         }
 
         [Test]
@@ -104,7 +104,7 @@ namespace GraphQLCore.Tests.Type
                 testSub(author : ""test"") {
                     content
                 }
-            }");
+            }", null, null, "1", 0);
 
             OnMessageReceivedEventArgs eventArgs = null;
 
@@ -128,7 +128,7 @@ namespace GraphQLCore.Tests.Type
                 testSub(author : ""other"") {
                     content
                 }
-            }");
+            }", null, null, "1", 0);
 
             OnMessageReceivedEventArgs eventArgs = null;
 
@@ -151,11 +151,11 @@ namespace GraphQLCore.Tests.Type
                 testSub(author : ""other"") {
                     content
                 }
-            }");
+            }", null, null, "1", 0);
 
             dynamic receivedData = null;
 
-            this.schema.OnSubscriptionMessageReceived += async (dynamic data) =>
+            this.schema.OnSubscriptionMessageReceived += async (string clientId, int subscriptionId, dynamic data) =>
             {
                 await Task.Yield();
                 receivedData = data;
@@ -177,11 +177,11 @@ namespace GraphQLCore.Tests.Type
                 testSub(author : ""other"") {
                     content
                 }
-            }");
+            }", null, null, "1", 0);
 
             var counter = 0;
 
-            this.schema.OnSubscriptionMessageReceived += async (dynamic data) =>
+            this.schema.OnSubscriptionMessageReceived += async (string clientId, int subscriptionId, dynamic data) =>
             {
                 await Task.Yield();
                 counter++;
@@ -205,11 +205,11 @@ namespace GraphQLCore.Tests.Type
                 testSub(author : ""other"") {
                     content
                 }
-            }");
+            }", null, null, "1", 0);
 
             var counter = 0;
 
-            this.schema.OnSubscriptionMessageReceived += async (dynamic data) =>
+            this.schema.OnSubscriptionMessageReceived += async (string clientId, int subscriptionId, dynamic data) =>
             {
                 await Task.Yield();
                 counter++;

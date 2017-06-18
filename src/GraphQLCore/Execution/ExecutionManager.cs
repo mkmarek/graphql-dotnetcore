@@ -22,6 +22,8 @@
         private Dictionary<string, GraphQLFragmentDefinition> fragments;
         private GraphQLSchema graphQLSchema;
         private dynamic variables;
+        private int? subscriptionId;
+        private string clientId;
 
         public GraphQLOperationDefinition Operation { get; private set; }
 
@@ -38,6 +40,15 @@
             : this(graphQLSchema, ast)
         {
             this.variables = variables ?? new ExpandoObject();
+        }
+
+        public ExecutionManager(
+            GraphQLSchema graphQLSchema, GraphQLDocument ast, dynamic variables, string clientId, int subscriptionId)
+            : this(graphQLSchema, ast)
+        {
+            this.variables = variables ?? new ExpandoObject();
+            this.subscriptionId = subscriptionId;
+            this.clientId = clientId;
         }
 
         public void Dispose()
@@ -131,23 +142,38 @@
                 resultObject.__type = introspectedField;
         }
 
-        public async Task<dynamic> ComposeResultForSubscriptions(GraphQLComplexType type, GraphQLOperationDefinition operationDefinition)
+        public async Task<dynamic> ComposeResultForSubscriptions(
+            GraphQLComplexType type, GraphQLOperationDefinition operationDefinition)
         {
+            if (string.IsNullOrWhiteSpace(this.clientId))
+            {
+                throw new GraphQLException(
+                    "Can't invoke subscription without clientId specified",
+                    new ASTNode[] { operationDefinition });
+            }
+
+            if (!this.subscriptionId.HasValue)
+            {
+                throw new GraphQLException(
+                    "Can't invoke subscription without subscriptionId specified",
+                    new ASTNode[] { operationDefinition });
+            }
+
             var context = this.CreateExecutionContext(operationDefinition);
 
             var scope = new FieldScope(context, type, null);
 
-            return await this.ProcessSubscriptions(
+            return await this.ProcessSubscription(
                     (GraphQLSubscriptionType)type,
                     context.FieldCollector,
                     scope);
         }
 
         public async Task<dynamic> ComposeResultForQuery(
-            GraphQLComplexType type, GraphQLOperationDefinition operationDefinition)
+            GraphQLComplexType type, GraphQLOperationDefinition operationDefinition, object parent = null)
         {
             var context = this.CreateExecutionContext(operationDefinition);
-            var scope = new FieldScope(context, type, null);
+            var scope = new FieldScope(context, type, parent);
 
             var fields = context.FieldCollector.CollectFields(type, operationDefinition.SelectionSet);
             var resultObject = await scope.GetObject(fields);
@@ -189,30 +215,29 @@
             };
         }
 
-        private async Task<ExpandoObject> ProcessSubscriptions(
+        private async Task<ExpandoObject> ProcessSubscription(
             GraphQLSubscriptionType type,
             IFieldCollector fieldCollector,
             FieldScope scope)
         {
             var fields = fieldCollector.CollectFields(type, this.Operation.SelectionSet);
+            var field = fields.Single(); //only single subscription field allowed
             var result = new ExpandoObject();
             var resultDictionary = (IDictionary<string, object>)result;
 
-            foreach (var field in fields)
-            {
-                var subscriptionId = await this.RegisterSubscription(
-                        field.Value.Single(),
-                        type,
-                        this.ast,
-                        scope);
+            await this.RegisterSubscription(
+                field.Value.Single(),
+                type,
+                this.ast,
+                scope);
 
-                resultDictionary.Add(field.Key, subscriptionId);
-            }
+            resultDictionary.Add("subscriptionId", this.subscriptionId.Value);
+            resultDictionary.Add("clientId", this.clientId);
 
             return result;
         }
 
-        private async Task<long> RegisterSubscription(
+        private async Task RegisterSubscription(
             GraphQLFieldSelection fieldSelection,
             GraphQLSubscriptionType type,
             GraphQLDocument document,
@@ -220,18 +245,22 @@
         {
             var fieldInfo = type.GetFieldInfo(fieldSelection.Name.Value) as GraphQLSubscriptionTypeFieldInfo;
 
-            Expression<Func<object, bool>> filter
-                = entity => (bool)scope.InvokeWithArgumentsSync(fieldSelection.Arguments.ToList(), fieldInfo.Filter, entity);
+            Expression<Func<object, bool>> filter = null;
+
+            if (fieldInfo.Filter != null)
+            {
+                filter = entity => (bool)scope.InvokeWithArgumentsSync(
+                    fieldSelection.Arguments.ToList(), fieldInfo.Filter, entity);
+            }
 
             await type.EventBus.Subscribe(EventBusSubscription.Create(
                 fieldInfo.Channel,
-                Guid.NewGuid().ToString(),
-                this.Operation.Name.Value,
+                this.clientId,
+                this.subscriptionId.Value,
+                this.Operation?.Name?.Value ?? "Anonymous",
                 this.variables,
                 filter,
                 this.ast));
-
-            return 5456;
         }
 
         private VariableResolver CreateVariableResolver()

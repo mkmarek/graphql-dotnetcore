@@ -12,7 +12,7 @@
     using System.Threading.Tasks;
     using Translation;
 
-    public delegate Task SubscriptionMessageReceived(dynamic data);
+    public delegate Task SubscriptionMessageReceived(string clientId, int subscriptionId, dynamic data);
 
     public class GraphQLSchema : IGraphQLSchema
     {
@@ -53,6 +53,13 @@
             return this.ExecuteAsync(expression, variables, operationToExecute).GetAwaiter().GetResult();
         }
 
+        public dynamic Execute(
+            string expression, dynamic variables, string operationToExecute, string clientId, int subscriptionId)
+        {
+            return this.ExecuteAsync(expression, variables, operationToExecute, clientId, subscriptionId)
+                .GetAwaiter().GetResult();
+        }
+
         public async Task<dynamic> ExecuteAsync(string expression)
         {
             using (var context = new ExecutionManager(this, this.GetAst(expression)))
@@ -69,9 +76,20 @@
             }
         }
 
-        public async Task<dynamic> ExecuteAsync(string expression, dynamic variables, string operationToExecute)
+        public async Task<dynamic> ExecuteAsync(
+            string expression, dynamic variables, string operationToExecute)
         {
             using (var context = new ExecutionManager(this, this.GetAst(expression), variables))
+            {
+                return await context.ExecuteAsync(operationToExecute);
+            }
+        }
+
+        public async Task<dynamic> ExecuteAsync(
+            string expression, dynamic variables, string operationToExecute, string clientId, int subscriptionId)
+        {
+            using (var context = new ExecutionManager(
+                this, this.GetAst(expression), variables, clientId, subscriptionId))
             {
                 return await context.ExecuteAsync(operationToExecute);
             }
@@ -101,6 +119,16 @@
         public void AddOrReplaceDirective(GraphQLDirectiveType directive)
         {
             this.SchemaRepository.AddOrReplaceDirective(directive);
+        }
+
+        public void Unsubscribe(string clientId, int subscriptionId)
+        {
+            this.SubscriptionType?.EventBus?.Unsubscribe(clientId, subscriptionId);
+        }
+
+        public void Unsubscribe(string clientId)
+        {
+            this.SubscriptionType?.EventBus?.Unsubscribe(clientId);
         }
 
         private GraphQLDocument GetAst(string expression)
@@ -133,9 +161,9 @@
                 foreach (var definition in args.Document.Definitions)
                     context.ResolveDefinition(definition, args.OperationToExecute);
 
-                var data = await context.ComposeResultForQuery(this.SubscriptionType, context.Operation);
+                var data = await context.ComposeResultForQuery(this.SubscriptionType, context.Operation, args.Data);
 
-                await this.OnSubscriptionMessageReceived?.Invoke(data);
+                await this.OnSubscriptionMessageReceived?.Invoke(args.ClientId, args.SubscriptionId, data);
             }
         }
 

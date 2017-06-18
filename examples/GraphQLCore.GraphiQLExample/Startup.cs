@@ -9,6 +9,8 @@
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.FileProviders;
     using Microsoft.Extensions.Logging;
+    using Middlewares;
+    using System;
     using System.IO;
 
     public class Startup
@@ -26,10 +28,15 @@
         public IConfigurationRoot Configuration { get; }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(
+            IApplicationBuilder app,
+            IServiceProvider serviceProvider,
+            ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
+
+            app.UseWebSockets();
 
             app.UseMvc();
             app.UseStaticFiles(new StaticFileOptions()
@@ -37,6 +44,8 @@
                 FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"public")),
                 RequestPath = new PathString("/public")
             });
+
+            app.AddGraphQLWs();
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.

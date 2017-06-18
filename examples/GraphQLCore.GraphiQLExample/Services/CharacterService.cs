@@ -8,15 +8,15 @@
 
     public class CharacterService
     {
-        private List<ICharacter> characterList;
-        private Characters characters = new Characters();
+        private static List<ICharacter> characterList = new List<ICharacter>();
+        private static Characters characters = new Characters();
 
-        public CharacterService()
+        static CharacterService()
         {
-            this.characterList = new ICharacter[] {
+            characterList = new List<ICharacter> {
                 characters.Artoo, characters.Han, characters.Leia, characters.Luke,
                 characters.Tarkin, characters.Threepio, characters.Vader
-            }.ToList();
+            };
         }
 
         public Droid GetDroidById(string id)
@@ -31,7 +31,7 @@
 
         public IEnumerable<ICharacter> List(Episode episode)
         {
-            return characterList.Where(e => e.AppearsIn.Contains(episode));
+            return characterList.Where(e => e.AppearsIn?.Contains(episode) == true);
         }
 
         internal Droid CreateDroid(Droid droid)

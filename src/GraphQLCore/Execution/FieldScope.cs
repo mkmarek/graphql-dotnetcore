@@ -303,9 +303,6 @@
         private Type GetResultType(
             GraphQLComplexType type, GraphQLObjectTypeFieldInfo fieldInfo, object result)
         {
-            if (type is GraphQLSubscriptionType)
-                return ((GraphQLSubscriptionTypeFieldInfo)fieldInfo).SubscriptionReturnType;
-
             return fieldInfo?.SystemType ?? result?.GetType();
         }
 
