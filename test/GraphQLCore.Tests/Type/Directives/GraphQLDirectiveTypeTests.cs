@@ -6,6 +6,7 @@ namespace GraphQLCore.Tests.Type.Directives
     using GraphQLCore.Type.Directives;
     using NSubstitute;
     using NUnit.Framework;
+    using System.Threading.Tasks;
 
     [TestFixture]
     public class GraphQLDirectiveTests
@@ -27,7 +28,7 @@ namespace GraphQLCore.Tests.Type.Directives
             this.testDirective.PostExecutionIncludeFieldIntoResult(null, null, null, null)
                 .ReturnsForAnyArgs(true);
 
-            this.testDirective.GetResolver(Arg.Any<object>(), Arg.Any<object>())
+            this.testDirective.GetResolver(Arg.Any<Func<Task<object>>>(), Arg.Any<object>())
                 .Returns((Expression<Func<object>>)(() => "modified"));
 
             this.schema.AddOrReplaceDirective(this.testDirective);
@@ -44,7 +45,7 @@ namespace GraphQLCore.Tests.Type.Directives
 
             this.testDirective
                 .Received()
-                .GetResolver("bar", Arg.Any<dynamic>());
+                .GetResolver(Arg.Any<Func<Task<object>>>(), Arg.Any<dynamic>());
         }
 
         [Test]
@@ -92,7 +93,7 @@ namespace GraphQLCore.Tests.Type.Directives
 
             this.testDirective
                 .Received()
-                .GetResolver("bar", Arg.Any<dynamic>());
+                .GetResolver(Arg.Any<Func<Task<object>>>(), Arg.Any<dynamic>());
         }
 
         [Test]

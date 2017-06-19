@@ -32,9 +32,9 @@
             return (bool)result.Value;
         }
 
-        public override LambdaExpression GetResolver(object value, object parentValue)
+        public override LambdaExpression GetResolver(Func<Task<object>> valueGetter, object parentValue)
         {
-            Expression<Func<bool, object>> resolver = (@if) => @value;
+            Expression<Func<bool, object>> resolver = (@if) => valueGetter().Result;
 
             return resolver;
         }

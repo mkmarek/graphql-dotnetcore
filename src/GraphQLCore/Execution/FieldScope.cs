@@ -265,11 +265,16 @@
             var fieldInfo = this.GetFieldInfo(type, selection);
             var directivesToUse = selection.Directives;
 
-            var result = await this.ResolveField(fieldInfo, arguments, this.parent);
+            Func<Task<object>> fieldResolver = async () =>
+            {
+                var fieldResult = await this.ResolveField(fieldInfo, arguments, this.parent);
 
-            await this.PublishToEventChannel(fieldInfo, result);
+                await this.PublishToEventChannel(fieldInfo, fieldResult);
 
-            result = await this.ApplyDirectivesToResult(selection, dictionary, result);
+                return fieldResult;
+            };
+
+            var result = await this.ApplyDirectivesToResult(selection, dictionary, fieldResolver);
             var resultType = this.GetResultType(type, fieldInfo, result);
 
             return await this.CompleteValue(result, resultType, selection, arguments);
@@ -283,7 +288,7 @@
             }
         }
 
-        private async Task<object> ApplyDirectivesToResult(GraphQLFieldSelection selection, IDictionary<string, object> dictionary, object result)
+        private async Task<object> ApplyDirectivesToResult(GraphQLFieldSelection selection, IDictionary<string, object> dictionary, Func<Task<object>> fieldResolver)
         {
             foreach (var directive in selection.Directives)
             {
@@ -291,13 +296,15 @@
 
                 if (directiveType != null && directiveType.Locations.Any(l => l == DirectiveLocation.FIELD))
                 {
-                    result = await this.InvokeWithArguments(
+                    var newResolver = directiveType.GetResolver(fieldResolver, (ExpandoObject)dictionary);
+
+                    fieldResolver = async () => await this.InvokeWithArguments(
                         directive.Arguments.ToList(),
-                        directiveType.GetResolver(result, (ExpandoObject)dictionary));
+                        newResolver);
                 }
             }
 
-            return result;
+            return await fieldResolver();
         }
 
         private Type GetResultType(

@@ -3,9 +3,11 @@
     using Complex;
     using Introspection;
     using Language.AST;
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Threading.Tasks;
     using Translation;
 
     public abstract class GraphQLDirectiveType
@@ -41,7 +43,7 @@
 
         private LambdaExpression GetResolverInfo() => this.GetResolver(null, null);
 
-        public abstract LambdaExpression GetResolver(object value, object parentValue);
+        public abstract LambdaExpression GetResolver(Func<Task<object>> valueGetter, object parentValue);
 
         public IntrospectedDirective Introspect(ISchemaRepository schemaRepository)
         {

@@ -7,6 +7,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Threading.Tasks;
 
     public enum FurColor
     {
@@ -221,7 +222,8 @@
         {
         }
 
-        public override LambdaExpression GetResolver(object value, object parentValue)
+
+        public override LambdaExpression GetResolver(Func<Task<object>> valueGetter, object parentValue)
         {
             Expression<Func<int?, int?, int?, object>> resolver = (a, b, c) => "replacedByDirective";
 
