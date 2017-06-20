@@ -26,8 +26,8 @@
             }
             ");
 
-            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string a = result.nested.a; }));
-            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.nested.b; }));
+            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string a = result.data.nested.a; }));
+            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.data.nested.b; }));
         }
 
         [Test]
@@ -46,8 +46,8 @@
             }
             ");
 
-            Assert.AreEqual("1", result.nested.a);
-            Assert.AreEqual("2", result.nested.b);
+            Assert.AreEqual("1", result.data.nested.a);
+            Assert.AreEqual("2", result.data.nested.b);
         }
 
         [Test]
@@ -66,8 +66,8 @@
             }
             ");
 
-            Assert.AreEqual("1", result.nested.a);
-            Assert.AreEqual("2", result.nested.b);
+            Assert.AreEqual("1", result.data.nested.a);
+            Assert.AreEqual("2", result.data.nested.b);
         }
 
         [Test]
@@ -86,8 +86,8 @@
             }
             ");
 
-            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string a = result.nested.a; }));
-            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.nested.b; }));
+            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string a = result.data.nested.a; }));
+            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.data.nested.b; }));
         }
 
         [Test]
@@ -95,8 +95,8 @@
         {
             dynamic result = this.schema.Execute("{ a, b @include(if: false) @skip(if: false) }");
 
-            Assert.AreEqual("world", result.a);
-            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.b; }));
+            Assert.AreEqual("world", result.data.a);
+            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.data.b; }));
         }
 
         [Test]
@@ -104,8 +104,8 @@
         {
             dynamic result = this.schema.Execute("{ a, b @include(if: false) @skip(if: true) }");
 
-            Assert.AreEqual("world", result.a);
-            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.b; }));
+            Assert.AreEqual("world", result.data.a);
+            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.data.b; }));
         }
 
         [Test]
@@ -113,8 +113,8 @@
         {
             dynamic result = this.schema.Execute("{ a, b @include(if: false) }");
 
-            Assert.AreEqual("world", result.a);
-            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.b; }));
+            Assert.AreEqual("world", result.data.a);
+            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.data.b; }));
         }
 
         [Test]
@@ -122,8 +122,8 @@
         {
             dynamic result = this.schema.Execute("{ a, b @skip(if: false) }");
 
-            Assert.AreEqual("world", result.a);
-            Assert.AreEqual("test", result.b);
+            Assert.AreEqual("world", result.data.a);
+            Assert.AreEqual("test", result.data.b);
         }
 
         [Test]
@@ -131,8 +131,8 @@
         {
             dynamic result = this.schema.Execute("{ a, b @include(if: true) @skip(if: false) }");
 
-            Assert.AreEqual("world", result.a);
-            Assert.AreEqual("test", result.b);
+            Assert.AreEqual("world", result.data.a);
+            Assert.AreEqual("test", result.data.b);
         }
 
         [Test]
@@ -140,8 +140,8 @@
         {
             dynamic result = this.schema.Execute("{ a, b @include(if: true) @skip(if: true) }");
 
-            Assert.AreEqual("world", result.a);
-            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.b; }));
+            Assert.AreEqual("world", result.data.a);
+            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.data.b; }));
         }
 
         [Test]
@@ -149,8 +149,8 @@
         {
             dynamic result = this.schema.Execute("{ a, b @include(if: true) }");
 
-            Assert.AreEqual("world", result.a);
-            Assert.AreEqual("test", result.b);
+            Assert.AreEqual("world", result.data.a);
+            Assert.AreEqual("test", result.data.b);
         }
 
         [Test]
@@ -158,8 +158,8 @@
         {
             dynamic result = this.schema.Execute("{ a, b @skip(if: true) }");
 
-            Assert.AreEqual("world", result.a);
-            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.b; }));
+            Assert.AreEqual("world", result.data.a);
+            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.data.b; }));
         }
 
         [Test]
@@ -168,7 +168,7 @@
             var schema = new TestSchema();
             dynamic result = schema.Execute("{ foo @onField }");
 
-            Assert.AreEqual("replacedByDirective", result.foo);
+            Assert.AreEqual("replacedByDirective", result.data.foo);
         }
 
         [SetUp]

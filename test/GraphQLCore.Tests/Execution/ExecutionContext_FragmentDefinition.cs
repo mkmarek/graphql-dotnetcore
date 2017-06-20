@@ -1,5 +1,6 @@
 ﻿namespace GraphQLCore.Tests.Execution
 {
+    using System.Collections.Generic;
     using GraphQLCore.Exceptions;
     using GraphQLCore.Type;
     using Microsoft.CSharp.RuntimeBinder;
@@ -26,14 +27,14 @@
             }
             ");
 
-            Assert.AreEqual("1", result.nested.a);
-            Assert.AreEqual("2", result.nested.b);
+            Assert.AreEqual("1", result.data.nested.a);
+            Assert.AreEqual("2", result.data.nested.b);
         }
 
         [Test]
         public void Execute_DuplicateFragments_ShouldNotReportAnyOtherExectionThenValidationException()
         {
-            Assert.Throws<GraphQLValidationException>(() => this.schema.Execute(@"
+            var result = this.schema.Execute(@"
             query fetch {
                 nested {
                     ...frag
@@ -47,7 +48,13 @@
             fragment frag on NestedQueryType {
                 b
             }
-            "));
+            ");
+
+            var errors = (IList<GraphQLException>)result.errors;
+            var objectResult = (IDictionary<string, object>)result;
+
+            Assert.IsFalse(objectResult.ContainsKey("data"));
+            Assert.AreEqual(1, errors.Count);
         }
 
 
@@ -71,8 +78,8 @@
             }
             ");
 
-            Assert.AreEqual("1", result.nested.a);
-            Assert.AreEqual("2", result.nested.b);
+            Assert.AreEqual("1", result.data.nested.a);
+            Assert.AreEqual("2", result.data.nested.b);
         }
 
         [Test]
@@ -89,8 +96,8 @@
             }
             ");
 
-            Assert.AreEqual("1", result.nested.a);
-            Assert.AreEqual("2", result.nested.b);
+            Assert.AreEqual("1", result.data.nested.a);
+            Assert.AreEqual("2", result.data.nested.b);
         }
 
         [Test]
@@ -109,8 +116,8 @@
             }
             ");
 
-            Assert.AreEqual("1", result.nested.a);
-            Assert.AreEqual("2", result.nested.b);
+            Assert.AreEqual("1", result.data.nested.a);
+            Assert.AreEqual("2", result.data.nested.b);
         }
 
         [SetUp]

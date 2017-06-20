@@ -16,7 +16,7 @@
         {
             dynamic result = this.schema.Execute("{ withArray(ids: [1,2,3]) }");
 
-            Assert.AreEqual(3, result.withArray);
+            Assert.AreEqual(3, result.data.withArray);
         }
 
         [Test]
@@ -24,8 +24,8 @@
         {
             dynamic result = this.schema.Execute("{ nested(id: 42) { Id, StringField } }");
 
-            Assert.AreEqual(42, result.nested.Id);
-            Assert.AreEqual("Test with id 42", result.nested.StringField);
+            Assert.AreEqual(42, result.data.nested.Id);
+            Assert.AreEqual("Test with id 42", result.data.nested.StringField);
         }
 
         [Test]
@@ -33,7 +33,7 @@
         {
             dynamic result = this.schema.Execute("{ withFloat(value: 3.14) }");
 
-            Assert.AreEqual(3.14f, result.withFloat);
+            Assert.AreEqual(3.14f, result.data.withFloat);
         }
 
         [Test]
@@ -41,7 +41,7 @@
         {
             dynamic result = this.schema.Execute("{ withFloat(value: 3) }");
 
-            Assert.AreEqual(3.0f, result.withFloat);
+            Assert.AreEqual(3.0f, result.data.withFloat);
         }
 
         [Test]
@@ -49,7 +49,7 @@
         {
             dynamic result = this.schema.Execute("{ withIEnumerable(ids: [1,2,3]) }");
 
-            Assert.AreEqual(3, result.withIEnumerable);
+            Assert.AreEqual(3, result.data.withIEnumerable);
         }
 
         [Test]
@@ -57,7 +57,7 @@
         {
             dynamic result = this.schema.Execute("{ nested(id: 42) { nested(id: 24) { text(id: 12 str: \"string argument\") } } }");
 
-            Assert.AreEqual("I received 12 with string argument", result.nested.nested.text);
+            Assert.AreEqual("I received 12 with string argument", result.data.nested.nested.text);
         }
 
         [Test]
@@ -65,7 +65,7 @@
         {
             dynamic result = this.schema.Execute("{ isNull }");
 
-            Assert.AreEqual(true, result.isNull);
+            Assert.AreEqual(true, result.data.isNull);
         }
 
         [Test]
@@ -73,7 +73,7 @@
         {
             dynamic result = this.schema.Execute("{ isNull(nonMandatory: 1) }");
 
-            Assert.AreEqual(false, result.isNull);
+            Assert.AreEqual(false, result.data.isNull);
         }
 
         [Test]
@@ -81,7 +81,7 @@
         {
             dynamic result = this.schema.Execute("{ withObjectArg(obj: { stringField: \"abc\" }) { StringField } }");
 
-            Assert.AreEqual("abc", result.withObjectArg.StringField);
+            Assert.AreEqual("abc", result.data.withObjectArg.StringField);
         }
 
         [Test]
@@ -89,7 +89,7 @@
         {
             dynamic result = this.schema.Execute("{ withList(ids: 1) }");
 
-            Assert.AreEqual(1, ((IEnumerable<object>)result.withList).ElementAt(0));
+            Assert.AreEqual(1, ((IEnumerable<object>)result.data.withList).ElementAt(0));
         }
 
         [Test]
@@ -97,9 +97,9 @@
         {
             dynamic result = this.schema.Execute("{ withList(ids: [4 8 6]) }");
 
-            Assert.AreEqual(4, ((IEnumerable<object>)result.withList).ElementAt(0));
-            Assert.AreEqual(8, ((IEnumerable<object>)result.withList).ElementAt(1));
-            Assert.AreEqual(6, ((IEnumerable<object>)result.withList).ElementAt(2));
+            Assert.AreEqual(4, ((IEnumerable<object>)result.data.withList).ElementAt(0));
+            Assert.AreEqual(8, ((IEnumerable<object>)result.data.withList).ElementAt(1));
+            Assert.AreEqual(6, ((IEnumerable<object>)result.data.withList).ElementAt(2));
         }
 
         [Test]
@@ -107,8 +107,8 @@
         {
             dynamic result = this.schema.Execute("{ withObjectListArg(obj: [{ stringField: \"abc\" }, { stringField: \"efg\" }]) { StringField } }");
 
-            Assert.AreEqual("abc", ((IEnumerable<dynamic>)result.withObjectListArg).ElementAt(0).StringField);
-            Assert.AreEqual("efg", ((IEnumerable<dynamic>)result.withObjectListArg).ElementAt(1).StringField);
+            Assert.AreEqual("abc", ((IEnumerable<dynamic>)result.data.withObjectListArg).ElementAt(0).StringField);
+            Assert.AreEqual("efg", ((IEnumerable<dynamic>)result.data.withObjectListArg).ElementAt(1).StringField);
         }
 
         [Test]
@@ -116,8 +116,8 @@
         {
             dynamic result = this.schema.Execute("{ withObjectListArg(obj: { stringArray: [\"abc\", \"efg\"] }) { StringArray } }");
 
-            Assert.AreEqual("abc", ((IEnumerable<dynamic>)((IEnumerable<dynamic>)result.withObjectListArg).ElementAt(0).StringArray).ElementAt(0));
-            Assert.AreEqual("efg", ((IEnumerable<dynamic>)((IEnumerable<dynamic>)result.withObjectListArg).ElementAt(0).StringArray).ElementAt(1));
+            Assert.AreEqual("abc", ((IEnumerable<dynamic>)((IEnumerable<dynamic>)result.data.withObjectListArg).ElementAt(0).StringArray).ElementAt(0));
+            Assert.AreEqual("efg", ((IEnumerable<dynamic>)((IEnumerable<dynamic>)result.data.withObjectListArg).ElementAt(0).StringArray).ElementAt(1));
         }
 
         [Test]
@@ -136,8 +136,8 @@
                     }
                 }");
             
-            Assert.AreEqual("abc", result.withObjectNestedListArg[0][0].StringArray[0]);
-            Assert.AreEqual("klm", result.withObjectNestedListArg[1][0].StringArray[1]);
+            Assert.AreEqual("abc", result.data.withObjectNestedListArg[0][0].StringArray[0]);
+            Assert.AreEqual("klm", result.data.withObjectNestedListArg[1][0].StringArray[1]);
         }
 
         [Test]
@@ -174,7 +174,7 @@
                 }
             };
 
-            Assert.AreEqual(expectedResult, result.withNestedArray);
+            Assert.AreEqual(expectedResult, result.data.withNestedArray);
         }
 
         [Test]
@@ -189,7 +189,7 @@
                     }
                 }");
 
-            Assert.AreEqual(new string[] { TestEnum.One.ToString() }, result.withObjectArg.enumField);
+            Assert.AreEqual(new string[] { TestEnum.One.ToString() }, result.data.withObjectArg.enumField);
         }
 
         [Test]
@@ -200,7 +200,7 @@
                     isNull(nonMandatory: null)
                 }");
 
-            Assert.IsTrue(result.isNull);
+            Assert.IsTrue(result.data.isNull);
         }
 
         [SetUp]

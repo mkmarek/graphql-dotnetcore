@@ -125,7 +125,7 @@
 
         private static dynamic GetField(dynamic result, string name)
         {
-            return ((IEnumerable<dynamic>)result.__type.fields).SingleOrDefault(e => e.name == name);
+            return ((IEnumerable<dynamic>)result.data.__type.fields).SingleOrDefault(e => e.name == name);
         }
 
         private string GetIntrospectionQuery()

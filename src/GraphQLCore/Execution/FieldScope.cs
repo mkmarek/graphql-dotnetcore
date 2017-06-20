@@ -1,5 +1,6 @@
 ﻿namespace GraphQLCore.Execution
 {
+    using Exceptions;
     using Language.AST;
     using System;
     using System.Collections;
@@ -17,37 +18,49 @@
 
     public class FieldScope
     {
+        public IList<GraphQLException> Errors { get; }
+
         private List<GraphQLArgument> arguments;
         private ExecutionContext context;
         private object parent;
         private GraphQLComplexType type;
+        private IEnumerable<object> path;
 
         private static Guid INVALID_RESULT = Guid.NewGuid();
 
         public FieldScope(
             ExecutionContext context,
             GraphQLComplexType type,
-            object parent)
+            object parent,
+            IEnumerable<object> parentPath = null,
+            IList<GraphQLException> parentErrors = null)
         {
             this.type = type;
             this.parent = parent;
             this.arguments = new List<GraphQLArgument>();
             this.context = context;
+            this.path = parentPath ?? new List<object>();
+            this.Errors = parentErrors ?? new List<GraphQLException>();
         }
 
         public async Task<object> CompleteValue(
             object input,
             Type inputType,
             GraphQLFieldSelection selection,
-            IList<GraphQLArgument> arguments)
+            IList<GraphQLArgument> arguments,
+            IEnumerable<object> path = null)
         {
-            if (input == null || inputType == null)
+            if (path == null)
+                path = this.path;
+
+            if (inputType == null)
                 return null;
 
-            var resolvers = new List<Func<object, Type, GraphQLFieldSelection, Task<object>>>()
+            var resolvers = new List<Func<object, Type, GraphQLFieldSelection, IEnumerable<object>, Task<object>>>()
             {
-                this.TryResolveUnion,
                 this.TryResolveNonNull,
+                this.TryResolveNull,
+                this.TryResolveUnion,
                 this.TryResolveObjectType,
                 this.TryResolveCollection,
                 this.TryResolveGraphQLObjectType,
@@ -56,7 +69,7 @@
 
             foreach (var resolver in resolvers)
             {
-                var result = await resolver(input, inputType, selection);
+                var result = await resolver(input, inputType, selection, path);
 
                 if (!INVALID_RESULT.Equals(result))
                 {
@@ -223,11 +236,17 @@
             }
         }
 
-        private async Task<object> CompleteCollectionType(IEnumerable input, GraphQLFieldSelection selection, IList<GraphQLArgument> arguments)
+        private async Task<object> CompleteCollectionType(IEnumerable input, GraphQLFieldSelection selection, IList<GraphQLArgument> arguments, IEnumerable<object> path)
         {
             var result = new List<object>();
+            var index = 0;
+
             foreach (var element in input)
-                result.Add(await this.CompleteValue(element, element?.GetType(), selection, arguments));
+            {
+                result.Add(await this.CompleteValue(element, element?.GetType(), selection, arguments, path.Append(index)));
+
+                index++;
+            }
 
             return result;
         }
@@ -236,14 +255,29 @@
             GraphQLObjectType input,
             GraphQLFieldSelection selection,
             IList<GraphQLArgument> arguments,
-            object parentObject)
+            object parentObject,
+            IEnumerable<object> path)
         {
-            var scope = new FieldScope(this.context, input, parentObject)
+            var aliasOrName = selection.Alias?.Value ?? selection.Name.Value;
+
+            var scope = new FieldScope(this.context, input, parentObject, path.Append(aliasOrName), this.Errors)
             {
                 arguments = arguments.ToList()
             };
 
-            return await scope.GetObject(this.context.FieldCollector.CollectFields(input, selection.SelectionSet));
+            return await this.TryGetObject(scope, input, selection, path);
+        }
+
+        private async Task<dynamic> TryGetObject(FieldScope scope, GraphQLObjectType input, GraphQLFieldSelection selection, IEnumerable<object> path)
+        {
+            try
+            {
+                return await scope.GetObject(this.context.FieldCollector.CollectFields(input, selection.SelectionSet));
+            }
+            catch (GraphQLResolveException)
+            {
+                return null;
+            }
         }
 
         private List<GraphQLArgument> GetArgumentsFromSelection(GraphQLFieldSelection selection)
@@ -267,7 +301,7 @@
 
             Func<Task<object>> fieldResolver = async () =>
             {
-                var fieldResult = await this.ResolveField(fieldInfo, arguments, this.parent);
+                var fieldResult = await this.TryResolveField(selection, fieldInfo, arguments, this.parent);
 
                 await this.PublishToEventChannel(fieldInfo, fieldResult);
 
@@ -277,7 +311,7 @@
             var result = await this.ApplyDirectivesToResult(selection, dictionary, fieldResolver);
             var resultType = this.GetResultType(type, fieldInfo, result);
 
-            return await this.CompleteValue(result, resultType, selection, arguments);
+            return await this.CompleteValue(result, resultType, selection, arguments, this.path);
         }
 
         private async Task PublishToEventChannel(GraphQLObjectTypeFieldInfo fieldInfo, object result)
@@ -338,6 +372,43 @@
             return input;
         }
 
+        private async Task<object>TryResolveField(
+            GraphQLFieldSelection selection, GraphQLObjectTypeFieldInfo fieldInfo, IList<GraphQLArgument> arguments, object parent)
+        {
+            try
+            {
+                return await this.ResolveField(fieldInfo, arguments, parent);
+            }
+            catch (TargetInvocationException ex)
+            {
+                var aliasOrName = selection.Alias?.Value ?? selection.Name.Value;
+                var orderedPath = this.ReorderPath(this.path);
+
+                var exception = new GraphQLException(ex.InnerException);
+                var locatedException = GraphQLException.LocateException(exception, new[] { selection }, orderedPath.Append(aliasOrName));
+                this.Errors.Add(locatedException);
+
+                return await this.CompleteValue(null, fieldInfo.SystemType, selection, arguments, this.path);
+            }
+        }
+
+        private IEnumerable<object> ReorderPath(IEnumerable<object> path)
+        {
+            var index = 0;
+
+            // Reorder elements so array indexes are placed after array name
+            return path.OrderBy(e =>
+            {
+                var value = index;
+
+                if (e is int)
+                    value += 2;
+                index++;
+
+                return value;
+            });
+        }
+
         private async Task<object> ResolveField(
             GraphQLObjectTypeFieldInfo fieldInfo, IList<GraphQLArgument> arguments, object parent)
         {
@@ -357,7 +428,7 @@
             return this.ProcessField(accessorResult);
         }
 
-        private async Task<object> TryResolveEnum(object input, Type inputType, GraphQLFieldSelection selection)
+        private async Task<object> TryResolveEnum(object input, Type inputType, GraphQLFieldSelection selection, IEnumerable<object> path)
         {
             return await Task.Run(() =>
             {
@@ -373,12 +444,12 @@
             });
         }
 
-        private async Task<object> TryResolveGraphQLObjectType(object input, Type inputType, GraphQLFieldSelection selection)
+        private async Task<object> TryResolveGraphQLObjectType(object input, Type inputType, GraphQLFieldSelection selection, IEnumerable<object> path)
         {
             var schemaValue = this.context.SchemaRepository.GetSchemaTypeFor(inputType);
             if (schemaValue is GraphQLObjectType)
             {
-                input = await this.CompleteObjectType((GraphQLObjectType)schemaValue, selection, this.arguments, input);
+                input = await this.CompleteObjectType((GraphQLObjectType)schemaValue, selection, this.arguments, input, path);
 
                 return input;
             }
@@ -386,11 +457,11 @@
             return INVALID_RESULT;
         }
 
-        private async Task<object> TryResolveCollection(object input, Type inputType, GraphQLFieldSelection selection)
+        private async Task<object> TryResolveCollection(object input, Type inputType, GraphQLFieldSelection selection, IEnumerable<object> path)
         {
             if (ReflectionUtilities.IsCollection(inputType))
             {
-                input = await this.CompleteCollectionType((IEnumerable)input, selection, this.arguments);
+                input = await this.CompleteCollectionType((IEnumerable)input, selection, this.arguments, path);
 
                 return input;
             }
@@ -398,23 +469,23 @@
             return INVALID_RESULT;
         }
 
-        private async Task<object> TryResolveObjectType(object input, Type inputType, GraphQLFieldSelection selection)
+        private async Task<object> TryResolveObjectType(object input, Type inputType, GraphQLFieldSelection selection, IEnumerable<object> path)
         {
             if (ReflectionUtilities.IsDescendant(inputType, typeof(GraphQLObjectType)))
             {
-                input = await this.CompleteObjectType((GraphQLObjectType)input, selection, this.arguments, this.parent);
+                input = await this.CompleteObjectType((GraphQLObjectType)input, selection, this.arguments, this.parent, path);
                 return input;
             }
 
             return INVALID_RESULT;
         }
 
-        private async Task<object> TryResolveUnion(object input, Type inputType, GraphQLFieldSelection selection)
+        private async Task<object> TryResolveUnion(object input, Type inputType, GraphQLFieldSelection selection, IEnumerable<object> path)
         {
             if (ReflectionUtilities.IsDescendant(inputType, typeof(GraphQLUnionType)))
             {
                 var unionSchemaType = this.context.SchemaRepository.GetSchemaTypeFor(inputType) as GraphQLUnionType;
-                input = await this.CompleteValue(input, unionSchemaType.ResolveType(input), selection, this.arguments);
+                input = await this.CompleteValue(input, unionSchemaType.ResolveType(input), selection, this.arguments, path);
 
                 return input;
             }
@@ -422,17 +493,33 @@
             return INVALID_RESULT;
         }
 
-        private async Task<object> TryResolveNonNull(object input, Type inputType, GraphQLFieldSelection selection)
+        private async Task<object> TryResolveNonNull(object input, Type inputType, GraphQLFieldSelection selection, IEnumerable<object> path)
         {
             var underlyingType = NonNullable.GetUnderlyingType(inputType);
             if (underlyingType != null)
             {
-                input = await this.CompleteValue(((INonNullable)input).GetValue(), underlyingType, selection, this.arguments);
+                input = (input as INonNullable)?.GetValue() ?? input;
+
+                input = await this.CompleteValue(input, underlyingType, selection, this.arguments, path);
+
+                if (input == null)
+                    throw new GraphQLResolveException($"Cannot return null for non-nullable field {selection.Name.Value}.");
 
                 return input;
             }
 
             return INVALID_RESULT;
+        }
+
+        private async Task<object> TryResolveNull(object input, Type inputType, GraphQLFieldSelection selection, IEnumerable<object> path)
+        {
+            return await Task.Run(() =>
+            {
+                if (input == null)
+                    return (object)null;
+
+                return INVALID_RESULT;
+            });
         }
     }
 }

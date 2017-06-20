@@ -8,6 +8,7 @@
     using System.Collections.Generic;
     using System.Dynamic;
     using System.Linq;
+    using Validation;
 
     [TestFixture]
     public class ExecutionContext_Variables
@@ -34,8 +35,8 @@
 
             var result = this.schema.Execute(query, variables);
 
-            Assert.AreEqual("sample", result.insertInputObject.stringField);
-            Assert.AreEqual(3, result.insertInputObject.intField);
+            Assert.AreEqual("sample", result.data.insertInputObject.stringField);
+            Assert.AreEqual(3, result.data.insertInputObject.intField);
         }
 
         [Test]
@@ -49,7 +50,7 @@
 
             var result = this.schema.Execute(query, variables);
 
-            Assert.AreEqual(true, result.complicatedArgs.booleanArgField);
+            Assert.AreEqual(true, result.data.complicatedArgs.booleanArgField);
         }
 
         [Test]
@@ -63,7 +64,7 @@
 
             var result = this.schema.Execute(query, variables);
 
-            Assert.AreEqual("BROWN", result.complicatedArgs.enumArgField);
+            Assert.AreEqual("BROWN", result.data.complicatedArgs.enumArgField);
         }
 
         [Test]
@@ -77,7 +78,7 @@
 
             var result = this.schema.Execute(query, variables);
 
-            Assert.AreEqual("BROWN", result.complicatedArgs.enumArgField);
+            Assert.AreEqual("BROWN", result.data.complicatedArgs.enumArgField);
         }
 
         [Test]
@@ -91,7 +92,7 @@
 
             var result = this.schema.Execute(query, variables);
 
-            Assert.AreEqual(1.6f, result.complicatedArgs.floatArgField);
+            Assert.AreEqual(1.6f, result.data.complicatedArgs.floatArgField);
         }
 
         [Test]
@@ -105,7 +106,7 @@
 
             var result = this.schema.Execute(query, variables);
 
-            Assert.AreEqual(new int?[] { 1, null, 3 }, result.complicatedArgs.intListArgField);
+            Assert.AreEqual(new int?[] { 1, null, 3 }, result.data.complicatedArgs.intListArgField);
         }
 
         [Test]
@@ -119,7 +120,7 @@
 
             var result = this.schema.Execute(query, variables);
 
-            Assert.AreEqual(3, result.complicatedArgs.intArgField);
+            Assert.AreEqual(3, result.data.complicatedArgs.intArgField);
         }
 
         [Test]
@@ -133,7 +134,7 @@
 
             var result = this.schema.Execute(query, variables);
 
-            Assert.AreEqual(new int[] { 1, 2, 3 }, result.complicatedArgs.nonNullIntListArgField);
+            Assert.AreEqual(new int[] { 1, 2, 3 }, result.data.complicatedArgs.nonNullIntListArgField);
         }
 
         [Test]
@@ -147,7 +148,7 @@
 
             var result = this.schema.Execute(query, variables);
 
-            Assert.AreEqual(3, result.complicatedArgs.nonNullIntArgField);
+            Assert.AreEqual(3, result.data.complicatedArgs.nonNullIntArgField);
         }
 
         [Test]
@@ -169,13 +170,13 @@
 
             var result = this.schema.Execute(query, variables);
 
-            Assert.AreEqual(1, result.complicatedArgs.complicatedObjectArgField.intField);
-            Assert.AreEqual(1, result.complicatedArgs.complicatedObjectArgField.nonNullIntField);
-            Assert.AreEqual("sample", result.complicatedArgs.complicatedObjectArgField.stringField);
-            Assert.AreEqual(true, result.complicatedArgs.complicatedObjectArgField.booleanField);
-            Assert.AreEqual("BROWN", result.complicatedArgs.complicatedObjectArgField.enumField);
-            Assert.AreEqual(1.6f, result.complicatedArgs.complicatedObjectArgField.floatField);
-            Assert.AreEqual(new string[] { "a", "b", "c" }, result.complicatedArgs.complicatedObjectArgField.stringListField);
+            Assert.AreEqual(1, result.data.complicatedArgs.complicatedObjectArgField.intField);
+            Assert.AreEqual(1, result.data.complicatedArgs.complicatedObjectArgField.nonNullIntField);
+            Assert.AreEqual("sample", result.data.complicatedArgs.complicatedObjectArgField.stringField);
+            Assert.AreEqual(true, result.data.complicatedArgs.complicatedObjectArgField.booleanField);
+            Assert.AreEqual("BROWN", result.data.complicatedArgs.complicatedObjectArgField.enumField);
+            Assert.AreEqual(1.6f, result.data.complicatedArgs.complicatedObjectArgField.floatField);
+            Assert.AreEqual(new string[] { "a", "b", "c" }, result.data.complicatedArgs.complicatedObjectArgField.stringListField);
         }
 
         [Test]
@@ -199,13 +200,13 @@
 
             var result = this.schema.Execute(query, variables);
 
-            Assert.AreEqual(1, result.complicatedArgs.complicatedObjectArgField.nested.intField);
-            Assert.AreEqual(1, result.complicatedArgs.complicatedObjectArgField.nested.nonNullIntField);
-            Assert.AreEqual("sample", result.complicatedArgs.complicatedObjectArgField.nested.stringField);
-            Assert.AreEqual(true, result.complicatedArgs.complicatedObjectArgField.nested.booleanField);
-            Assert.AreEqual("BROWN", result.complicatedArgs.complicatedObjectArgField.nested.enumField);
-            Assert.AreEqual(1.6f, result.complicatedArgs.complicatedObjectArgField.nested.floatField);
-            Assert.AreEqual(new string[] { "a", "b", "c" }, result.complicatedArgs.complicatedObjectArgField.nested.stringListField);
+            Assert.AreEqual(1, result.data.complicatedArgs.complicatedObjectArgField.nested.intField);
+            Assert.AreEqual(1, result.data.complicatedArgs.complicatedObjectArgField.nested.nonNullIntField);
+            Assert.AreEqual("sample", result.data.complicatedArgs.complicatedObjectArgField.nested.stringField);
+            Assert.AreEqual(true, result.data.complicatedArgs.complicatedObjectArgField.nested.booleanField);
+            Assert.AreEqual("BROWN", result.data.complicatedArgs.complicatedObjectArgField.nested.enumField);
+            Assert.AreEqual(1.6f, result.data.complicatedArgs.complicatedObjectArgField.nested.floatField);
+            Assert.AreEqual(new string[] { "a", "b", "c" }, result.data.complicatedArgs.complicatedObjectArgField.nested.stringListField);
         }
 
         [Test]
@@ -219,7 +220,7 @@
 
             var result = this.schema.Execute(query, variables);
 
-            Assert.AreEqual(new string[] { "a", "b", "c" }, result.complicatedArgs.stringListArgField);
+            Assert.AreEqual(new string[] { "a", "b", "c" }, result.data.complicatedArgs.stringListArgField);
         }
 
         [Test]
@@ -233,7 +234,7 @@
 
             var result = this.schema.Execute(query, variables);
 
-            Assert.AreEqual("sample", result.complicatedArgs.stringArgField);
+            Assert.AreEqual("sample", result.data.complicatedArgs.stringArgField);
         }
 
         [Test]
@@ -249,7 +250,7 @@
 
             var result = this.schema.Execute(query, variables);
 
-            Assert.AreEqual(1, ((IEnumerable<dynamic>)result.complicatedArgs.complicatedObjectListArgField).ElementAt(0).intField);
+            Assert.AreEqual(1, ((IEnumerable<dynamic>)result.data.complicatedArgs.complicatedObjectListArgField).ElementAt(0).intField);
         }
 
         [Test]
@@ -264,7 +265,7 @@
                         }";
 
             var result = this.schema.Execute(query, variables);
-            var stringListField = (IEnumerable<object>)((IEnumerable<dynamic>)result.complicatedArgs.complicatedObjectListArgField)
+            var stringListField = (IEnumerable<object>)((IEnumerable<dynamic>)result.data.complicatedArgs.complicatedObjectListArgField)
                 .ElementAt(0).stringListField;
 
             Assert.AreEqual("a", stringListField.ElementAt(0));
@@ -283,7 +284,7 @@
             }";
 
             var result = this.schema.Execute(query, variables);
-            var stringField = result.insertInputObject.stringField;
+            var stringField = result.data.insertInputObject.stringField;
 
             Assert.AreEqual("sample", stringField);
         }
@@ -302,7 +303,7 @@
             }";
 
             var result = this.schema.Execute(query, variables);
-            var stringListField = result.insertInputObject.stringListField;
+            var stringListField = result.data.insertInputObject.stringListField;
 
             Assert.AreEqual(new string[] { "a", "b", "c" }, stringListField);
         }
@@ -320,7 +321,7 @@
             }";
 
             var result = this.schema.Execute(query, variables);
-            var array = (IEnumerable<dynamic>)result.insertInputObject.complicatedObjectArray;
+            var array = (IEnumerable<dynamic>)result.data.insertInputObject.complicatedObjectArray;
 
             Assert.AreEqual("sample", array.ElementAt(0).stringField);
             Assert.AreEqual("sample", array.ElementAt(1).stringField);
@@ -341,8 +342,8 @@
 
             var result = this.schema.Execute(query, variables);
 
-            Assert.AreEqual(null, result.complicatedArgs.intArgField);
-            Assert.AreEqual(null, result.complicatedArgs.intArgField2);
+            Assert.AreEqual(null, result.data.complicatedArgs.intArgField);
+            Assert.AreEqual(null, result.data.complicatedArgs.intArgField2);
         }
 
         [Test]
@@ -356,12 +357,11 @@
             }";
             dynamic variables = new ExpandoObject();
 
-            var exception = Assert.Throws<GraphQLException>(() =>
-            {
-                this.schema.Execute(query, variables);
-            });
-
-            Assert.AreEqual("Variable \"intArgVar\" of required type \"Int!\" was not provided.", exception.Message);
+            var result = this.schema.Execute(query, variables);
+            var errors = (IList<GraphQLException>)result.errors;
+            
+            ErrorAssert.AreEqual("Variable \"intArgVar\" of required type \"Int!\" was not provided.", 
+                errors.Single(), 2, 29);
         }
 
         [Test]
@@ -390,10 +390,10 @@
 
             var result = this.schema.Execute(query, this.variables);
 
-            Assert.AreEqual(new string[] { "sample", "and", "sample" }, result.insertInputObject.stringListField);
-            Assert.AreEqual("sample", result.insertInputObject.complicatedObjectArray[0].stringField);
-            Assert.AreEqual(new string[] { "a", "b", "c" }, result.insertInputObject.complicatedObjectArray[1].stringListField);
-            Assert.AreEqual(null, result.insertInputObject.complicatedObjectArray[1].stringField);
+            Assert.AreEqual(new string[] { "sample", "and", "sample" }, result.data.insertInputObject.stringListField);
+            Assert.AreEqual("sample", result.data.insertInputObject.complicatedObjectArray[0].stringField);
+            Assert.AreEqual(new string[] { "a", "b", "c" }, result.data.insertInputObject.complicatedObjectArray[1].stringListField);
+            Assert.AreEqual(null, result.data.insertInputObject.complicatedObjectArray[1].stringField);
         }
 
         [Test]
@@ -418,7 +418,7 @@
 
             var result = this.schema.Execute(query, this.variables);
 
-            Assert.AreEqual(1, result.insertInputObject.nested.nested.intField);
+            Assert.AreEqual(1, result.data.insertInputObject.nested.nested.intField);
         }
 
         [Test]
@@ -459,7 +459,7 @@
                 }
             };
 
-            Assert.AreEqual(expectedResult, result.jagged);
+            Assert.AreEqual(expectedResult, result.data.jagged);
         }
 
         [Test]
@@ -473,7 +473,7 @@
 
             var result = this.schema.Execute(query, variables);
 
-            Assert.AreEqual(new int[] { 3 }, result.complicatedArgs.nonNullIntListArgField);
+            Assert.AreEqual(new int[] { 3 }, result.data.complicatedArgs.nonNullIntListArgField);
         }
 
         [Test]
@@ -487,7 +487,7 @@
 
             var result = this.schema.Execute(query, variables);
 
-            Assert.AreEqual(null, result.complicatedArgs.nonNullIntListArgField);
+            Assert.AreEqual(null, result.data.complicatedArgs.nonNullIntListArgField);
         }
 
         [Test]
@@ -499,7 +499,7 @@
 
             var result = this.schema.Execute(query, variables);
 
-            Assert.AreEqual("sample", result.nonNullField);
+            Assert.AreEqual("sample", result.data.nonNullField);
         }
 
         [Test]
@@ -511,11 +511,11 @@
                             }
                         }";
 
-            Assert.Throws<GraphQLException>(() =>
-            {
-                this.schema.Execute(query, variables);
-            },
-            "Type \"Int!\" is non-nullable and cannot be null.");
+            var result = this.schema.Execute(query, variables);
+            var errors = (IList<GraphQLException>)result.errors;
+        
+            ErrorAssert.AreEqual("Variable \"notExistingVariable\" of required type \"Int!\" was not provided.",
+                errors.Single(), 1, 28);
         }
 
         [Test]
@@ -528,7 +528,7 @@
 
             var result = this.schema.Execute(query, variables);
 
-            Assert.AreEqual("123", result.idArg);
+            Assert.AreEqual("123", result.data.idArg);
         }
 
         [SetUp]

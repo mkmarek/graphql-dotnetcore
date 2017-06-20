@@ -99,7 +99,7 @@
                 kind
               }
             }
-            ").__type;
+            ").data.__type;
         }
     }
 }

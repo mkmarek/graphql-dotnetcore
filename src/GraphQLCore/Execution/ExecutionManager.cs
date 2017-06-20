@@ -67,7 +67,14 @@
 
             this.CreateVariableResolver();
 
-            this.ValidateAstAndThrowErrorWhenFaulty();
+            try
+            {
+                this.ValidateAstAndThrowErrorWhenFaulty();
+            }
+            catch (GraphQLValidationException ex)
+            {
+                return this.CreateResultObjectForErrors(ex.Errors);
+            }
 
             if (this.Operation == null && !string.IsNullOrWhiteSpace(operationToExecute))
                 throw new GraphQLException($"Unknown operation named \"{operationToExecute}\".");
@@ -76,12 +83,27 @@
 
             var operationType = this.GetOperationRootType();
 
-            if (this.Operation.Operation == OperationType.Subscription)
-                return await this.ComposeResultForSubscriptions(operationType, this.Operation);
-            else if (this.Operation.Operation == OperationType.Query)
-                return await this.ComposeResultForQuery(operationType, this.Operation);
-            else //Mutation
-                return await this.ComposeResultForMutation(operationType, this.Operation);
+            try
+            {
+                if (this.Operation.Operation == OperationType.Subscription)
+                    return await this.ComposeResultForSubscriptions(operationType, this.Operation);
+                else if (this.Operation.Operation == OperationType.Query)
+                    return await this.ComposeResultForQuery(operationType, this.Operation);
+                else //Mutation
+                    return await this.ComposeResultForMutation(operationType, this.Operation);
+            }
+            catch (GraphQLException ex)
+            {
+                return this.CreateResultObjectForErrors(new[] { ex });
+            }
+            catch (AggregateException ex)
+            {
+                var innerException = ex.Flatten().InnerException;
+                if (!(innerException is GraphQLException))
+                    throw ex.InnerException;
+
+                return this.CreateResultObjectForErrors(new[] { (GraphQLException)innerException });
+            }
         }
 
         private void ValidateAstAndThrowErrorWhenFaulty()
@@ -180,7 +202,7 @@
 
             await this.AppendIntrospectionInfo(scope, fields, resultObject);
 
-            return resultObject;
+            return this.CreateResultObject(resultObject, scope.Errors);
         }
 
         public async Task<dynamic> ComposeResultForMutation(
@@ -194,7 +216,7 @@
 
             await this.AppendIntrospectionInfo(scope, fields, resultObject);
 
-            return resultObject;
+            return this.CreateResultObject(resultObject, scope.Errors);
         }
 
         private ExecutionContext CreateExecutionContext(GraphQLOperationDefinition operationDefinition)
@@ -234,7 +256,26 @@
             resultDictionary.Add("subscriptionId", this.subscriptionId.Value);
             resultDictionary.Add("clientId", this.clientId);
 
-            return result;
+            return this.CreateResultObject(result, scope.Errors);
+        }
+
+        private ExpandoObject CreateResultObjectForErrors(IEnumerable<GraphQLException> errors)
+        {
+            dynamic resultObject = new ExpandoObject();
+            resultObject.errors = errors;
+
+            return resultObject;
+        }
+
+        private ExpandoObject CreateResultObject(ExpandoObject result, IEnumerable<GraphQLException> errors)
+        {
+            dynamic resultObject = new ExpandoObject();
+
+            resultObject.data = result;
+            if (errors.Any())
+                resultObject.errors = errors;
+
+            return resultObject;
         }
 
         private async Task RegisterSubscription(

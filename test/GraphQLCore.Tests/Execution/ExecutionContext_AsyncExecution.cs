@@ -20,8 +20,8 @@
             sw.Stop();
 
             Assert.AreEqual(1, sw.ElapsedMilliseconds / 1000);
-            Assert.AreEqual(42, result.async1);
-            Assert.AreEqual(42, result.async2);
+            Assert.AreEqual(42, result.data.async1);
+            Assert.AreEqual(42, result.data.async2);
         }
 
         [Test]
@@ -34,8 +34,8 @@
             sw.Stop();
 
             Assert.AreEqual(1, sw.ElapsedMilliseconds / 1000);
-            Assert.AreEqual(42, result.nested.async1);
-            Assert.AreEqual(42, result.nested.async2);
+            Assert.AreEqual(42, result.data.nested.async1);
+            Assert.AreEqual(42, result.data.nested.async2);
         }
 
         [Test]
@@ -48,8 +48,8 @@
             sw.Stop();
 
             Assert.AreEqual(1, sw.ElapsedMilliseconds / 1000);
-            Assert.AreEqual(42, result.nested.nested.nested.async1);
-            Assert.AreEqual(42, result.nested.nested.nested.async2);
+            Assert.AreEqual(42, result.data.nested.nested.nested.async1);
+            Assert.AreEqual(42, result.data.nested.nested.nested.async2);
         }
 
         [Test]
@@ -63,8 +63,8 @@
             sw.Stop();
 
             Assert.AreEqual(1, sw.ElapsedMilliseconds / 1000);
-            Assert.AreEqual(42, result.a);
-            Assert.AreEqual(42, result.b);
+            Assert.AreEqual(42, result.data.a);
+            Assert.AreEqual(42, result.data.b);
         }
 
         [SetUp]

@@ -17,6 +17,10 @@
         public Location[] Locations { get; }
         public IEnumerable Path { get; }
 
+        public GraphQLException(Exception baseException) : base(baseException.Message, baseException)
+        {
+        }
+
         public GraphQLException(string message, IEnumerable<ASTNode> nodes = null, ISource source = null,
             IEnumerable<int> positions = null, IEnumerable path = null,
             Exception innerException = null) : base(message, innerException)
@@ -58,6 +62,25 @@
         {
             if (field != null)
                 info.AddValue(name, field);
+        }
+
+        public static GraphQLException LocateException(GraphQLException originalException = null, IEnumerable<ASTNode> nodes = null,
+            IEnumerable path = null)
+        {
+            if (originalException?.Path != null)
+                return originalException;
+
+            var message = originalException?.Message ?? "An unknown error occured.";
+
+            var error = new GraphQLException(
+                message,
+                originalException?.Nodes ?? nodes,
+                originalException?.ASTSource,
+                originalException?.Positions,
+                path,
+                originalException);
+
+            return error;
         }
     }
 }

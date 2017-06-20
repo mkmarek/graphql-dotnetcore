@@ -18,7 +18,7 @@
         {
             var result = this.schema.Execute(this.singleOperationQuery);
 
-            Assert.IsNotNull(result.a);
+            Assert.IsNotNull(result.data.a);
         }
 
         [Test]
@@ -26,7 +26,7 @@
         {
             var result = this.schema.Execute(this.singleOperationQuery, new ExpandoObject(), "q1");
 
-            Assert.IsNotNull(result.a);
+            Assert.IsNotNull(result.data.a);
         }
 
         [Test]
@@ -56,7 +56,7 @@
         {
             var result = this.schema.Execute(this.multipleOperationQuery, new ExpandoObject(), "q1");
 
-            Assert.IsNotNull(result.a);
+            Assert.IsNotNull(result.data.a);
         }
 
         [Test]
@@ -64,7 +64,7 @@
         {
             var result = this.schema.Execute(this.multipleOperationQuery, new ExpandoObject(), "q2");
 
-            Assert.IsNotNull(result.b);
+            Assert.IsNotNull(result.data.b);
         }
 
         [Test]

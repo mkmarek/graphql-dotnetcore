@@ -20,8 +20,8 @@
         {
             dynamic result = this.schema.Execute("subscription { test }", null, null, "1", 0);
 
-            Assert.AreEqual(0, result.subscriptionId);
-            Assert.AreEqual("1", result.clientId);
+            Assert.AreEqual(0, result.data.subscriptionId);
+            Assert.AreEqual("1", result.data.clientId);
         }
 
         [Test]
@@ -43,7 +43,7 @@
 
             this.schema.Execute("mutation { test }");
 
-            Assert.AreEqual(42, result.test);
+            Assert.AreEqual(42, result.data.test);
             Assert.AreEqual("1", cliId);
             Assert.AreEqual(0, subId);
         }
@@ -73,7 +73,10 @@
         [Test]
         public void Execute_ThorwsErrorWhenInvokingSubscriptionWithoutSubscriptionId()
         {
-            Assert.Throws<GraphQLException>(() => this.schema.Execute("subscription { test }"));
+            var result = this.schema.Execute("subscription { test }");
+
+            var errors = (IList<GraphQLException>)result.errors;
+            Assert.IsInstanceOf<GraphQLException>(errors.Single());
         }
 
         [SetUp]

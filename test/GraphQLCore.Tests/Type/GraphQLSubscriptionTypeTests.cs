@@ -94,7 +94,7 @@ namespace GraphQLCore.Tests.Type
                 }
             }", null, null, "123", 0);
 
-            Assert.IsInstanceOf<int>(result.subscriptionId);
+            Assert.IsInstanceOf<int>(result.data.subscriptionId);
         }
 
         [Test]
@@ -167,7 +167,7 @@ namespace GraphQLCore.Tests.Type
                 }
             }");
 
-            Assert.AreEqual("test", receivedData.testSub.content);
+            Assert.AreEqual("test", receivedData.data.testSub.content);
         }
 
         [Test]
