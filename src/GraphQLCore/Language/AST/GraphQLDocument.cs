@@ -13,5 +13,10 @@ namespace GraphQLCore.Language.AST
                 return ASTNodeKind.Document;
             }
         }
+
+        public static GraphQLDocument GetAst(string expression)
+        {
+            return new Parser(new Lexer()).Parse(new Source(expression));
+        }
     }
 }

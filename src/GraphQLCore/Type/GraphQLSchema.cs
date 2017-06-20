@@ -62,7 +62,7 @@
 
         public async Task<dynamic> ExecuteAsync(string expression)
         {
-            using (var context = new ExecutionManager(this, this.GetAst(expression)))
+            using (var context = new ExecutionManager(this, expression))
             {
                 return await context.ExecuteAsync();
             }
@@ -70,7 +70,7 @@
 
         public async Task<dynamic> ExecuteAsync(string expression, dynamic variables)
         {
-            using (var context = new ExecutionManager(this, this.GetAst(expression), variables))
+            using (var context = new ExecutionManager(this, expression, variables))
             {
                 return await context.ExecuteAsync();
             }
@@ -79,7 +79,7 @@
         public async Task<dynamic> ExecuteAsync(
             string expression, dynamic variables, string operationToExecute)
         {
-            using (var context = new ExecutionManager(this, this.GetAst(expression), variables))
+            using (var context = new ExecutionManager(this, expression, variables))
             {
                 return await context.ExecuteAsync(operationToExecute);
             }
@@ -89,7 +89,7 @@
             string expression, dynamic variables, string operationToExecute, string clientId, int subscriptionId)
         {
             using (var context = new ExecutionManager(
-                this, this.GetAst(expression), variables, clientId, subscriptionId))
+                this, expression, variables, clientId, subscriptionId))
             {
                 return await context.ExecuteAsync(operationToExecute);
             }
@@ -129,11 +129,6 @@
         public void Unsubscribe(string clientId)
         {
             this.SubscriptionType?.EventBus?.Unsubscribe(clientId);
-        }
-
-        private GraphQLDocument GetAst(string expression)
-        {
-            return new Parser(new Lexer()).Parse(new Source(expression));
         }
 
         private void RegisterIntrospectionTypes()

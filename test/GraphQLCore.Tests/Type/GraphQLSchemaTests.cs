@@ -3,7 +3,9 @@
     using GraphQLCore.Exceptions;
     using GraphQLCore.Type;
     using NUnit.Framework;
+    using System.Collections.Generic;
     using System.Dynamic;
+    using System.Linq;
 
     [TestFixture]
     public class GraphQLSchemaTests
@@ -32,23 +34,19 @@
         [Test]
         public void NotExistingOperationNameProvided_TrowsException()
         {
-            var exception = Assert.Throws<GraphQLException>(() =>
-            {
-                var result = this.schema.Execute(this.singleOperationQuery, new ExpandoObject(), "q2");
-            });
+            var result = this.schema.Execute(this.singleOperationQuery, new ExpandoObject(), "q2");
+            var errors = (IList<GraphQLException>)result.errors;
 
-            Assert.AreEqual("Unknown operation named \"q2\".", exception.Message);
+            Assert.AreEqual("Unknown operation named \"q2\".", errors.Single().Message);
         }
 
         [Test]
         public void MultipleOperationsNoOperationNameProvided_TrowsException()
         {
-            var exception = Assert.Throws<GraphQLException>(() =>
-            {
-                var result = this.schema.Execute(this.multipleOperationQuery);
-            });
+            var result = this.schema.Execute(this.multipleOperationQuery);
+            var errors = (IList<GraphQLException>)result.errors;
 
-            Assert.AreEqual("Must provide operation name if query contains multiple operations.", exception.Message);
+            Assert.AreEqual("Must provide operation name if query contains multiple operations.", errors.Single().Message);
         }
 
         [Test]
@@ -70,12 +68,10 @@
         [Test]
         public void NoOperationProvided_ThrowsError()
         {
-            var exception = Assert.Throws<GraphQLException>(() =>
-            {
-                var result = this.schema.Execute("");
-            });
+            var result = this.schema.Execute("");
+            var errors = (IList<GraphQLException>)result.errors;
 
-            Assert.AreEqual("Must provide an operation.", exception.Message);
+            Assert.AreEqual("Must provide an operation.", errors.Single().Message);
         }
 
         [SetUp]

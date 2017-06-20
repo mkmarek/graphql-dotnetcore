@@ -17,6 +17,7 @@
 
     public class ExecutionManager : IDisposable
     {
+        private string expression;
         private GraphQLDocument ast;
         private ValidationContext validationContext;
         private Dictionary<string, GraphQLFragmentDefinition> fragments;
@@ -27,28 +28,27 @@
 
         public GraphQLOperationDefinition Operation { get; private set; }
 
-        public ExecutionManager(GraphQLSchema graphQLSchema, GraphQLDocument ast)
+        private ExecutionManager(GraphQLSchema graphQLSchema, dynamic variables, string clientId, int? subscriptionId)
         {
             this.graphQLSchema = graphQLSchema;
-            this.ast = ast;
             this.fragments = new Dictionary<string, GraphQLFragmentDefinition>();
-            this.variables = new ExpandoObject();
             this.validationContext = new ValidationContext();
-        }
 
-        public ExecutionManager(GraphQLSchema graphQLSchema, GraphQLDocument ast, dynamic variables)
-            : this(graphQLSchema, ast)
-        {
-            this.variables = variables ?? new ExpandoObject();
-        }
-
-        public ExecutionManager(
-            GraphQLSchema graphQLSchema, GraphQLDocument ast, dynamic variables, string clientId, int subscriptionId)
-            : this(graphQLSchema, ast)
-        {
             this.variables = variables ?? new ExpandoObject();
             this.subscriptionId = subscriptionId;
             this.clientId = clientId;
+        }
+
+        public ExecutionManager(GraphQLSchema graphQLSchema, GraphQLDocument ast, object variables = null, string clientId = null, int? subscriptionId = null)
+            : this(graphQLSchema, variables, clientId, subscriptionId)
+        {
+            this.ast = ast;
+        }
+
+        public ExecutionManager(GraphQLSchema graphQLSchema, string expression, object variables = null, string clientId = null, int? subscriptionId = null)
+            : this(graphQLSchema, variables, clientId, subscriptionId)
+        {
+            this.expression = expression;
         }
 
         public void Dispose()
@@ -60,21 +60,17 @@
             return await this.ExecuteAsync(null);
         }
 
-        public async Task<dynamic> ExecuteAsync(string operationToExecute)
+        private async Task<dynamic> ExecuteAsyncWithErrors(string operationToExecute)
         {
+            if (this.ast == null)
+                this.ast = GraphQLDocument.GetAst(this.expression);
+
             foreach (var definition in this.ast.Definitions)
                 this.ResolveDefinition(definition, operationToExecute);
 
             this.CreateVariableResolver();
 
-            try
-            {
-                this.ValidateAstAndThrowErrorWhenFaulty();
-            }
-            catch (GraphQLValidationException ex)
-            {
-                return this.CreateResultObjectForErrors(ex.Errors);
-            }
+            this.ValidateAstAndThrowErrorWhenFaulty();
 
             if (this.Operation == null && !string.IsNullOrWhiteSpace(operationToExecute))
                 throw new GraphQLException($"Unknown operation named \"{operationToExecute}\".");
@@ -83,26 +79,31 @@
 
             var operationType = this.GetOperationRootType();
 
+            if (this.Operation.Operation == OperationType.Subscription)
+                return await this.ComposeResultForSubscriptions(operationType, this.Operation);
+            else if (this.Operation.Operation == OperationType.Query)
+                return await this.ComposeResultForQuery(operationType, this.Operation);
+            else //Mutation
+                return await this.ComposeResultForMutation(operationType, this.Operation);
+        }
+
+        public async Task<dynamic> ExecuteAsync(string operationToExecute)
+        {
             try
             {
-                if (this.Operation.Operation == OperationType.Subscription)
-                    return await this.ComposeResultForSubscriptions(operationType, this.Operation);
-                else if (this.Operation.Operation == OperationType.Query)
-                    return await this.ComposeResultForQuery(operationType, this.Operation);
-                else //Mutation
-                    return await this.ComposeResultForMutation(operationType, this.Operation);
+                return await this.ExecuteAsyncWithErrors(operationToExecute);
             }
             catch (GraphQLException ex)
             {
                 return this.CreateResultObjectForErrors(new[] { ex });
             }
-            catch (AggregateException ex)
+            catch (GraphQLValidationException ex)
             {
-                var innerException = ex.Flatten().InnerException;
-                if (!(innerException is GraphQLException))
-                    throw ex.InnerException;
-
-                return this.CreateResultObjectForErrors(new[] { (GraphQLException)innerException });
+                return this.CreateResultObjectForErrors(ex.Errors);
+            }
+            catch (Exception ex)
+            {
+                return this.CreateResultObjectForErrors(new[] { new GraphQLException(ex) });
             }
         }
 
