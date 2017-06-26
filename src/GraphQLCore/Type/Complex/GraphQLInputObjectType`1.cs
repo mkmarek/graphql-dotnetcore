@@ -20,7 +20,7 @@
             this.SystemType = typeof(T);
         }
 
-        public void Field<TProperty>(string fieldName, Expression<Func<T, TProperty>> accessor)
+        public InputFieldDefinitionBuilder Field<TProperty>(string fieldName, Expression<Func<T, TProperty>> accessor, string description = null)
         {
             if (this.ContainsField(fieldName))
                 throw new GraphQLException("Can't insert two fields with the same name.");
@@ -30,7 +30,10 @@
             if (this.IsInterfaceOrCollectionOfInterfaces(returnType))
                 throw new GraphQLException("Can't set accessor to interface based field");
 
-            this.Fields.Add(fieldName, GraphQLInputObjectTypeFieldInfo.CreateAccessorFieldInfo(fieldName, accessor));
+            var fieldInfo = GraphQLInputObjectTypeFieldInfo.CreateAccessorFieldInfo(fieldName, accessor, description);
+            this.Fields.Add(fieldName, fieldInfo);
+
+            return new InputFieldDefinitionBuilder(fieldInfo);
         }
 
         public override Result GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)

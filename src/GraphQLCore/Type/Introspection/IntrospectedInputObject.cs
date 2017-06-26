@@ -24,7 +24,8 @@
                     {
                         Name = field.Name,
                         Type = field.GetGraphQLType(this.schemaRepository)
-                            .Introspect(this.schemaRepository)
+                            .Introspect(this.schemaRepository),
+                        Description = field.Description
                     }).ToArray();
             }
         }

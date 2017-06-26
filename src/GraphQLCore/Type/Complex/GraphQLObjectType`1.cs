@@ -13,21 +13,21 @@
             this.SystemType = typeof(T);
         }
 
-        public FieldDefinitionBuilder Field<TFieldType>(string fieldName, Expression<Func<T, TFieldType>> accessor)
+        public FieldDefinitionBuilder Field<TFieldType>(string fieldName, Expression<Func<T, TFieldType>> accessor, string description = null)
         {
             if (this.ContainsField(fieldName))
                 throw new GraphQLException("Can't insert two fields with the same name.");
 
-            var fieldInfo = this.CreateFieldInfo(fieldName, accessor);
+            var fieldInfo = this.CreateFieldInfo(fieldName, accessor, description);
 
             this.Fields.Add(fieldName, fieldInfo);
 
             return new FieldDefinitionBuilder(fieldInfo);
         }
 
-        public FieldDefinitionBuilder Field<TFieldType>(Expression<Func<T, TFieldType>> accessor)
+        public FieldDefinitionBuilder Field<TFieldType>(Expression<Func<T, TFieldType>> accessor, string description = null)
         {
-            return this.Field(ReflectionUtilities.GetPropertyInfo(accessor).Name, accessor);
+            return this.Field(ReflectionUtilities.GetPropertyInfo(accessor).Name, accessor, description);
         }
     }
 }

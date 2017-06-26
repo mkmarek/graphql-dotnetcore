@@ -8,10 +8,18 @@
         public GraphQLCharacterInterface()
             : base("Character", "A character in the Star Wars Trilogy")
         {
-            this.Field("id", e => e.Id);
-            this.Field("name", e => e.Name);
-            this.Field("friends", e => e.Friends);
-            this.Field("appearsIn", e => e.AppearsIn);
+            this.Field("id", e => e.Id).WithDescription(
+                "The id of the character.");
+
+            this.Field("name", e => e.Name).WithDescription(
+                "The name of the character.");
+
+            this.Field("friends", e => e.Friends).WithDescription(
+                "The friends of the character, or an empty list if they " +
+                "have none.");
+
+            this.Field("appearsIn", e => e.AppearsIn).WithDescription(
+                "Which movies they appear in.");
         }
     }
 }

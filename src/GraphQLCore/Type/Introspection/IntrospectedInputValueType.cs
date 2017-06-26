@@ -11,7 +11,9 @@
             this.Field("name", e => e.Name);
             this.Field("description", e => e.Description);
             this.Field("type", e => e.Type);
-            this.Field("defaultValue", e => e.DefaultValue);
+            this.Field("defaultValue", e => e.DefaultValue).WithDescription(
+                "A GraphQL-formatted string representing the default value for this " +
+                "input value.");
         }
     }
 }

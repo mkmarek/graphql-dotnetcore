@@ -217,14 +217,16 @@
         {
             return GraphQLObjectTypeFieldInfo.CreateResolverFieldInfo(
                 "__type",
-                (Expression<Func<string, IntrospectedType>>)((string name) => this.Schema.IntrospectType(name)));
+                (Expression<Func<string, IntrospectedType>>)((string name) => this.Schema.IntrospectType(name)),
+                "Request the type information of a single type.");
         }
 
         private GraphQLFieldInfo GetIntrospectedSchemaField()
         {
             return GraphQLObjectTypeFieldInfo.CreateResolverFieldInfo(
                 "__schema",
-                (Expression<Func<IntrospectedSchemaType>>)(() => this.Schema.IntrospectedSchema));
+                (Expression<Func<IntrospectedSchemaType>>)(() => this.Schema.IntrospectedSchema),
+                "Access the current type schema of this server.");
         }
 
         private bool IsQueryRootType(GraphQLBaseType type)

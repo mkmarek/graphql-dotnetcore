@@ -71,16 +71,24 @@
             Assert.AreEqual("Test", type.Name);
         }
 
-        [SetUp]
-        public void SetUp()
-        {
-            this.type = new GraphQLTestInterfaceModelType();
-        }
-
         [Test]
         public void ToString_ReturnsName()
         {
             Assert.AreEqual("Test", type.ToString());
+        }
+
+        [Test]
+        public void Description_ReturnsDescription()
+        {
+            type.Field("test", e => e.Test).WithDescription("description");
+
+            Assert.AreEqual("description", type.GetFieldInfo("test").Description);
+        }
+
+        [SetUp]
+        public void SetUp()
+        {
+            this.type = new GraphQLTestInterfaceModelType();
         }
 
         public class GraphQLInvalidTestInterfaceModelType : GraphQLInterfaceType<TestModel>

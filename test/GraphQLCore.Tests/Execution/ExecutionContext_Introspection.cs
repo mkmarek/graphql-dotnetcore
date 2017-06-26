@@ -264,6 +264,13 @@
         }
 
         [Test]
+        public void Execute_ObjectT1WithThreeFields_FieldBHasDescription()
+        {
+            var field = GetFieldForObject("T1", "b");
+            Assert.AreEqual("description for b", field.description);
+        }
+
+        [Test]
         public void Execute_ObjectT1WithThreeFields_FieldAHasNullIDeprecationReason()
         {
             var field = GetFieldForObject("T1", "a");
@@ -293,10 +300,16 @@
         }
 
         [Test]
+        public void Execute_RootQueryField_HasDescription()
+        {
+            var field = GetRootField("type1");
+            Assert.AreEqual("test", field.description);
+        }
+
+        [Test]
         public void Execute_RootQueryType2IField_ShouldBeInterfaceType()
         {
             var field = GetFieldForObject("RootQueryType", "type2i");
-
             Assert.AreEqual("T2Interface", field.type.name);
         }
 
@@ -337,25 +350,6 @@
             Assert.AreEqual("if", skipDirective.args[0].name);
             Assert.AreEqual("NON_NULL", skipDirective.args[0].type.kind);
             Assert.AreEqual("Boolean", skipDirective.args[0].type.ofType.name);
-        }
-
-        [SetUp]
-        public void SetUp()
-        {
-            this.schema = new GraphQLSchema();
-
-            var type2 = new T2(this.schema);
-            var type1 = new T1();
-            var t2interface = new T2Interface(this.schema);
-            var rootType = new RootQueryType(type1);
-
-            this.schema.AddKnownType(type1);
-            this.schema.AddKnownType(type2);
-            this.schema.AddKnownType(t2interface);
-            this.schema.AddKnownType(rootType);
-            this.schema.AddKnownType(new SampleInputObjectType());
-
-            this.schema.Query(rootType);
         }
 
         [Test]
@@ -399,6 +393,30 @@
             var result = emptySchema.Execute("{ __schema { mutationType { name } } }");
 
             Assert.IsNull(result.data.__schema.mutationType);
+        }
+
+        [SetUp]
+        public void SetUp()
+        {
+            this.schema = new GraphQLSchema();
+
+            var type2 = new T2(this.schema);
+            var type1 = new T1();
+            var t2interface = new T2Interface(this.schema);
+            var rootType = new RootQueryType(type1);
+
+            this.schema.AddKnownType(type1);
+            this.schema.AddKnownType(type2);
+            this.schema.AddKnownType(t2interface);
+            this.schema.AddKnownType(rootType);
+            this.schema.AddKnownType(new SampleInputObjectType());
+
+            this.schema.Query(rootType);
+        }
+
+        private dynamic GetRootField(string fieldName)
+        {
+            return ((IEnumerable<dynamic>)GetType("RootQueryType").fields).SingleOrDefault(e => e.name == fieldName);
         }
 
         private dynamic GetField(string fieldName)
@@ -538,6 +556,7 @@
                 },
                 fields {
                   name
+                  description
                   type {
                     name
                     kind
@@ -590,7 +609,7 @@
         {
             public RootQueryType(T1 type1) : base("RootQueryType", "")
             {
-                this.Field("type1", () => type1);
+                this.Field("type1", () => type1).WithDescription("test");
                 this.Field("type2i", () => (ITestType)new TestType());
             }
         }
@@ -609,7 +628,7 @@
             public T1() : base("T1", "")
             {
                 this.Field("a", () => "1");
-                this.Field("b", () => 2);
+                this.Field("b", () => 2).WithDescription("description for b");
                 this.Field("c", () => new int[] { 1, 2, 3 });
                 this.Field("type2", () => new TestType());
             }

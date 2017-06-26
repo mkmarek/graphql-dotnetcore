@@ -8,6 +8,7 @@
     public abstract class GraphQLFieldInfo
     {
         public string Name { get; set; }
+        public string Description { get; set; }
 
         public IDictionary<string, GraphQLObjectTypeArgumentInfo> Arguments { get; set; }
         public abstract Type SystemType { get; set; }

@@ -40,7 +40,8 @@
             if (fieldName == "__typename")
             {
                 Expression<Func<string>> lambda = () => this.Name;
-                return GraphQLObjectTypeFieldInfo.CreateResolverFieldInfo("__typename", lambda);
+                return GraphQLObjectTypeFieldInfo.CreateResolverFieldInfo("__typename", lambda,
+                    "The name of the current Object type at runtime.");
             }
 
             if (!this.ContainsField(fieldName))
@@ -85,9 +86,9 @@
             return introspectedType;
         }
 
-        protected GraphQLObjectTypeFieldInfo CreateFieldInfo<T, TProperty>(string fieldName, Expression<Func<T, TProperty>> accessor)
+        protected GraphQLObjectTypeFieldInfo CreateFieldInfo<T, TProperty>(string fieldName, Expression<Func<T, TProperty>> accessor, string description)
         {
-            return GraphQLObjectTypeFieldInfo.CreateAccessorFieldInfo(fieldName, accessor);
+            return GraphQLObjectTypeFieldInfo.CreateAccessorFieldInfo(fieldName, accessor, description);
         }
     }
 }

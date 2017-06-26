@@ -3,6 +3,7 @@
     using Exceptions;
     using System;
     using System.Linq.Expressions;
+    using Complex;
 
     public abstract class GraphQLInterfaceType<T> : GraphQLInterfaceType
         where T : class
@@ -14,12 +15,15 @@
             this.SystemType = typeof(T);
         }
 
-        public void Field<TProperty>(string fieldName, Expression<Func<T, TProperty>> accessor)
+        public FieldDefinitionBuilder Field<TProperty>(string fieldName, Expression<Func<T, TProperty>> accessor, string description = null)
         {
             if (this.ContainsField(fieldName))
                 throw new GraphQLException("Can't insert two fields with the same name.");
 
-            this.Fields.Add(fieldName, this.CreateFieldInfo(fieldName, accessor));
+            var fieldInfo = this.CreateFieldInfo(fieldName, accessor, description);
+            this.Fields.Add(fieldName, fieldInfo);
+
+            return new FieldDefinitionBuilder(fieldInfo);
         }
     }
 }

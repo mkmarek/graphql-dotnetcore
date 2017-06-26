@@ -1,5 +1,6 @@
 ﻿namespace GraphQLCore.GraphiQLExample.Models
 {
+    using System;
     using System.Collections.Generic;
     using Type.Scalar;
 
@@ -10,6 +11,6 @@
         public string HomePlanet { get; set; }
         public ID Id { get; set; }
         public string Name { get; set; }
-        public string SecretBackstory { get; set; }
+        public string SecretBackstory { get { throw new Exception("secretBackstory is secret."); } }
     }
 }

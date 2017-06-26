@@ -12,14 +12,15 @@
         public LambdaExpression Lambda { get; set; }
         public override Type SystemType { get; set; }
 
-        public static GraphQLInputObjectTypeFieldInfo CreateAccessorFieldInfo(string fieldName, LambdaExpression accessor)
+        public static GraphQLInputObjectTypeFieldInfo CreateAccessorFieldInfo(string fieldName, LambdaExpression accessor, string description)
         {
             return new GraphQLInputObjectTypeFieldInfo()
             {
                 Name = fieldName,
                 Arguments = new Dictionary<string, GraphQLObjectTypeArgumentInfo>(),
                 Lambda = accessor,
-                SystemType = ReflectionUtilities.GetReturnValueFromLambdaExpression(accessor)
+                SystemType = ReflectionUtilities.GetReturnValueFromLambdaExpression(accessor),
+                Description = description
             };
         }
 

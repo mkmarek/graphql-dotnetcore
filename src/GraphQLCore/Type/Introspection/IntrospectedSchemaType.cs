@@ -20,11 +20,22 @@
             this.schemaRepository = schemaRepository;
             this.schema = schema;
 
-            this.Field("types", () => this.IntrospectAllSchemaTypes());
-            this.Field("queryType", () => this.IntrospectQueryType());
-            this.Field("mutationType", () => this.IntrospectMudationType());
-            this.Field("subscriptionType", () => this.IntrospectSubscriptionType());
-            this.Field("directives", () => this.IntrospectDirectives());
+            this.Field("types", () => this.IntrospectAllSchemaTypes()).WithDescription(
+                "A list of all types supported by this server.");
+
+            this.Field("queryType", () => this.IntrospectQueryType()).WithDescription(
+                "The type that query operations will be rooted at.");
+
+            this.Field("mutationType", () => this.IntrospectMutationType()).WithDescription(
+                "If this server supports mutation, the type that " +
+                "mutation operations will be rooted at.");
+
+            this.Field("subscriptionType", () => this.IntrospectSubscriptionType()).WithDescription(
+                "If this server support subscription, the type that " +
+                "subscription operations will be rooted at.");
+
+            this.Field("directives", () =>  this.IntrospectDirectives()).WithDescription(
+                "A list of all directives supported by this server.");
         }
 
         public IEnumerable<IntrospectedDirective> IntrospectDirectives()
@@ -49,7 +60,7 @@
                 .ToList();
         }
 
-        private IntrospectedType IntrospectMudationType()
+        private IntrospectedType IntrospectMutationType()
         {
             return this.schema.MutationType?.Introspect(this.schemaRepository);
         }

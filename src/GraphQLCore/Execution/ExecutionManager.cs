@@ -375,7 +375,7 @@
 
                 return await scope.CompleteValue(
                     value,
-                    value.GetType(),
+                    value?.GetType(),
                     field,
                     field.Arguments.ToList());
             }

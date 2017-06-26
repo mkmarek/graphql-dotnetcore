@@ -14,7 +14,7 @@
         public bool IsResolver { get; set; }
         public string Channel { get; set; }
 
-        public static new GraphQLObjectTypeFieldInfo CreateAccessorFieldInfo(string fieldName, LambdaExpression accessor)
+        public static new GraphQLObjectTypeFieldInfo CreateAccessorFieldInfo(string fieldName, LambdaExpression accessor, string description = null)
         {
             return new GraphQLObjectTypeFieldInfo()
             {
@@ -22,11 +22,12 @@
                 IsResolver = false,
                 Arguments = new Dictionary<string, GraphQLObjectTypeArgumentInfo>(),
                 Lambda = accessor,
-                SystemType = ReflectionUtilities.GetReturnValueFromLambdaExpression(accessor)
+                SystemType = ReflectionUtilities.GetReturnValueFromLambdaExpression(accessor),
+                Description = description
             };
         }
 
-        public static GraphQLObjectTypeFieldInfo CreateResolverFieldInfo(string fieldName, LambdaExpression resolver)
+        public static GraphQLObjectTypeFieldInfo CreateResolverFieldInfo(string fieldName, LambdaExpression resolver, string description = null)
         {
             return new GraphQLObjectTypeFieldInfo()
             {
@@ -34,7 +35,8 @@
                 IsResolver = true,
                 Lambda = resolver,
                 Arguments = GetArguments(resolver),
-                SystemType = ReflectionUtilities.GetReturnValueFromLambdaExpression(resolver)
+                SystemType = ReflectionUtilities.GetReturnValueFromLambdaExpression(resolver),
+                Description = description
             };
         }
 

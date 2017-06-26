@@ -122,6 +122,22 @@
             Assert.AreEqual("Test", type.ToString());
         }
 
+        [Test]
+        public void FieldDescription_ReturnsCorrectDescription()
+        {
+            this.type.Field("test", e => e.Test, "description");
+
+            Assert.AreEqual("description", this.type.GetFieldInfo("test").Description);
+        }
+
+        [Test]
+        public void FieldDescription_CanBeWrittenFluently()
+        {
+            this.type.Field("test", e => e.Test).WithDescription("description");
+
+            Assert.AreEqual("description", this.type.GetFieldInfo("test").Description);
+        }
+
         [SetUp]
         public void SetUp()
         {
