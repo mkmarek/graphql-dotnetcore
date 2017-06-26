@@ -307,6 +307,13 @@
         }
 
         [Test]
+        public void Execute_RootQueryDeprecatedField_IsDeprecated()
+        {
+            var field = GetRootField("deprecated");
+            Assert.IsTrue(field.isDeprecated);
+        }
+
+        [Test]
         public void Execute_RootQueryType2IField_ShouldBeInterfaceType()
         {
             var field = GetFieldForObject("RootQueryType", "type2i");
@@ -554,9 +561,10 @@
                 interfaces {
                     name kind description
                 },
-                fields {
+                fields (includeDeprecated: true) {
                   name
                   description
+                  isDeprecated
                   type {
                     name
                     kind
@@ -611,6 +619,7 @@
             {
                 this.Field("type1", () => type1).WithDescription("test");
                 this.Field("type2i", () => (ITestType)new TestType());
+                this.Field("deprecated", () => "").IsDeprecated("deprecated");
             }
         }
 

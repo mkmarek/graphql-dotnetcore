@@ -25,5 +25,16 @@
 
             return (TDefinitionBuilder)this;
         }
+
+        public TDefinitionBuilder IsDeprecated(string deprecationReason)
+        {
+            if (deprecationReason != null)
+            {
+                this.FieldInfo.IsDeprecated = true;
+                this.FieldInfo.DeprecationReason = deprecationReason;
+            }
+
+            return (TDefinitionBuilder)this;
+        }
     }
 }

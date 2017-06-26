@@ -138,6 +138,25 @@
             Assert.AreEqual("description", this.type.GetFieldInfo("test").Description);
         }
 
+        [Test]
+        public void Field_CanBeSetToDeprecated()
+        {
+            this.type.Field("test", e => e.Test).IsDeprecated("because");
+
+            var field = this.type.GetFieldInfo("test");
+
+            Assert.AreEqual(true, field.IsDeprecated);
+            Assert.AreEqual("because", field.DeprecationReason);
+        }
+
+        [Test]
+        public void Field_IsDeprecatedOnlyWhenReasonExists()
+        {
+            this.type.Field("test", e => e.Test).IsDeprecated(null);
+
+            Assert.AreEqual(false, this.type.GetFieldInfo("test").IsDeprecated);
+        }
+
         [SetUp]
         public void SetUp()
         {

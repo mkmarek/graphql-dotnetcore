@@ -33,7 +33,9 @@ namespace GraphQLCore.Type.Introspection
                         }).ToArray(),
                         Type = field.GetGraphQLType(this.schemaRepository)
                             .Introspect(this.schemaRepository),
-                        Description = field.Description
+                        Description = field.Description,
+                        IsDeprecated = field.IsDeprecated,
+                        DeprecationReason = field.DeprecationReason
                     }).ToArray();
             }
         }
