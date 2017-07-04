@@ -329,11 +329,30 @@
         }
 
         [Test]
-        public void SampleInputObjectType_HasInputObjectKind()
+        public void Execute_SampleInputObjectType_HasInputObjectKind()
         {
-            dynamic inputObject = GetType("SampleInputObjectType");
+            var inputObject = GetType("SampleInputObjectType");
 
             Assert.AreEqual("INPUT_OBJECT", inputObject.kind);
+        }
+
+        [Test]
+        public void Execute_SampleInputObjectType_HasDefaultInputValueField()
+        {
+            var inputObject = GetType("SampleInputObjectType");
+
+            Assert.AreEqual("default", inputObject.inputFields[2].name);
+            Assert.AreEqual("\"defaultString\"", inputObject.inputFields[2].defaultValue);
+        }
+
+        [Test]
+        public void Execute_RootQueryField_HasDefaultArgument()
+        {
+            var field = GetRootField("default");
+
+            var defaultValue = field.args[0].defaultValue;
+
+            Assert.AreEqual("5", defaultValue);
         }
 
         [Test]
@@ -579,6 +598,7 @@
                   }
                   args {
                     name
+                    defaultValue
                     type {
                       kind
                       ofType {
@@ -603,6 +623,7 @@
                 },
                 inputFields {
                   name
+                  defaultValue
                 },
                 ofType {
                   name
@@ -620,6 +641,8 @@
                 this.Field("type1", () => type1).WithDescription("test");
                 this.Field("type2i", () => (ITestType)new TestType());
                 this.Field("deprecated", () => "").IsDeprecated("deprecated");
+                this.Field("default", (int? a) => a).WithDefaultValue("a", 5);
+                this.Field("input", (TestType test) => test);
             }
         }
 
@@ -629,6 +652,7 @@
             {
                 this.Field("a", e => e.A);
                 this.Field("b", e => e.B);
+                this.Field("default", e => null as string).WithDefaultValue("defaultString");
             }
         }
 

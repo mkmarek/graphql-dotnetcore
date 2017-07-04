@@ -62,6 +62,14 @@
         }
 
         [Test]
+        public void ID_ToString_ReturnsValue()
+        {
+            ID id = "123";
+
+            Assert.AreEqual("123", id.ToString());
+        }
+
+        [Test]
         public void ID_ReturnsNullWhenUnassigned()
         {
             ID id = null;

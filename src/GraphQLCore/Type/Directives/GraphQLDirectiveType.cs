@@ -52,7 +52,7 @@
                 Name = this.Name,
                 Description = this.Description,
                 Locations = this.Locations,
-                Resolver = this.GetResolver(null, null)
+                Resolver = this.GetResolverInfo()
             };
         }
 

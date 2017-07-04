@@ -34,7 +34,7 @@
                 "If this server support subscription, the type that " +
                 "subscription operations will be rooted at.");
 
-            this.Field("directives", () =>  this.IntrospectDirectives()).WithDescription(
+            this.Field("directives", () => this.IntrospectDirectives()).WithDescription(
                 "A list of all directives supported by this server.");
         }
 

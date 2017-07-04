@@ -2,6 +2,7 @@
 {
     using Language.AST;
     using System;
+    using System.Globalization;
     using Translation;
     using Utils;
 
@@ -17,20 +18,34 @@
 
         public override Result GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
         {
-            if (astValue.Kind == ASTNodeKind.FloatValue)
-                return new Result(((GraphQLScalarValue)astValue).Value.ParseFloatOrGiveNull());
-
-            if (astValue.Kind == ASTNodeKind.IntValue)
+            if (astValue.Kind == ASTNodeKind.FloatValue || astValue.Kind == ASTNodeKind.IntValue)
             {
-                object integerValue = ((GraphQLScalarValue)astValue).Value.ParseIntOrGiveNull();
-
-                if (integerValue == null)
-                    return new Result(null);
-
-                return new Result(Convert.ToSingle(integerValue));
+                var value = ((GraphQLScalarValue)astValue).Value.ParseFloatOrGiveNull();
+                if (value != null)
+                    return new Result(value);
             }
 
             return Result.Invalid;
+        }
+
+        protected override GraphQLValue GetAst(object value, ISchemaRepository schemaRepository)
+        {
+            if (!(value is int) && !(value is float) && !(value is double))
+                return null;
+
+            var stringValue = value.ToString();
+
+            var intValue = stringValue.ParseIntOrGiveNull();
+            if (intValue != null)
+                return new GraphQLScalarValue(ASTNodeKind.IntValue)
+                {
+                    Value = intValue.ToString()
+                };
+
+            return new GraphQLScalarValue(ASTNodeKind.FloatValue)
+            {
+                Value = ((double)value).ToString(CultureInfo.InvariantCulture).ToLower()
+            };
         }
     }
 }

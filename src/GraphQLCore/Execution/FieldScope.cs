@@ -20,13 +20,13 @@
     {
         public IList<GraphQLException> Errors { get; }
 
+        private static Guid INVALID_RESULT = Guid.NewGuid();
+
         private List<GraphQLArgument> arguments;
         private ExecutionContext context;
         private object parent;
         private GraphQLComplexType type;
         private IEnumerable<object> path;
-
-        private static Guid INVALID_RESULT = Guid.NewGuid();
 
         public FieldScope(
             ExecutionContext context,
@@ -150,6 +150,7 @@
 
                 return null;
             }
+
             if (result is Task)
             {
                 Task r = (Task)result;
@@ -280,14 +281,32 @@
             }
         }
 
-        private List<GraphQLArgument> GetArgumentsFromSelection(GraphQLFieldSelection selection)
+        private List<GraphQLArgument> GetArgumentsFromSelection(GraphQLFieldSelection selection, GraphQLFieldInfo fieldInfo)
         {
-            var arguments = this.arguments.ToList();
+            if (fieldInfo == null || fieldInfo.Arguments?.Count == 0)
+                return null;
 
-            arguments.RemoveAll(e => selection.Arguments.Any(arg => arg.Name.Value.Equals(e.Name.Value)));
-            arguments.AddRange(selection.Arguments);
+            var schemaRepository = this.context.SchemaRepository;
+            var arguments = selection.Arguments.ToDictionary(e => e.Name.Value, e => e);
 
-            return arguments;
+            foreach (var argument in fieldInfo.Arguments)
+            {
+                var argumentName = argument.Key;
+                var argumentValue = argument.Value;
+
+                if (!arguments.ContainsKey(argumentName) && argumentValue.DefaultValue.IsSet)
+                {
+                    var defaultArgument = new GraphQLArgument()
+                    {
+                        Name = new GraphQLName() { Value = argumentName },
+                        Value = argumentValue.DefaultValue.GetAstValue(
+                            (GraphQLInputType)argumentValue.GetGraphQLType(schemaRepository), schemaRepository)
+                    };
+                    arguments.Add(argumentName, defaultArgument);
+                }
+            }
+
+            return arguments.Values.ToList();
         }
 
         private async Task<object> GetDefinitionAndExecuteField(
@@ -295,8 +314,8 @@
             GraphQLFieldSelection selection,
             IDictionary<string, object> dictionary)
         {
-            var arguments = this.GetArgumentsFromSelection(selection);
             var fieldInfo = this.GetFieldInfo(type, selection);
+            var arguments = this.GetArgumentsFromSelection(selection, fieldInfo)?.ToList() ?? new List<GraphQLArgument>();
             var directivesToUse = selection.Directives;
 
             Func<Task<object>> fieldResolver = async () =>
@@ -372,7 +391,7 @@
             return input;
         }
 
-        private async Task<object>TryResolveField(
+        private async Task<object> TryResolveField(
             GraphQLFieldSelection selection, GraphQLObjectTypeFieldInfo fieldInfo, IList<GraphQLArgument> arguments, object parent)
         {
             try

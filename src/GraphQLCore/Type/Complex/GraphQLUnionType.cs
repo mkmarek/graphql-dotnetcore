@@ -1,14 +1,9 @@
 namespace GraphQLCore.Type
 {
-    using Exceptions;
+    using Introspection;
     using System;
-    using System.Reflection;
-    using System.Linq.Expressions;
-    using Utils;
-    using System.Collections;
     using System.Collections.Generic;
-    using GraphQLCore.Type.Introspection;
-    using GraphQLCore.Type.Translation;
+    using Translation;
 
     public abstract class GraphQLUnionType : GraphQLComplexType
     {

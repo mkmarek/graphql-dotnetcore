@@ -1,8 +1,10 @@
-﻿using GraphQLCore.Type.Translation;
-using System.Linq;
-
-namespace GraphQLCore.Type.Introspection
+﻿namespace GraphQLCore.Type.Introspection
 {
+    using Complex;
+    using System.Collections.Generic;
+    using System.Linq;
+    using Translation;
+
     public class ComplexIntrospectedType : IntrospectedType
     {
         private ISchemaRepository schemaRepository;
@@ -25,12 +27,7 @@ namespace GraphQLCore.Type.Introspection
                     .Select(field => new IntrospectedField()
                     {
                         Name = field.Name,
-                        Arguments = field.Arguments?.Select(argument => new IntrospectedInputValue()
-                        {
-                            Name = argument.Key,
-                            Type = argument.Value.GetGraphQLType(this.schemaRepository)
-                                .Introspect(this.schemaRepository)
-                        }).ToArray(),
+                        Arguments = field.Arguments?.Select(this.GetInputValueFromArgument).ToArray(),
                         Type = field.GetGraphQLType(this.schemaRepository)
                             .Introspect(this.schemaRepository),
                         Description = field.Description,
@@ -38,6 +35,19 @@ namespace GraphQLCore.Type.Introspection
                         DeprecationReason = field.DeprecationReason
                     }).ToArray();
             }
+        }
+
+        private IntrospectedInputValue GetInputValueFromArgument(KeyValuePair<string, GraphQLObjectTypeArgumentInfo> argument)
+        {
+            var type = argument.Value.GetGraphQLType(this.schemaRepository);
+
+            return new IntrospectedInputValue()
+            {
+                Name = argument.Key,
+                Type = type.Introspect(this.schemaRepository),
+                Description = argument.Value.Description,
+                DefaultValue = argument.Value.DefaultValue.GetSerialized((GraphQLInputType)type, this.schemaRepository)
+            };
         }
 
         public override IntrospectedType[] Interfaces

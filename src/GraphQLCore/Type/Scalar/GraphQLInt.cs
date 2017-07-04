@@ -3,6 +3,8 @@
     using Language.AST;
     using System;
     using Translation;
+    using Utils;
+
     public class GraphQLInt : GraphQLScalarType
     {
         public GraphQLInt() : base(
@@ -24,6 +26,20 @@
             }
 
             return Result.Invalid;
+        }
+
+        protected override GraphQLValue GetAst(object value, ISchemaRepository schemaRepository)
+        {
+            if (value is float || value is double)
+                value = value.ToString().ParseIntOrGiveNull();
+
+            if (!(value is int))
+                return null;
+
+            return new GraphQLScalarValue(ASTNodeKind.IntValue)
+            {
+                Value = value.ToString()
+            };
         }
     }
 }

@@ -11,7 +11,8 @@
             var service = new CharacterService();
 
             this.Field("hero", (Episode episode) => service.List(episode));
-            this.Field("human", (string id) => service.GetHumanById(id));
+            this.Field("human", (string id) => service.GetHumanById(id))
+                .WithDefaultValue("id", "1000");
             this.Field("droid", (string id) => service.GetDroidById(id));
             this.Field("characterUnion",
                 (string id) => (service.GetDroidById(id) as object) ?? (service.GetHumanById(id) as object))

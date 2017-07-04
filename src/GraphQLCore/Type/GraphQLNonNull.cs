@@ -36,6 +36,21 @@
             return Result.Invalid;
         }
 
+        protected override GraphQLValue GetAst(object value, ISchemaRepository schemaRepository)
+        {
+            if (this.UnderlyingNullableType is GraphQLInputType)
+            {
+                var astValue = ((GraphQLInputType)this.UnderlyingNullableType).GetAstFromValue(value, schemaRepository);
+
+                if (astValue.Kind == ASTNodeKind.NullValue)
+                    return null;
+
+                return astValue;
+            }
+
+            return null;
+        }
+
         public override IntrospectedType Introspect(ISchemaRepository schemaRepository)
         {
             var introspectedType = new IntrospectedType();

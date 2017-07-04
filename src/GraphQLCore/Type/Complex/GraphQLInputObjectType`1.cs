@@ -4,7 +4,7 @@
     using Exceptions;
     using Language.AST;
     using System;
-    using System.Collections;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
     using Translation;
@@ -20,7 +20,7 @@
             this.SystemType = typeof(T);
         }
 
-        public InputFieldDefinitionBuilder Field<TProperty>(string fieldName, Expression<Func<T, TProperty>> accessor, string description = null)
+        public InputFieldDefinitionBuilder<TProperty> Field<TProperty>(string fieldName, Expression<Func<T, TProperty>> accessor, string description = null)
         {
             if (this.ContainsField(fieldName))
                 throw new GraphQLException("Can't insert two fields with the same name.");
@@ -33,7 +33,7 @@
             var fieldInfo = GraphQLInputObjectTypeFieldInfo.CreateAccessorFieldInfo(fieldName, accessor, description);
             this.Fields.Add(fieldName, fieldInfo);
 
-            return new InputFieldDefinitionBuilder(fieldInfo);
+            return new InputFieldDefinitionBuilder<TProperty>(fieldInfo);
         }
 
         public override Result GetValueFromAst(GraphQLValue astValue, ISchemaRepository schemaRepository)
@@ -47,15 +47,52 @@
             foreach (var field in this.Fields)
             {
                 var astField = GetFieldFromAstObjectValue(objectAstValue, field.Key);
-                var value = this.GetField(astField, field.Value, schemaRepository);
+                Result fieldResult;
 
-                if (!value.IsValid)
+                if (astField == null && field.Value.DefaultValue.IsSet)
+                    fieldResult = new Result(field.Value.DefaultValue.Value);
+                else
+                    fieldResult = this.GetField(astField, field.Value, schemaRepository);
+
+                if (!fieldResult.IsValid)
                     return Result.Invalid;
 
-                this.AssignValueToObjectField(result, field.Value, value.Value);
+                if (fieldResult.Value == null && field.Value.DefaultValue.IsSet)
+                    fieldResult = new Result(field.Value.DefaultValue.Value);
+
+                this.AssignValueToObjectField(result, field.Value, fieldResult.Value);
             }
 
             return new Result(result);
+        }
+
+        protected override GraphQLValue GetAst(object value, ISchemaRepository schemaRepository)
+        {
+            if (!(value is T))
+                return null;
+
+            var fieldNodes = new List<GraphQLObjectField>();
+
+            foreach (var field in this.Fields)
+            {
+                var fieldName = field.Key;
+                var fieldInfo = field.Value;
+                var fieldType = fieldInfo.GetGraphQLType(schemaRepository) as GraphQLInputType;
+
+                var objectValue = fieldInfo.Lambda.Compile().DynamicInvoke(value);
+                var fieldValue = fieldType.GetAstFromValue(objectValue, schemaRepository);
+
+                fieldNodes.Add(new GraphQLObjectField()
+                {
+                    Name = new GraphQLName() { Value = fieldName },
+                    Value = fieldValue
+                });
+            }
+
+            return new GraphQLObjectValue()
+            {
+                Fields = fieldNodes
+            };
         }
 
         private static GraphQLObjectField GetFieldFromAstObjectValue(GraphQLObjectValue objectAstValue, string fieldName)

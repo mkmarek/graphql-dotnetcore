@@ -79,6 +79,8 @@
             {
                 if (input is string)
                     return new Result(new ID(input as string));
+                if (input is int)
+                    return new Result(new ID(input.ToString()));
             }
 
             return Result.Invalid;

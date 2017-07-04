@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Dynamic;
-using System.Linq;
-using GraphQLCore.Execution;
-using NSubstitute;
-using NSubstitute.Extensions;
-
-namespace GraphQLCore.Tests.Type
+﻿namespace GraphQLCore.Tests.Type
 {
+    using GraphQLCore.Execution;
     using GraphQLCore.Language;
     using GraphQLCore.Language.AST;
     using GraphQLCore.Type;
     using GraphQLCore.Type.Scalar;
     using GraphQLCore.Type.Translation;
     using NUnit.Framework;
+    using System.Collections.Generic;
+    using System.Dynamic;
+    using System.Linq;
 
     [TestFixture]
     public class ValueFromAstTests
@@ -26,6 +22,7 @@ namespace GraphQLCore.Tests.Type
         private static GraphQLFloat graphQLFloat = new GraphQLFloat();
         private static GraphQLString graphQLString = new GraphQLString();
         private static GraphQLID graphQLID = new GraphQLID();
+        private static GraphQLLong graphQLLong = new GraphQLLong();
 
         private static GraphQLInputType nonNullBool = new GraphQLNonNull(graphQLBool);
         private static GraphQLInputType listOfBool = new GraphQLList(graphQLBool);
@@ -43,9 +40,12 @@ namespace GraphQLCore.Tests.Type
             this.AreEqual(123, graphQLInt, "123");
             this.AreEqual(123, graphQLFloat, "123");
             this.AreEqual(123.456f, graphQLFloat, "123.456");
+            this.AreEqual(9999999999999999999999999999999999999f, graphQLFloat, "9999999999999999999999999999999999999");
             this.AreEqual("abc123", graphQLString, "\"abc123\"");
             this.AreEqual("123456", graphQLID, "123456");
             this.AreEqual("123456", graphQLID, "\"123456\"");
+            this.AreEqual(123, graphQLLong, "123");
+            this.AreEqual(1234567890123456789, graphQLLong, "1234567890123456789");
         }
 
         [Test]
@@ -55,10 +55,17 @@ namespace GraphQLCore.Tests.Type
             this.IsInvalid(graphQLInt, "123.456");
             this.IsInvalid(graphQLInt, "true");
             this.IsInvalid(graphQLInt, "\"123\"");
+            this.IsInvalid(graphQLInt, "9999999999999999999999999999999999999");
             this.IsInvalid(graphQLFloat, "\"123\"");
+            this.IsInvalid(graphQLFloat, "99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999");
             this.IsInvalid(graphQLString, "123");
             this.IsInvalid(graphQLString, "true");
             this.IsInvalid(graphQLID, "123.456");
+            this.IsInvalid(graphQLLong, "123.456");
+            this.IsInvalid(graphQLLong, "true");
+            this.IsInvalid(graphQLLong, "\"123\"");
+            this.IsInvalid(graphQLLong, "12345678901234567890");
+            this.IsInvalid(graphQLLong, "9999999999999999999999999999999999999");
         }
 
         [Test]
@@ -262,13 +269,7 @@ namespace GraphQLCore.Tests.Type
 
     public class TestInput
     {
-        private int? _int;
-        public int? Int
-        {
-            get { return _int ?? 42; }
-            set { this._int = value; }
-        }
-
+        public int? Int { get; set; }
         public bool? Bool { get; set; }
         public bool RequiredBool { get; set; }
 
@@ -287,7 +288,7 @@ namespace GraphQLCore.Tests.Type
     {
         public TestInputObjectType() : base("TestInput", "")
         {
-            this.Field("int", e => e.Int);
+            this.Field("int", e => e.Int).WithDefaultValue(42);
             this.Field("bool", e => e.Bool);
             this.Field("requiredBool", e => e.RequiredBool);
         }

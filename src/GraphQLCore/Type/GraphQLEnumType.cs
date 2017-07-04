@@ -28,6 +28,17 @@
             return new Result(Enum.Parse(this.SystemType, value));
         }
 
+        protected override GraphQLValue GetAst(object value, ISchemaRepository schemaRepository)
+        {
+            if (!Enum.IsDefined(this.SystemType, value))
+                return null;
+
+            return new GraphQLScalarValue(ASTNodeKind.EnumValue)
+            {
+                Value = value.ToString()
+            };
+        }
+
         public override IntrospectedType Introspect(ISchemaRepository schemaRepository)
         {
             var introspectedType = new IntrospectedType();

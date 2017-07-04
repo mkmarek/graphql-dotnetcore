@@ -95,6 +95,38 @@
             Assert.AreEqual("Test", type.ToString());
         }
 
+        [Test]
+        public void Field_CanHaveDescription()
+        {
+            this.type.Field("test", e => e.Test).WithDescription("description");
+
+            Assert.AreEqual("description", this.type.GetFieldInfo("test").Description);
+        }
+
+        [Test]
+        public void Field_CanBeDeprecated()
+        {
+            this.type.Field("test", e => e.Test).IsDeprecated("because");
+
+            var fieldInfo = this.type.GetFieldInfo("test");
+
+            Assert.AreEqual(true, fieldInfo.IsDeprecated);
+            Assert.AreEqual("because", fieldInfo.DeprecationReason);
+        }
+
+        [Test]
+        public void Field_CanSetArgumentsDefaultValues()
+        {
+            this.type.Field("test", (int? a, int? b, int c) => a + b + c)
+                .WithDefaultValue("a", 4)
+                .WithDefaultValue("b", 3);
+
+            var fieldInfo = this.type.GetFieldInfo("test");
+
+            Assert.AreEqual(4, fieldInfo.Arguments["a"].DefaultValue.Value);
+            Assert.AreEqual(3, fieldInfo.Arguments["b"].DefaultValue.Value);
+        }
+
         [SetUp]
         public void SetUp()
         {

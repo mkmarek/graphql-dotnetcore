@@ -59,7 +59,7 @@
 
             if (!this.variableDefinitions.Contains(variableName))
                 this.Errors.Add(new GraphQLException(this.ComposeUndefinedVarMessage(variableName, opName),
-                    new ASTNode[] { usage.Variable, operation } ));
+                    new ASTNode[] { usage.Variable, operation }));
         }
 
         private string ComposeUndefinedVarMessage(string varName, string opName)

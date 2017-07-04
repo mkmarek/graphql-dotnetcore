@@ -1,7 +1,9 @@
 ﻿namespace GraphQLCore.Type.Scalar
 {
     using Language.AST;
+    using System.Text.RegularExpressions;
     using Translation;
+    using Utils;
 
     public class GraphQLString : GraphQLScalarType
     {
@@ -19,6 +21,14 @@
                 return new Result(((GraphQLScalarValue)astValue).Value);
 
             return Result.Invalid;
+        }
+
+        protected override GraphQLValue GetAst(object value, ISchemaRepository schemaRepository)
+        {
+            return new GraphQLScalarValue(ASTNodeKind.StringValue)
+            {
+                Value = value.ParseString()
+            };
         }
     }
 }

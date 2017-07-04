@@ -3,6 +3,7 @@
     using Language.AST;
     using System;
     using Translation;
+    using Utils;
 
     public class GraphQLLong : GraphQLScalarType
     {
@@ -25,6 +26,20 @@
             }
 
             return Result.Invalid;
+        }
+
+        protected override GraphQLValue GetAst(object value, ISchemaRepository schemaRepository)
+        {
+            if (value is float || value is double)
+                value = value.ToString().ParseLongOrGiveNull();
+
+            if (!(value is long) && !(value is int))
+                return null;
+
+            return new GraphQLScalarValue(ASTNodeKind.IntValue)
+            {
+                Value = value.ToString()
+            };
         }
     }
 }

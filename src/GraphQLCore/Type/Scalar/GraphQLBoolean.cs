@@ -1,6 +1,7 @@
 ﻿namespace GraphQLCore.Type.Scalar
 {
     using Language.AST;
+    using System;
     using Translation;
     using Utils;
 
@@ -18,6 +19,22 @@
                 return new Result(((GraphQLScalarValue)astValue).Value.ParseBoolOrGiveNull());
 
             return Result.Invalid;
+        }
+
+        protected override GraphQLValue GetAst(object value, ISchemaRepository schemaRepository)
+        {
+            if (value is int)
+                value = Convert.ToBoolean(value);
+
+            if (!(value is bool))
+                return null;
+
+            var stringValue = (bool)value ? "true" : "false";
+
+            return new GraphQLScalarValue(ASTNodeKind.BooleanValue)
+            {
+                Value = stringValue
+            };
         }
     }
 }

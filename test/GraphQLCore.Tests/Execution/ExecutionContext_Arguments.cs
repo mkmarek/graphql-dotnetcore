@@ -1,8 +1,8 @@
 ﻿namespace GraphQLCore.Tests.Execution
 {
+    using GraphQLCore.Execution;
     using GraphQLCore.Type;
     using NUnit.Framework;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -203,6 +203,49 @@
             Assert.IsTrue(result.data.isNull);
         }
 
+        [Test]
+        public void Execute_WithDefaultValue_ReturnsDefaultValue()
+        {
+            dynamic result = this.schema.Execute(@"
+                {
+                    withDefaultValue
+                }");
+
+            Assert.AreEqual("default", result.data.withDefaultValue);
+        }
+
+        [Test]
+        public void Execute_WithComplexDefaultValue_ReturnsDefaultValue()
+        {
+            dynamic result = this.schema.Execute(@"
+                {
+                    withDefaultComplexValue {
+                        stringField : StringField
+                    }
+                }");
+
+            Assert.AreEqual("defaultCreatedByObject", result.data.withDefaultComplexValue.stringField);
+        }
+
+        [Test]
+        public void Execute_WithComplexDefaultValueInField_ReturnsDefaultValue()
+        {
+            dynamic result = this.schema.Execute(@"
+                {
+                    withDefaultComplexValue (obj: {}) {
+                        stringField : StringField
+                        withSupplied : defaultField(argument: ""abc"")
+                        withNull : defaultField(argument: null)
+                        withDefault : defaultField
+                    }
+                }");
+
+            Assert.AreEqual("default", result.data.withDefaultComplexValue.stringField);
+            Assert.AreEqual("default+abc", result.data.withDefaultComplexValue.withSupplied);
+            Assert.AreEqual("default+", result.data.withDefaultComplexValue.withNull);
+            Assert.AreEqual("default+defaultArgument", result.data.withDefaultComplexValue.withDefault);
+        }
+
         [SetUp]
         public void SetUp()
         {
@@ -237,6 +280,8 @@
                 this.Field(instance => instance.StringArray);
                 this.Field("enumField", instance => instance.Enum);
                 this.Field("nested", (int id) => nestedTypeNonGeneric);
+                this.Field("defaultField", (IContext<TestObject> context, string argument) => $"{context.Instance.StringField}+{argument}")
+                    .WithDefaultValue("argument", "defaultArgument");
             }
         }
 
@@ -244,7 +289,7 @@
         {
             public InputTestObjectType() : base("InputTestObjectType", "")
             {
-                this.Field("stringField", instance => instance.StringField);
+                this.Field("stringField", instance => instance.StringField).WithDefaultValue("default");
                 this.Field("stringArray", instance => instance.StringArray);
                 this.Field("enumField", instance => instance.Enum);
             }
@@ -264,6 +309,9 @@
                 this.Field("withObjectListArg", (IEnumerable<TestObject> obj) => obj);
                 this.Field("withObjectNestedListArg", (IEnumerable<IEnumerable<TestObject>> obj) => obj);
                 this.Field("withNestedArray", (int?[][][] matrix) => matrix);
+                this.Field("withDefaultValue", (string value) => value).WithDefaultValue("value", "default");
+                this.Field("withDefaultComplexValue", (TestObject obj) => obj)
+                    .WithDefaultValue("obj", new TestObject() { Id = 1, StringField = "defaultCreatedByObject" });
             }
         }
 

@@ -62,11 +62,36 @@
 
                 if (!result.IsValid)
                     return Result.Invalid;
-                
+
                 output.Add(result.Value);
             }
 
             return new Result(output);
+        }
+
+        protected override GraphQLValue GetAst(object value, ISchemaRepository schemaRepository)
+        {
+            var itemType = this.MemberType as GraphQLInputType;
+
+            if (ReflectionUtilities.IsCollection(value.GetType()))
+            {
+                var valuesNodes = new List<GraphQLValue>();
+
+                foreach (var item in (IEnumerable)value)
+                {
+                    var itemNode = itemType?.GetAstFromValue(item, schemaRepository);
+
+                    if (itemNode != null)
+                        valuesNodes.Add(itemNode);
+                }
+
+                return new GraphQLListValue(ASTNodeKind.ListValue)
+                {
+                    Values = valuesNodes
+                };
+            }
+
+            return itemType.GetAstFromValue(value, schemaRepository);
         }
 
         public override IntrospectedType Introspect(ISchemaRepository schemaRepository)

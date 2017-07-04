@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using Translation;
-    using Utils;
 
     public abstract class GraphQLFieldInfo
     {

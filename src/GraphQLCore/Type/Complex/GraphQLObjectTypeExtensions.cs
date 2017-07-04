@@ -1,9 +1,9 @@
-﻿using System;
-using System.Linq.Expressions;
-using GraphQLCore.Type.Complex;
-
-namespace GraphQLCore.Type
+﻿namespace GraphQLCore.Type
 {
+    using Complex;
+    using System;
+    using System.Linq.Expressions;
+
     public static class GraphQLObjectTypeExtensions
     {
         public static FieldDefinitionBuilder Field<T1>(this GraphQLObjectType @this, string name, Expression<Func<T1>> resolver, string description = null) => @this.Field(name, resolver, description);

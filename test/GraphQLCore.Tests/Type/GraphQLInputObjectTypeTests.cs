@@ -9,6 +9,7 @@
     using NUnit.Framework;
     using System.Collections.Generic;
     using System.Linq;
+    using GraphQLCore.Execution;
 
     public class GraphQLInputObjectTypeTests
     {
@@ -157,10 +158,25 @@
             Assert.AreEqual(false, this.type.GetFieldInfo("test").IsDeprecated);
         }
 
+        [Test]
+        public void Field_CanHaveDefaultValue()
+        {
+            this.type.Field("test", e => (int?)e.Test).WithDefaultValue(1);
+
+            Assert.AreEqual(1, type.GetFieldInfo("test").DefaultValue.Value);
+        }
+
         [SetUp]
         public void SetUp()
         {
             this.type = new GraphQLTestInputModelType();
+        }
+
+        public class GraphQLTestObjectType : GraphQLObjectType
+        {
+            public GraphQLTestObjectType() : base("Test", "")
+            {
+            }
         }
 
         public class GraphQLTestInputModelType : GraphQLInputObjectType<TestModel>

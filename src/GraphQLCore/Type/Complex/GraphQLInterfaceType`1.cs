@@ -1,9 +1,9 @@
 ﻿namespace GraphQLCore.Type
 {
+    using Complex;
     using Exceptions;
     using System;
     using System.Linq.Expressions;
-    using Complex;
 
     public abstract class GraphQLInterfaceType<T> : GraphQLInterfaceType
         where T : class
