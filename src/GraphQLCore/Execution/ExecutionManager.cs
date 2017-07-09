@@ -203,7 +203,13 @@
 
             await this.AppendIntrospectionInfo(scope, fields, resultObject);
 
-            return this.CreateResultObject(resultObject, scope.Errors);
+            dynamic returnObject = new ExpandoObject();
+            returnObject.data = resultObject;
+
+            if (scope.Errors.Any())
+                returnObject.errors = scope.Errors;
+
+            return returnObject;
         }
 
         public async Task<dynamic> ComposeResultForMutation(
@@ -217,7 +223,13 @@
 
             await this.AppendIntrospectionInfo(scope, fields, resultObject);
 
-            return this.CreateResultObject(resultObject, scope.Errors);
+            dynamic returnObject = new ExpandoObject();
+            returnObject.data = resultObject;
+
+            if (scope.Errors.Any())
+                returnObject.errors = scope.Errors;
+
+            return returnObject;
         }
 
         private ExecutionContext CreateExecutionContext(GraphQLOperationDefinition operationDefinition)
@@ -257,26 +269,21 @@
             resultDictionary.Add("subscriptionId", this.subscriptionId.Value);
             resultDictionary.Add("clientId", this.clientId);
 
-            return this.CreateResultObject(result, scope.Errors);
+            dynamic returnObject = new ExpandoObject();
+            returnObject.data = result;
+
+            if (scope.Errors.Any())
+                returnObject.errors = scope.Errors;
+
+            return returnObject;
         }
 
-        private ExpandoObject CreateResultObjectForErrors(IEnumerable<GraphQLException> errors)
+        private dynamic CreateResultObjectForErrors(IEnumerable<GraphQLException> errors)
         {
-            dynamic resultObject = new ExpandoObject();
-            resultObject.errors = errors;
+            dynamic result = new ExpandoObject();
+            result.errors = errors;
 
-            return resultObject;
-        }
-
-        private ExpandoObject CreateResultObject(ExpandoObject result, IEnumerable<GraphQLException> errors)
-        {
-            dynamic resultObject = new ExpandoObject();
-
-            resultObject.data = result;
-            if (errors.Any())
-                resultObject.errors = errors;
-
-            return resultObject;
+            return result;
         }
 
         private async Task RegisterSubscription(
