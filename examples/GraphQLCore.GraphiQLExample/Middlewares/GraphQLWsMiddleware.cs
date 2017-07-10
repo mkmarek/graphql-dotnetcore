@@ -71,9 +71,16 @@ namespace GraphQLCore.GraphiQLExample.Middlewares
 
         private static IGraphQLSchema GetSchema(HttpContext context, SubscriptionMessageReceived received)
         {
-            var schema = context.RequestServices.GetService(typeof(IGraphQLSchema)) as IGraphQLSchema;
-            schema.OnSubscriptionMessageReceived += received;
-            return schema;
+            try
+            {
+                var schema = context.RequestServices.GetService(typeof(IGraphQLSchema)) as IGraphQLSchema;
+                schema.OnSubscriptionMessageReceived += received;
+                return schema;
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
         }
 
         private static async Task<WebSocketReceiveResult> MainLoop(WebSocket webSocket, string clientId, IGraphQLSchema schema)

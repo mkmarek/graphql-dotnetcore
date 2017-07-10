@@ -99,7 +99,7 @@
 
       var subscriptionsClient = new window.SubscriptionsTransportWs.SubscriptionClient(
         'ws://' + window.location.host + '/graphql',
-        { reconnect: true });
+        { reconnect: false });
       var subscriptionsFetcher = window.GraphiQLSubscriptionsFetcher.graphQLFetcher(subscriptionsClient, graphQLFetcher);
 
       // Render <GraphiQL /> into the body.
