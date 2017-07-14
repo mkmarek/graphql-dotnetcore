@@ -26,7 +26,7 @@
             return (TDefinitionBuilder)this;
         }
 
-        public TDefinitionBuilder IsDeprecated(string deprecationReason)
+        public TDefinitionBuilder IsDeprecated(string deprecationReason = "No longer supported")
         {
             if (deprecationReason != null)
             {

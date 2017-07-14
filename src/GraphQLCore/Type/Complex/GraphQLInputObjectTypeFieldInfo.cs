@@ -9,7 +9,6 @@
     public class GraphQLInputObjectTypeFieldInfo : GraphQLFieldInfo
     {
         public LambdaExpression Lambda { get; set; }
-        public DefaultValue DefaultValue { get; set; }
         public override Type SystemType { get; set; }
 
         public static GraphQLInputObjectTypeFieldInfo CreateAccessorFieldInfo(string fieldName, LambdaExpression accessor, string description)

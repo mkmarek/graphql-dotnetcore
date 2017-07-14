@@ -18,11 +18,11 @@
             this.interfaceType = interfaceType;
         }
 
-        public override IntrospectedType Introspect(ISchemaRepository schemaRepository)
+        public override NonNullable<IntrospectedType> Introspect(ISchemaRepository schemaRepository)
         {
             var type = base.Introspect(schemaRepository);
 
-            type.Kind = TypeKind.INTERFACE;
+            type.Value.Kind = TypeKind.INTERFACE;
 
             return type;
         }

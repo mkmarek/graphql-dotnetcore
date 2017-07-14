@@ -50,7 +50,7 @@
             {
                 var fragmentDefinition = this.Fragments[fragmentSpread.Name.Value];
                 var fragmentType = this.GetFragmentType(fragmentDefinition);
-                var parentType = this.GetLastType();
+                var parentType = this.GetUnderlyingType(this.GetLastType());
 
                 if (fragmentType != null &&
                     parentType != null &&
@@ -87,16 +87,16 @@
                 return true;
 
             var parentImplementsFragmentType = fragmentType
-                .Introspect(this.SchemaRepository)
-                .Interfaces?.Any(e => e.Name == parentType.Name) ?? false;
+                .Introspect(this.SchemaRepository).Value
+                .Interfaces?.Any(e => e.Value.Name == parentType.Name) ?? false;
 
             var fragmentTypeImplementsParent = parentType
-                .Introspect(this.SchemaRepository)
-                .Interfaces?.Any(e => e.Name == fragmentType.Name) ?? false;
+                .Introspect(this.SchemaRepository).Value
+                .Interfaces?.Any(e => e.Value.Name == fragmentType.Name) ?? false;
 
             var fragmentTypeIsWithinPossibleTypes = parentType
-                .Introspect(this.SchemaRepository)
-                .PossibleTypes?.Any(e => e.Name == fragmentType.Name) ?? false;
+                .Introspect(this.SchemaRepository).Value
+                .PossibleTypes?.Any(e => e.Value.Name == fragmentType.Name) ?? false;
 
             return parentImplementsFragmentType || fragmentTypeImplementsParent || fragmentTypeIsWithinPossibleTypes;
         }

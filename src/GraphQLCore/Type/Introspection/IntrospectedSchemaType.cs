@@ -38,25 +38,26 @@
                 "A list of all directives supported by this server.");
         }
 
-        public IEnumerable<IntrospectedDirective> IntrospectDirectives()
+        public NonNullable<IEnumerable<NonNullable<IntrospectedDirective>>> IntrospectDirectives()
         {
-            return this.schemaRepository.GetDirectives()
-                .Select(e => e.Introspect(this.schemaRepository));
+            var directives = this.schemaRepository.GetDirectives();
+            if (directives == null)
+                return new NonNullable<IEnumerable<NonNullable<IntrospectedDirective>>>(
+                    Enumerable.Empty<NonNullable<IntrospectedDirective>>());
+
+            return this.schemaRepository.GetDirectives().Select(e =>
+                (NonNullable<IntrospectedDirective>)e.Introspect(this.schemaRepository)).ToList();
         }
 
-        public IEnumerable<IntrospectedType> IntrospectAllSchemaTypes()
+        public NonNullable<IEnumerable<NonNullable<IntrospectedType>>> IntrospectAllSchemaTypes()
         {
-            var result = new List<IntrospectedType>();
+            var result = new List<NonNullable<IntrospectedType>>();
 
-            foreach (var type in this.schemaRepository.GetOutputKnownTypes())
-                result.Add(type.Introspect(this.schemaRepository));
-
-            foreach (var type in this.schemaRepository.GetInputKnownTypes().Where(e => !result.Any(r => r.Name == e.Name)))
+            foreach (var type in this.schemaRepository.GetAllKnownTypes())
                 result.Add(type.Introspect(this.schemaRepository));
 
             return result
-                .Where(e => e.Name != null)
-                .OrderBy(e => e.Name)
+                .OrderBy(e => e.Value.Name)
                 .ToList();
         }
 
@@ -70,9 +71,9 @@
             return this.schema.SubscriptionType?.Introspect(this.schemaRepository);
         }
 
-        private IntrospectedType IntrospectQueryType()
+        private NonNullable<IntrospectedType> IntrospectQueryType()
         {
-            return this.schema.QueryType?.Introspect(this.schemaRepository);
+            return this.schema.QueryType.Introspect(this.schemaRepository);
         }
     }
 }

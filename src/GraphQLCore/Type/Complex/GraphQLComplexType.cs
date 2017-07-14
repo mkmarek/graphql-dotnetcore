@@ -57,6 +57,16 @@
                 .ToArray();
         }
 
+        public override NonNullable<IntrospectedType> Introspect(ISchemaRepository schemaRepository)
+        {
+            var introspectedType = new ComplexIntrospectedType(schemaRepository, this);
+            introspectedType.Name = this.Name;
+            introspectedType.Description = this.Description;
+            introspectedType.Kind = TypeKind.OBJECT;
+
+            return introspectedType;
+        }
+
         protected void ValidateResolver(LambdaExpression resolver)
         {
             var contextType = typeof(IContext<>);
@@ -74,16 +84,6 @@
                         $"Can't specify IContext of type \"{argumentType.Name}\" in GraphQLObjectType with type \"{this.SystemType}\"");
                 }
             }
-        }
-
-        public override IntrospectedType Introspect(ISchemaRepository schemaRepository)
-        {
-            var introspectedType = new ComplexIntrospectedType(schemaRepository, this);
-            introspectedType.Name = this.Name;
-            introspectedType.Description = this.Description;
-            introspectedType.Kind = TypeKind.OBJECT;
-
-            return introspectedType;
         }
 
         protected GraphQLObjectTypeFieldInfo CreateFieldInfo<T, TProperty>(string fieldName, Expression<Func<T, TProperty>> accessor, string description)

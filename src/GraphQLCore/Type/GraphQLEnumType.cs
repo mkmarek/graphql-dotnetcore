@@ -4,13 +4,19 @@
     using Language.AST;
     using Scalar;
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using Translation;
+    using Utils;
 
     public class GraphQLEnumType : GraphQLScalarType, ISystemTypeBound
     {
-        public GraphQLEnumType(string name, string description, Type enumType) : base(name, description)
+        public Dictionary<string, GraphQLEnumValueInfo> Values { get; }
+
+        protected GraphQLEnumType(string name, string description, Type enumType) : base(name, description)
         {
             this.SystemType = enumType;
+            this.Values = this.GetEnumValues(enumType).ToDictionary(e => e.Name, e => e);
         }
 
         public Type SystemType { get; protected set; }
@@ -28,6 +34,17 @@
             return new Result(Enum.Parse(this.SystemType, value));
         }
 
+        public override NonNullable<IntrospectedType> Introspect(ISchemaRepository schemaRepository)
+        {
+            var introspectedType = new IntrospectedType();
+            introspectedType.Name = this.Name;
+            introspectedType.Description = this.Description;
+            introspectedType.Kind = TypeKind.ENUM;
+            introspectedType.EnumValues = this.Values.Select(e => e.Value.Introspect()).ToArray();
+
+            return introspectedType;
+        }
+
         protected override GraphQLValue GetAst(object value, ISchemaRepository schemaRepository)
         {
             if (!Enum.IsDefined(this.SystemType, value))
@@ -39,15 +56,15 @@
             };
         }
 
-        public override IntrospectedType Introspect(ISchemaRepository schemaRepository)
+        private GraphQLEnumValueInfo[] GetEnumValues(Type type)
         {
-            var introspectedType = new IntrospectedType();
-            introspectedType.Name = this.Name;
-            introspectedType.Description = this.Description;
-            introspectedType.Kind = TypeKind.ENUM;
-            introspectedType.EnumValues = IntrospectedEnumValue.GetEnumValuesFor(this.SystemType);
+            if (!ReflectionUtilities.IsEnum(type))
+                throw new ArgumentException("T must be an enum type");
 
-            return introspectedType;
+            return Enum.GetNames(type).Select(e => new GraphQLEnumValueInfo()
+            {
+                Name = e
+            }).ToArray();
         }
     }
 }

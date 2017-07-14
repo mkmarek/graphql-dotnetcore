@@ -10,7 +10,7 @@
     using Type.Translation;
     using Utils;
 
-    public class SingleFieldSubscriptionsVisitor: ValidationASTVisitor
+    public class SingleFieldSubscriptionsVisitor : ValidationASTVisitor
     {
         private ISchemaRepository schemaRepository;
 

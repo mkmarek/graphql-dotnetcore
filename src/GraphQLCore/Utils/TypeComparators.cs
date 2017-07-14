@@ -80,7 +80,8 @@ namespace GraphQLCore.Utils
         {
             return parent
                 .Introspect(schemaRepository)
-                .Interfaces.Any(e => e.Name == child.Name);
+                .Value
+                .Interfaces.Any(e => e.Value.Name == child.Name);
         }
     }
 }

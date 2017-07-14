@@ -6,7 +6,6 @@
     public class GraphQLObjectTypeArgumentInfo : GraphQLFieldInfo
     {
         public override Type SystemType { get; set; }
-        public DefaultValue DefaultValue { get; set; }
 
         protected override GraphQLBaseType GetSchemaType(Type type, ISchemaRepository schemaRepository)
         {

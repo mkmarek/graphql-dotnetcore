@@ -18,7 +18,7 @@
 
         public override GraphQLFieldSelection BeginVisitFieldSelection(GraphQLFieldSelection selection)
         {
-            var type = this.GetLastType();
+            var type = this.GetUnderlyingType(this.GetLastType());
 
             if (type != null)
             {
@@ -51,23 +51,23 @@
             var suggestedObjectTypes = new List<string>();
             var interfaceUsageCount = new Dictionary<string, int>();
 
-            if (introspectedType.PossibleTypes == null)
+            if (introspectedType.Value.PossibleTypes == null)
                 return suggestedObjectTypes;
 
-            foreach (var possibleType in introspectedType.PossibleTypes)
+            foreach (var possibleType in introspectedType.Value.PossibleTypes)
             {
-                if (possibleType.Fields.Any(e => e.Name == fieldName))
+                if (possibleType.Value.Fields.Any(e => e.Value.Name == fieldName))
                 {
-                    suggestedObjectTypes.Add(possibleType.Name);
+                    suggestedObjectTypes.Add(possibleType.Value.Name);
 
-                    foreach (var possibleInterface in possibleType.Interfaces)
+                    foreach (var possibleInterface in possibleType.Value.Interfaces)
                     {
-                        if (possibleInterface.Fields.Any(e => e.Name == fieldName))
+                        if (possibleInterface.Value.Fields.Any(e => e.Value.Name == fieldName))
                         {
-                            if (!interfaceUsageCount.ContainsKey(possibleInterface.Name))
-                                interfaceUsageCount.Add(possibleInterface.Name, 1);
+                            if (!interfaceUsageCount.ContainsKey(possibleInterface.Value.Name))
+                                interfaceUsageCount.Add(possibleInterface.Value.Name, 1);
                             else
-                                interfaceUsageCount[possibleInterface.Name]++;
+                                interfaceUsageCount[possibleInterface.Value.Name]++;
                         }
                     }
                 }
@@ -83,7 +83,7 @@
             if (type is GraphQLObjectType || type is GraphQLInterfaceType)
             {
                 var introspectedType = type.Introspect(schema.SchemaRepository);
-                var possibleFieldNames = introspectedType.Fields?.Select(e => e.Name);
+                var possibleFieldNames = introspectedType.Value.Fields.Select(e => e.Value.Name.Value);
 
                 return StringUtils.SuggestionList(fieldName, possibleFieldNames);
             }

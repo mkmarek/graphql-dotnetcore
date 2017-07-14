@@ -20,11 +20,11 @@ namespace GraphQLCore.Type
 
         public abstract Type ResolveType(object data);
 
-        public override IntrospectedType Introspect(ISchemaRepository schemaRepository)
+        public override NonNullable<IntrospectedType> Introspect(ISchemaRepository schemaRepository)
         {
             var introspectedType = base.Introspect(schemaRepository);
 
-            introspectedType.Kind = TypeKind.UNION;
+            introspectedType.Value.Kind = TypeKind.UNION;
 
             return introspectedType;
         }

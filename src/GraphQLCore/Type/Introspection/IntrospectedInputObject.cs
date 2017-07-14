@@ -1,6 +1,5 @@
 ﻿namespace GraphQLCore.Type
 {
-    using Complex;
     using Introspection;
     using System.Linq;
     using Translation;
@@ -16,27 +15,14 @@
             this.schemaRepository = schemaRepository;
         }
 
-        public override IntrospectedInputValue[] InputFields
+        public override NonNullable<IntrospectedInputValue>[] InputFields
         {
             get
             {
                 return this.type.GetFieldsInfo()
-                    .Select(this.GetIntrospectedFieldInputValue)
+                    .Select(e => e.Introspect(this.schemaRepository))
                     .ToArray();
             }
-        }
-
-        private IntrospectedInputValue GetIntrospectedFieldInputValue(GraphQLInputObjectTypeFieldInfo field)
-        {
-            var type = field.GetGraphQLType(this.schemaRepository);
-
-            return new IntrospectedInputValue()
-            {
-                Name = field.Name,
-                Type = type.Introspect(this.schemaRepository),
-                Description = field.Description,
-                DefaultValue = field.DefaultValue.GetSerialized((GraphQLInputType)type, this.schemaRepository)
-            };
         }
     }
 }

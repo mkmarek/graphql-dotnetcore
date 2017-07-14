@@ -36,6 +36,20 @@
             return Result.Invalid;
         }
 
+        public override NonNullable<IntrospectedType> Introspect(ISchemaRepository schemaRepository)
+        {
+            var introspectedType = new IntrospectedType();
+            introspectedType.Kind = TypeKind.NON_NULL;
+            introspectedType.OfType = this.UnderlyingNullableType.Introspect(schemaRepository);
+
+            return introspectedType;
+        }
+
+        public override string ToString()
+        {
+            return this.UnderlyingNullableType.ToString() + "!";
+        }
+
         protected override GraphQLValue GetAst(object value, ISchemaRepository schemaRepository)
         {
             if (this.UnderlyingNullableType is GraphQLInputType)
@@ -49,20 +63,6 @@
             }
 
             return null;
-        }
-
-        public override IntrospectedType Introspect(ISchemaRepository schemaRepository)
-        {
-            var introspectedType = new IntrospectedType();
-            introspectedType.Kind = TypeKind.NON_NULL;
-            introspectedType.OfType = this.UnderlyingNullableType.Introspect(schemaRepository);
-
-            return introspectedType;
-        }
-
-        public override string ToString()
-        {
-            return this.UnderlyingNullableType.ToString() + "!";
         }
     }
 }

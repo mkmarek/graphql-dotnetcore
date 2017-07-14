@@ -152,15 +152,20 @@
         {
             if (this.typeStack.Count > 0)
             {
-                var type = this.typeStack.Peek();
-
-                if (type is GraphQLList)
-                    return ((GraphQLList)type).MemberType;
-
-                return type;
+                return this.typeStack.Peek();
             }
 
             return null;
+        }
+
+        public GraphQLBaseType GetUnderlyingType(GraphQLBaseType type)
+        {
+            if (type is GraphQLList)
+                return this.GetUnderlyingType(((GraphQLList)type).MemberType);
+            if (type is GraphQLNonNull)
+                return this.GetUnderlyingType(((GraphQLNonNull)type).UnderlyingNullableType);
+
+            return type;
         }
 
         protected GraphQLFieldInfo GetField(GraphQLBaseType type, string fieldName)

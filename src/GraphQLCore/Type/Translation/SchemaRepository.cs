@@ -96,6 +96,11 @@
             return this.inputBindings.Select(e => e.Value).Distinct().ToList();
         }
 
+        public IEnumerable<GraphQLBaseType> GetAllKnownTypes()
+        {
+            return this.outputBindings.Values.Concat(this.inputBindings.Values).Distinct();
+        }
+
         public Type GetInputSystemTypeFor(GraphQLBaseType type)
         {
             if (type is GraphQLNonNull)

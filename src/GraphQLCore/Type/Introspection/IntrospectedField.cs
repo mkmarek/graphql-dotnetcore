@@ -2,11 +2,11 @@
 {
     public class IntrospectedField
     {
-        public IntrospectedInputValue[] Arguments { get; set; }
+        public NonNullable<NonNullable<IntrospectedInputValue>[]> Arguments { get; set; }
         public string DeprecationReason { get; set; }
         public string Description { get; set; }
         public bool IsDeprecated { get; set; }
-        public string Name { get; set; }
-        public IntrospectedType Type { get; set; }
+        public NonNullable<string> Name { get; set; }
+        public NonNullable<IntrospectedType> Type { get; set; }
     }
 }

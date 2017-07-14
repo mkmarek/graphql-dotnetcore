@@ -58,7 +58,7 @@ namespace GraphQLCore.Execution
 
             if (this.variables.TryGetValue(variableName, out variableValue))
                 return new Result(this.TranslatePerDefinition(variableValue, typeDefinition));
-            
+
             if (variableDefinition.DefaultValue != null)
                 return ((GraphQLInputType)typeDefinition).GetValueFromAst(variableDefinition.DefaultValue,
                     this.schemaRepository);

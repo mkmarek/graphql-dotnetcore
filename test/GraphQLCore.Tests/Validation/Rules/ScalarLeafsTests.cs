@@ -71,7 +71,7 @@
 
             ErrorAssert.AreEqual(
                 "Field \"stringListField\" must not have a selection since " +
-                "type \"String\" has no subfields.",
+                "type \"[String]\" has no subfields.",
                 errors.Single(), 2, 95);
         }
 

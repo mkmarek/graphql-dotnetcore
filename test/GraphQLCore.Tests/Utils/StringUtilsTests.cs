@@ -74,5 +74,157 @@
 
             Assert.AreEqual("\"a\", \"b\", \"c\", \"d\", or \"e\"", result);
         }
+
+        [Test]
+        public void Dedent_WorksWithoutInterpolation()
+        {
+            var result = StringUtils.Dedent(
+                @"first
+                  second
+                  third");
+
+            Assert.AreEqual(
+@"first
+second
+third".Replace("\r", string.Empty),
+            result);
+        }
+
+        [Test]
+        public void Dedent_WorksWithInterpolation()
+        {
+            var result = StringUtils.Dedent(
+                $@"first {"line"}
+                {"second"}
+                third");
+
+            Assert.AreEqual(
+@"first line
+second
+third".Replace("\r", string.Empty),
+            result);
+        }
+
+        [Test]
+        public void Dedent_WorksWithSuppressedNewlines()
+        {
+            var result = StringUtils.Dedent(
+                $@"first \
+                {"second"}
+                third");
+
+            Assert.AreEqual(
+@"first second
+third".Replace("\r", string.Empty),
+            result);
+        }
+
+        [Test]
+        public void Dedent_WorksWithBlankFirstLine()
+        {
+            var result = StringUtils.Dedent(@"
+                Some text that I might want to indent:
+                  * reasons
+                  * fun
+                That's all.
+            ");
+
+            Assert.AreEqual(
+@"Some text that I might want to indent:
+  * reasons
+  * fun
+That's all.".Replace("\r", string.Empty),
+            result);
+        }
+
+        [Test]
+        public void Dedent_WorksWithMultipleBlankFirstLines()
+        {
+            var result = StringUtils.Dedent(@"
+
+            first
+            second
+            third
+            ");
+
+            Assert.AreEqual(
+@"first
+second
+third".Replace("\r", string.Empty),
+                result);
+        }
+
+        [Test]
+        public void Dedent_WorksWithRemovingSameNumberOfSpaces()
+        {
+            var result = StringUtils.Dedent(@"
+                first
+                   second
+                      third
+            ");
+
+            Assert.AreEqual(
+@"first
+   second
+      third".Replace("\r", string.Empty),
+                result);
+        }
+
+        [Test]
+        public void Dedent_WorksWithSingleLineInput()
+        {
+            var result = StringUtils.Dedent(@"A single line of input.");
+
+            Assert.AreEqual("A single line of input.", result);
+        }
+
+        [Test]
+        public void Dedent_WorksWithSingleLineAndClosingQuotationMarkOnNewLine()
+        {
+            var result = StringUtils.Dedent(@"
+                A single line of input.
+            ");
+
+            Assert.AreEqual("A single line of input.", result);
+        }
+
+        [Test]
+        public void Dedent_WorksWithSingleLineAndInlineClosingQuotationMark()
+        {
+            var result = StringUtils.Dedent(@"
+                A single line of input.");
+
+            Assert.AreEqual("A single line of input.", result);
+        }
+
+        [Test]
+        public void Dedent_DoesntStripExplicitNewlines()
+        {
+            var result = StringUtils.Dedent(@"
+                <p>Hello world!</p>\n
+            ");
+
+            Assert.AreEqual(
+@"<p>Hello world!</p>
+".Replace("\r", string.Empty),
+                result);
+        }
+
+        [Test]
+        public void Dedent_DoesntStripExplicitNewLinesWithMindent()
+        {
+            var result = StringUtils.Dedent(@"
+                <p>
+                  Hello world!
+                </p>\n
+            ");
+
+            Assert.AreEqual(
+@"<p>
+  Hello world!
+</p>
+".Replace("\r", string.Empty),
+                result);
+        }
     }
 }

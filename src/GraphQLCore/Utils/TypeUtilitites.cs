@@ -1,7 +1,6 @@
 ﻿namespace GraphQLCore.Utils
 {
     using System.Globalization;
-    using System.Text.RegularExpressions;
 
     public static class TypeUtilitites
     {
@@ -49,8 +48,8 @@
         {
             if (valueToParse is bool)
                 return valueToParse.ToString().ToLower();
-            
-            return Regex.Escape(valueToParse.ToString());
+
+            return valueToParse.ToString().JsonEscape();
         }
     }
 }

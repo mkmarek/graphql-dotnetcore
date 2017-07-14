@@ -2,7 +2,6 @@
 {
     using Language.AST;
     using Translation;
-    using Utils;
 
     public abstract class GraphQLInputType : GraphQLBaseType
     {
@@ -38,8 +37,6 @@
             return this.GetValueFromAst(astValue, schemaRepository);
         }
 
-        protected abstract GraphQLValue GetAst(object value, ISchemaRepository schemaRepository);
-
         public GraphQLValue GetAstFromValue(object value, ISchemaRepository schemaRepository)
         {
             if (value == null && !(this is GraphQLNonNull))
@@ -47,5 +44,7 @@
 
             return this.GetAst(value, schemaRepository);
         }
+
+        protected abstract GraphQLValue GetAst(object value, ISchemaRepository schemaRepository);
     }
 }

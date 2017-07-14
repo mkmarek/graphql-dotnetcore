@@ -1,7 +1,5 @@
 ﻿namespace GraphQLCore.Type.Introspection
 {
-    using Complex;
-    using System.Collections.Generic;
     using System.Linq;
     using Translation;
 
@@ -16,7 +14,7 @@
             this.type = type;
         }
 
-        public override IntrospectedField[] Fields
+        public override NonNullable<IntrospectedField>[] Fields
         {
             get
             {
@@ -24,12 +22,11 @@
                     return null;
 
                 return this.type.GetFieldsInfo()
-                    .Select(field => new IntrospectedField()
+                    .Select(field => (NonNullable<IntrospectedField>)new IntrospectedField()
                     {
                         Name = field.Name,
-                        Arguments = field.Arguments?.Select(this.GetInputValueFromArgument).ToArray(),
-                        Type = field.GetGraphQLType(this.schemaRepository)
-                            .Introspect(this.schemaRepository),
+                        Arguments = field.Arguments?.Select(e => e.Value.Introspect(this.schemaRepository)).ToArray(),
+                        Type = field.GetGraphQLType(this.schemaRepository).Introspect(this.schemaRepository),
                         Description = field.Description,
                         IsDeprecated = field.IsDeprecated,
                         DeprecationReason = field.DeprecationReason
@@ -37,20 +34,7 @@
             }
         }
 
-        private IntrospectedInputValue GetInputValueFromArgument(KeyValuePair<string, GraphQLObjectTypeArgumentInfo> argument)
-        {
-            var type = argument.Value.GetGraphQLType(this.schemaRepository);
-
-            return new IntrospectedInputValue()
-            {
-                Name = argument.Key,
-                Type = type.Introspect(this.schemaRepository),
-                Description = argument.Value.Description,
-                DefaultValue = argument.Value.DefaultValue.GetSerialized((GraphQLInputType)type, this.schemaRepository)
-            };
-        }
-
-        public override IntrospectedType[] Interfaces
+        public override NonNullable<IntrospectedType>[] Interfaces
         {
             get
             {
@@ -63,7 +47,7 @@
             }
         }
 
-        public override IntrospectedType[] PossibleTypes
+        public override NonNullable<IntrospectedType>[] PossibleTypes
         {
             get
             {
@@ -81,7 +65,7 @@
                         .ToArray();
                 }
 
-                return new IntrospectedType[] { };
+                return new NonNullable<IntrospectedType>[] { };
             }
         }
     }

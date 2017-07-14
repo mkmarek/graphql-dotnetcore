@@ -58,12 +58,6 @@
             return JsonConvert.SerializeObject(this);
         }
 
-        private void AddFieldIfNotNull(string name, object field, SerializationInfo info)
-        {
-            if (field != null)
-                info.AddValue(name, field);
-        }
-
         public static GraphQLException LocateException(GraphQLException originalException = null, IEnumerable<ASTNode> nodes = null,
             IEnumerable path = null)
         {
@@ -81,6 +75,12 @@
                 originalException);
 
             return error;
+        }
+
+        private void AddFieldIfNotNull(string name, object field, SerializationInfo info)
+        {
+            if (field != null)
+                info.AddValue(name, field);
         }
     }
 }

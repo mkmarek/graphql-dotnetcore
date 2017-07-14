@@ -13,11 +13,12 @@
         public GraphQLSkipDirectiveType()
             : base(
                 "skip",
-                "Directs the executor to skip this field or fragment only when the `if` argument is true.",
+                "Directs the executor to skip this field or fragment when the `if` argument is true.",
                 DirectiveLocation.FIELD,
                 DirectiveLocation.FRAGMENT_SPREAD,
                 DirectiveLocation.INLINE_FRAGMENT)
         {
+            this.Argument("if").WithDescription("Skipped when true.");
         }
 
         public override bool PreExecutionIncludeFieldIntoResult(

@@ -24,6 +24,8 @@ namespace GraphQLCore.Type.Translation
 
         IEnumerable<GraphQLBaseType> GetOutputKnownTypes();
 
+        IEnumerable<GraphQLBaseType> GetAllKnownTypes();
+
         GraphQLInputType GetSchemaInputTypeFor(Type type);
 
         GraphQLBaseType GetSchemaTypeFor(Type type);

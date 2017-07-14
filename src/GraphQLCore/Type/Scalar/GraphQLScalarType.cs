@@ -17,7 +17,7 @@
         {
         }
 
-        public override IntrospectedType Introspect(ISchemaRepository schemaRepository)
+        public override NonNullable<IntrospectedType> Introspect(ISchemaRepository schemaRepository)
         {
             var introspectedType = new IntrospectedType();
             introspectedType.Name = this.Name;

@@ -5,7 +5,6 @@
     using Models;
     using Services;
     using System.Linq;
-    using Type;
     using Type.Complex;
 
     public class Subscription : GraphQLSubscriptionType

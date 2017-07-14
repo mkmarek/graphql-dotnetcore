@@ -7,7 +7,7 @@ using System.Text;
 
 namespace GraphQLCore.Type.Complex
 {
-    public class GraphQLSubscriptionType : GraphQLComplexType
+    public class GraphQLSubscriptionType : GraphQLObjectType
     {
         public IEventBus EventBus { get; private set; }
 

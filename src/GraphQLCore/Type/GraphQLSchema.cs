@@ -1,13 +1,10 @@
 ﻿namespace GraphQLCore.Type
 {
+    using Complex;
+    using Directives;
+    using Events;
     using Execution;
-    using GraphQLCore.Events;
-    using GraphQLCore.Type.Complex;
-    using GraphQLCore.Type.Directives;
     using Introspection;
-    using Language;
-    using Language.AST;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using Translation;
@@ -113,7 +110,7 @@
 
         public IntrospectedType IntrospectType(string name)
         {
-            return this.IntrospectedSchema.IntrospectAllSchemaTypes().Where(e => e.Name == name).FirstOrDefault();
+            return this.IntrospectedSchema.IntrospectAllSchemaTypes().Value.FirstOrDefault(e => e.Value.Name == name);
         }
 
         public void AddOrReplaceDirective(GraphQLDirectiveType directive)

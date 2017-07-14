@@ -3,6 +3,8 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text.RegularExpressions;
+    using Newtonsoft.Json;
 
     public static class StringUtils
     {
@@ -77,6 +79,50 @@
             }
 
             return d[firstLength][secondLength];
+        }
+
+        public static string JsonEscape(this string toEscape)
+        {
+            var serialized = JsonConvert.SerializeObject(toEscape);
+            return serialized.Substring(1, serialized.Length - 2);
+        }
+
+        public static string Dedent(string indented)
+        {
+            var result = indented.Replace("\r", string.Empty);
+            result = Regex.Replace(result, $"\\\\\n[ \t]*", string.Empty);
+            var lines = result.Split('\n');
+
+            var regex = new Regex(@"^(\s+)\S+");
+            var mindent = lines.Select(line =>
+            {
+                var match = regex.Match(line);
+                return match.Success ? match.Groups[1].Length : int.MaxValue;
+            }).Min();
+
+            if (mindent != int.MaxValue)
+            {
+                result = string.Join("\n", lines.Select(l =>
+                    l.Length > 0 && l[0] == ' ' ? l.Substring(Math.Min(mindent, l.Length)) : l));
+            }
+
+            return Regex.Replace(result.Trim(), @"\\n", "\n");
+        }
+
+        public static IEnumerable<string> BreakLine(string line, int length)
+        {
+            if (line.Length < length + 5)
+                return new[] { line };
+
+            var parts = Regex.Split(line, $"((?: |^).{{15,{length - 40}}}(?= |$))");
+            if (parts.Length < 4)
+                return new[] { line };
+
+            var sublines = new List<string>() { parts[0] + parts[1] + parts[2] };
+            for (var i = 3; i < parts.Length; i += 2)
+                sublines.Add(parts[i].Substring(1) + parts[i + 1]);
+
+            return sublines;
         }
     }
 }

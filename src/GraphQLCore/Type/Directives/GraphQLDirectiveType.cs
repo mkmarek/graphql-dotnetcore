@@ -15,6 +15,7 @@
         public string Name { get; private set; }
         public string Description { get; private set; }
         public DirectiveLocation[] Locations { get; private set; }
+        public Dictionary<string, GraphQLObjectTypeArgumentInfo> Arguments { get; private set; }
 
         protected GraphQLDirectiveType(
             string name,
@@ -24,6 +25,8 @@
             this.Name = name;
             this.Description = description;
             this.Locations = locations;
+            this.Arguments = this.GetArgumentsFromResolver(this.GetResolverInfo())?.ToDictionary(e => e.Name, e => e)
+                ?? new Dictionary<string, GraphQLObjectTypeArgumentInfo>();
         }
 
         public virtual bool PreExecutionIncludeFieldIntoResult(
@@ -41,42 +44,51 @@
             return true;
         }
 
-        private LambdaExpression GetResolverInfo() => this.GetResolver(null, null);
-
         public abstract LambdaExpression GetResolver(Func<Task<object>> valueGetter, object parentValue);
 
         public IntrospectedDirective Introspect(ISchemaRepository schemaRepository)
         {
-            return new IntrospectedDirective(schemaRepository)
+            return new IntrospectedDirective()
             {
                 Name = this.Name,
                 Description = this.Description,
                 Locations = this.Locations,
-                Resolver = this.GetResolverInfo()
+                Arguments = this.Arguments.Select(e =>
+                    e.Value.Introspect(schemaRepository))
+                    .ToArray()
             };
         }
 
         public IEnumerable<GraphQLObjectTypeArgumentInfo> GetArguments()
         {
-            return this.GetResolverInfo().Parameters.Select(e => new GraphQLObjectTypeArgumentInfo()
-            {
-                Name = e.Name,
-                SystemType = e.Type
-            });
+            return this.Arguments.Values;
         }
 
         public GraphQLObjectTypeArgumentInfo GetArgument(string name)
         {
-            var parameter = this.GetResolverInfo().Parameters.FirstOrDefault(e => e.Name == name);
+            if (this.Arguments.ContainsKey(name))
+                return this.Arguments[name];
 
-            if (parameter == null)
-                return null;
+            return null;
+        }
 
-            return new GraphQLObjectTypeArgumentInfo()
+        protected ArgumentDefinitionBuilder Argument(string name)
+        {
+            if (this.Arguments.ContainsKey(name))
+                return new ArgumentDefinitionBuilder(this.Arguments[name]);
+
+            return null;
+        }
+
+        private LambdaExpression GetResolverInfo() => this.GetResolver(null, null);
+
+        private IEnumerable<GraphQLObjectTypeArgumentInfo> GetArgumentsFromResolver(LambdaExpression resolver)
+        {
+            return resolver?.Parameters?.Select(e => new GraphQLObjectTypeArgumentInfo()
             {
-                Name = parameter.Name,
-                SystemType = parameter.Type
-            };
+                Name = e.Name,
+                SystemType = e.Type
+            });
         }
     }
 }

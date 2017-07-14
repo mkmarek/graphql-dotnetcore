@@ -281,20 +281,35 @@
             }
         }
 
+        private List<GraphQLArgument> GetArgumentsFromDirectiveDefinition(GraphQLDirective directive,
+            GraphQLDirectiveType directiveInfo)
+        {
+            if (directiveInfo == null || directiveInfo.Arguments?.Count == 0)
+                return null;
+
+            return this.MergeArgumentsWithDefault(directive.Arguments, directiveInfo.Arguments);
+        }
+
         private List<GraphQLArgument> GetArgumentsFromSelection(GraphQLFieldSelection selection, GraphQLFieldInfo fieldInfo)
         {
             if (fieldInfo == null || fieldInfo.Arguments?.Count == 0)
                 return null;
 
-            var schemaRepository = this.context.SchemaRepository;
-            var arguments = selection.Arguments.ToDictionary(e => e.Name.Value, e => e);
+            return this.MergeArgumentsWithDefault(selection.Arguments, fieldInfo.Arguments);
+        }
 
-            foreach (var argument in fieldInfo.Arguments)
+        private List<GraphQLArgument> MergeArgumentsWithDefault(IEnumerable<GraphQLArgument> arguments,
+            IDictionary<string, GraphQLObjectTypeArgumentInfo> argumentInfos)
+        {
+            var combinedArguments = arguments.ToDictionary(e => e.Name.Value, e => e);
+            var schemaRepository = this.context.SchemaRepository;
+
+            foreach (var argument in argumentInfos)
             {
                 var argumentName = argument.Key;
                 var argumentValue = argument.Value;
 
-                if (!arguments.ContainsKey(argumentName) && argumentValue.DefaultValue.IsSet)
+                if (!combinedArguments.ContainsKey(argumentName) && argumentValue.DefaultValue.IsSet)
                 {
                     var defaultArgument = new GraphQLArgument()
                     {
@@ -302,11 +317,11 @@
                         Value = argumentValue.DefaultValue.GetAstValue(
                             (GraphQLInputType)argumentValue.GetGraphQLType(schemaRepository), schemaRepository)
                     };
-                    arguments.Add(argumentName, defaultArgument);
+                    combinedArguments.Add(argumentName, defaultArgument);
                 }
             }
 
-            return arguments.Values.ToList();
+            return combinedArguments.Values.ToList();
         }
 
         private async Task<object> GetDefinitionAndExecuteField(
@@ -352,7 +367,7 @@
                     var newResolver = directiveType.GetResolver(fieldResolver, (ExpandoObject)dictionary);
 
                     fieldResolver = async () => await this.InvokeWithArguments(
-                        directive.Arguments.ToList(),
+                        this.GetArgumentsFromDirectiveDefinition(directive, directiveType),
                         newResolver);
                 }
             }
@@ -451,7 +466,6 @@
         {
             return await Task.Run(() =>
             {
-
                 if (ReflectionUtilities.IsEnum(inputType))
                 {
                     input = input.ToString();

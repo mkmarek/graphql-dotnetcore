@@ -18,6 +18,7 @@
                 DirectiveLocation.FRAGMENT_SPREAD,
                 DirectiveLocation.INLINE_FRAGMENT)
         {
+            this.Argument("if").WithDescription("Included when true.");
         }
 
         public override bool PreExecutionIncludeFieldIntoResult(

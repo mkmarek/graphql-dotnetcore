@@ -2,9 +2,13 @@
 {
     using GraphQLCore.Execution;
     using GraphQLCore.Type;
+    using GraphQLCore.Type.Directives;
     using NUnit.Framework;
+    using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Linq.Expressions;
+    using System.Threading.Tasks;
 
     [TestFixture]
     public class ExecutionContext_Arguments
@@ -246,6 +250,19 @@
             Assert.AreEqual("default+defaultArgument", result.data.withDefaultComplexValue.withDefault);
         }
 
+        [Test]
+        public void Execute_WithDirectiveWithDefaultValue_UsesDefaultValue()
+        {
+            dynamic result = this.schema.Execute(@"
+                {
+                    withDefaultComplexValue {
+                        stringField : StringField @default
+                    }
+                }");
+
+            Assert.AreEqual("default value", result.data.withDefaultComplexValue.stringField);
+        }
+
         [SetUp]
         public void SetUp()
         {
@@ -259,8 +276,26 @@
             this.schema.AddKnownType(nestedType);
             this.schema.AddKnownType(new InputTestObjectType());
             this.schema.AddKnownType(new TestEnumType());
+            this.schema.AddOrReplaceDirective(new DefaultArgumentDirectiveType());
 
             this.schema.Query(rootType);
+        }
+
+        private class DefaultArgumentDirectiveType : GraphQLDirectiveType
+        {
+            public DefaultArgumentDirectiveType() : base("default", "", DirectiveLocation.FIELD)
+            {
+                this.Argument("default")
+                    .WithDescription("description")
+                    .WithDefaultValue("default value");
+            }
+
+            public override LambdaExpression GetResolver(Func<Task<object>> valueGetter, object parentValue)
+            {
+                Expression<Func<string, object>> resolver = (@default) => @default;
+
+                return resolver;
+            }
         }
 
         private class NestedNonGenericQueryType : GraphQLObjectType

@@ -2,10 +2,8 @@
 {
     using Exceptions;
     using Language;
-    using System.Collections.Generic;
-    using Type;
     using Language.AST;
-    using System.Reflection;
+    using System.Collections.Generic;
 
     public class UniqueDirectivesPerLocationVisitor : GraphQLAstVisitor
     {

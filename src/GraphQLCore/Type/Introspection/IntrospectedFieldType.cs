@@ -9,10 +9,10 @@
         {
             this.Field("name", e => e.Name);
             this.Field("description", e => e.Description);
-            this.Field("isDeprecated", e => e.IsDeprecated);
-            this.Field("deprecationReason", e => e.DeprecationReason);
             this.Field("args", e => e.Arguments);
             this.Field("type", e => e.Type);
+            this.Field("isDeprecated", e => e.IsDeprecated);
+            this.Field("deprecationReason", e => e.DeprecationReason);
         }
     }
 }
