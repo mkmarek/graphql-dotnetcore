@@ -153,19 +153,25 @@
         }
 
         private async Task AppendIntrospectionInfo(
-            FieldScope scope, Dictionary<string, IList<GraphQLFieldSelection>> fields, dynamic resultObject)
+            FieldScope scope, Dictionary<string, IList<GraphQLFieldSelection>> fields, IDictionary<string, object> resultObject)
         {
             var introspectedSchema = await this.IntrospectSchemaIfRequested(scope, fields);
             var introspectedField = await this.IntrospectTypeIfRequested(scope, fields);
 
             if (introspectedSchema != null)
-                resultObject.__schema = introspectedSchema;
+            {
+                resultObject.Remove("__schema");
+                resultObject.Add("__schema", introspectedSchema);
+            }
 
             if (introspectedField != null)
-                resultObject.__type = introspectedField;
+            {
+                resultObject.Remove("__type");
+                resultObject.Add("__type", introspectedField);
+            }
         }
 
-        public async Task<dynamic> ComposeResultForSubscriptions(
+        public async Task<ExpandoObject> ComposeResultForSubscriptions(
             GraphQLComplexType type, GraphQLOperationDefinition operationDefinition)
         {
             if (string.IsNullOrWhiteSpace(this.clientId))
@@ -192,7 +198,7 @@
                     scope);
         }
 
-        public async Task<dynamic> ComposeResultForQuery(
+        public async Task<ExpandoObject> ComposeResultForQuery(
             GraphQLComplexType type, GraphQLOperationDefinition operationDefinition, object parent = null)
         {
             var context = this.CreateExecutionContext(operationDefinition);
@@ -206,7 +212,7 @@
             return this.CreateResultObject(resultObject, scope.Errors);
         }
 
-        public async Task<dynamic> ComposeResultForMutation(
+        public async Task<ExpandoObject> ComposeResultForMutation(
             GraphQLComplexType type, GraphQLOperationDefinition operationDefinition)
         {
             var context = this.CreateExecutionContext(operationDefinition);
@@ -262,19 +268,22 @@
 
         private ExpandoObject CreateResultObjectForErrors(IEnumerable<GraphQLException> errors)
         {
-            dynamic resultObject = new ExpandoObject();
-            resultObject.errors = errors;
+            var resultObject = new ExpandoObject();
+            var resultObjectDictionary = (IDictionary<string, object>)resultObject;
+
+            resultObjectDictionary.Add("errors", errors);
 
             return resultObject;
         }
 
         private ExpandoObject CreateResultObject(ExpandoObject result, IEnumerable<GraphQLException> errors)
         {
-            dynamic resultObject = new ExpandoObject();
+            var resultObject = new ExpandoObject();
+            var resultObjectDictionary = (IDictionary<string, object>)resultObject;
 
-            resultObject.data = result;
+            resultObjectDictionary.Add("data", result);
             if (errors.Any())
-                resultObject.errors = errors;
+                resultObjectDictionary.Add("errors", errors);
 
             return resultObject;
         }

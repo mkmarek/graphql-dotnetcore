@@ -30,7 +30,7 @@
             Assert.AreEqual("foo", result.data.sync);
             Assert.AreEqual(null, result.data.graphQLError);
 
-            var errors = (IList<GraphQLException>)result.errors;
+            var errors = result.errors as IList<GraphQLException>;
             Assert.AreEqual(3, errors.Count());
 
             ErrorAssert.AreEqual("Error getting graphQLError", errors.ElementAt(0), 4, 17, new[] { "graphQLError" });
@@ -57,7 +57,7 @@
 
             Assert.AreEqual(null, result.data.nullableA.aliasedA);
 
-            var errors = (IList<GraphQLException>)result.errors;
+            var errors = result.errors as IList<GraphQLException>;
             
             ErrorAssert.AreEqual("Catch me if you can", errors.Single(), 7, 33, new[] { "nullableA", "aliasedA", "nonNullA", "anotherA", "throws" });
         }
@@ -82,7 +82,7 @@
             Assert.IsNotNull(nullableAList.ElementAt(2));
             Assert.IsNull(nullableAList.ElementAt(3));
 
-            var errors = (IList<GraphQLException>)result.errors;
+            var errors = result.errors as IEnumerable<GraphQLException>;
             Assert.AreEqual(2, errors.Count());
 
             ErrorAssert.AreEqual("Catch me if you can", errors.ElementAt(0), 5, 21, new object[] { "nullableAList", 1, "throwAlias" });
@@ -106,13 +106,13 @@
             }
             ");
 
-            dynamic nullableAList = (IList<object>)result.data.nullableA.nullableAList;
+            dynamic nullableAList = result.data.nullableA.nullableAList as IList<object>;
 
             Assert.AreEqual(4, nullableAList.Count);
             Assert.AreEqual("did not throw", nullableAList[0].nullableAList[0].nullableA.throws);
             Assert.AreEqual(null, nullableAList[3].nullableAList[3].nullableA);
 
-            var errors = (IList<GraphQLException>)result.errors;
+            var errors = result.errors as IList<GraphQLException>;
             Assert.AreEqual(8, errors.Count);
 
             for (var i = 0; i < 4; i++)

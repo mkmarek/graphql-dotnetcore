@@ -75,7 +75,7 @@
         {
             var result = this.schema.Execute("subscription { test }");
 
-            var errors = (IList<GraphQLException>)result.errors;
+            var errors = result.errors as IList<GraphQLException>;
             Assert.IsInstanceOf<GraphQLException>(errors.Single());
         }
 

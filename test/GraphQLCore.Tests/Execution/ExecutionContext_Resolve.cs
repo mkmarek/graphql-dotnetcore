@@ -238,8 +238,8 @@
             }
             ", null, "fetch");
 
-            var errors = (IList<GraphQLException>)result.errors;
-            var objectResult = (IDictionary<string, object>)result;
+            var errors = result.errors as IList<GraphQLException>;
+            var objectResult = result as IDictionary<string, object>;
 
             Assert.IsFalse(objectResult.ContainsKey("data"));
             Assert.AreEqual(3, errors.Count);

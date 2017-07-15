@@ -35,7 +35,7 @@
         public void NotExistingOperationNameProvided_TrowsException()
         {
             var result = this.schema.Execute(this.singleOperationQuery, new ExpandoObject(), "q2");
-            var errors = (IList<GraphQLException>)result.errors;
+            var errors = result.errors as IList<GraphQLException>;
 
             Assert.AreEqual("Unknown operation named \"q2\".", errors.Single().Message);
         }
@@ -44,7 +44,7 @@
         public void MultipleOperationsNoOperationNameProvided_TrowsException()
         {
             var result = this.schema.Execute(this.multipleOperationQuery);
-            var errors = (IList<GraphQLException>)result.errors;
+            var errors = result.errors as IList<GraphQLException>;
 
             Assert.AreEqual("Must provide operation name if query contains multiple operations.", errors.Single().Message);
         }
@@ -69,7 +69,7 @@
         public void NoOperationProvided_ThrowsError()
         {
             var result = this.schema.Execute("");
-            var errors = (IList<GraphQLException>)result.errors;
+            var errors = result.errors as IList<GraphQLException>;
 
             Assert.AreEqual("Must provide an operation.", errors.Single().Message);
         }
