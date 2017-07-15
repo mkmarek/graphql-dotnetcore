@@ -153,19 +153,25 @@
         }
 
         private async Task AppendIntrospectionInfo(
-            FieldScope scope, Dictionary<string, IList<GraphQLFieldSelection>> fields, dynamic resultObject)
+            FieldScope scope, Dictionary<string, IList<GraphQLFieldSelection>> fields, IDictionary<string, object> resultObject)
         {
             var introspectedSchema = await this.IntrospectSchemaIfRequested(scope, fields);
             var introspectedField = await this.IntrospectTypeIfRequested(scope, fields);
 
             if (introspectedSchema != null)
-                resultObject.__schema = introspectedSchema;
+            {
+                resultObject.Remove("__schema");
+                resultObject.Add("__schema", introspectedSchema);
+            }
 
             if (introspectedField != null)
-                resultObject.__type = introspectedField;
+            {
+                resultObject.Remove("__type");
+                resultObject.Add("__type", introspectedField);
+            }
         }
 
-        public async Task<dynamic> ComposeResultForSubscriptions(
+        public async Task<ExpandoObject> ComposeResultForSubscriptions(
             GraphQLComplexType type, GraphQLOperationDefinition operationDefinition)
         {
             if (string.IsNullOrWhiteSpace(this.clientId))
@@ -192,7 +198,7 @@
                     scope);
         }
 
-        public async Task<dynamic> ComposeResultForQuery(
+        public async Task<ExpandoObject> ComposeResultForQuery(
             GraphQLComplexType type, GraphQLOperationDefinition operationDefinition, object parent = null)
         {
             var context = this.CreateExecutionContext(operationDefinition);
@@ -203,16 +209,18 @@
 
             await this.AppendIntrospectionInfo(scope, fields, resultObject);
 
-            dynamic returnObject = new ExpandoObject();
-            returnObject.data = resultObject;
+            var returnObject = new ExpandoObject();
+            var returnObjectDictionary = (IDictionary<string, object>)returnObject;
+
+            returnObjectDictionary.Add("data", resultObject);
 
             if (scope.Errors.Any())
-                returnObject.errors = scope.Errors;
+                returnObjectDictionary.Add("errors", scope.Errors);
 
             return returnObject;
         }
 
-        public async Task<dynamic> ComposeResultForMutation(
+        public async Task<ExpandoObject> ComposeResultForMutation(
             GraphQLComplexType type, GraphQLOperationDefinition operationDefinition)
         {
             var context = this.CreateExecutionContext(operationDefinition);
@@ -223,11 +231,13 @@
 
             await this.AppendIntrospectionInfo(scope, fields, resultObject);
 
-            dynamic returnObject = new ExpandoObject();
-            returnObject.data = resultObject;
+            var returnObject = new ExpandoObject();
+            var returnObjectDictionary = (IDictionary<string, object>)returnObject;
+
+            returnObjectDictionary.Add("data", resultObject);
 
             if (scope.Errors.Any())
-                returnObject.errors = scope.Errors;
+                returnObjectDictionary.Add("errors", scope.Errors);
 
             return returnObject;
         }
@@ -269,21 +279,25 @@
             resultDictionary.Add("subscriptionId", this.subscriptionId.Value);
             resultDictionary.Add("clientId", this.clientId);
 
-            dynamic returnObject = new ExpandoObject();
-            returnObject.data = result;
+            var returnObject = new ExpandoObject();
+            var returnObjectDictionary = (IDictionary<string, object>)returnObject;
+
+            returnObjectDictionary.Add("data", result);
 
             if (scope.Errors.Any())
-                returnObject.errors = scope.Errors;
+                returnObjectDictionary.Add("errors", scope.Errors);
 
             return returnObject;
         }
 
-        private dynamic CreateResultObjectForErrors(IEnumerable<GraphQLException> errors)
+        private ExpandoObject CreateResultObjectForErrors(IEnumerable<GraphQLException> errors)
         {
-            dynamic result = new ExpandoObject();
-            result.errors = errors;
+            var resultObject = new ExpandoObject();
+            var resultObjectDictionary = (IDictionary<string, object>)resultObject;
 
-            return result;
+            resultObjectDictionary.Add("errors", errors);
+
+            return resultObject;
         }
 
         private async Task RegisterSubscription(

@@ -97,7 +97,7 @@
             return type.GetFromAst(argument.Value, this.context.SchemaRepository).Value;
         }
 
-        public async Task<dynamic> GetObject(
+        public async Task<ExpandoObject> GetObject(
             Dictionary<string, IList<GraphQLFieldSelection>> fields)
         {
             var result = new ExpandoObject();
@@ -109,7 +109,7 @@
             return result;
         }
 
-        public async Task<dynamic> GetObjectSynchronously(
+        public async Task<ExpandoObject> GetObjectSynchronously(
             Dictionary<string, IList<GraphQLFieldSelection>> fields)
         {
             var result = new ExpandoObject();
@@ -269,7 +269,7 @@
             return await this.TryGetObject(scope, input, selection, path);
         }
 
-        private async Task<dynamic> TryGetObject(FieldScope scope, GraphQLObjectType input, GraphQLFieldSelection selection, IEnumerable<object> path)
+        private async Task<ExpandoObject> TryGetObject(FieldScope scope, GraphQLObjectType input, GraphQLFieldSelection selection, IEnumerable<object> path)
         {
             try
             {

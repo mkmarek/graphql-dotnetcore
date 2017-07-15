@@ -358,7 +358,7 @@
             dynamic variables = new ExpandoObject();
 
             var result = this.schema.Execute(query, variables);
-            var errors = (IList<GraphQLException>)result.errors;
+            var errors = result.errors as IList<GraphQLException>;
             
             ErrorAssert.AreEqual("Variable \"intArgVar\" of required type \"Int!\" was not provided.", 
                 errors.Single(), 2, 29);
@@ -512,7 +512,7 @@
                         }";
 
             var result = this.schema.Execute(query, variables);
-            var errors = (IList<GraphQLException>)result.errors;
+            var errors = result.errors as IList<GraphQLException>;
         
             ErrorAssert.AreEqual("Variable \"notExistingVariable\" of required type \"Int!\" was not provided.",
                 errors.Single(), 1, 28);
