@@ -27,8 +27,8 @@
             }
             ");
 
-            Assert.AreEqual(2, result.data.model.number);
-            Assert.AreEqual(4, result.data.model.numberPlusArgument);
+            Assert.AreEqual(2, result.Data.model.number);
+            Assert.AreEqual(4, result.Data.model.numberPlusArgument);
         }
 
         [Test]
@@ -40,7 +40,7 @@
             }
             ");
 
-            Assert.AreEqual(true, result.data.isInstanceNull);
+            Assert.AreEqual(true, result.Data.isInstanceNull);
         }
 
         [Test]

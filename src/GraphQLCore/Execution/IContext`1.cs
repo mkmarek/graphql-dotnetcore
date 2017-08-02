@@ -1,5 +1,4 @@
-﻿using System;
-namespace GraphQLCore.Execution
+﻿namespace GraphQLCore.Execution
 {
     public interface IContext<T>
     {

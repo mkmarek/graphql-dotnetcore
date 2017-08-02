@@ -86,11 +86,6 @@
             return Result.Invalid;
         }
 
-        internal static bool IsDescendant(Type parent, Type descendant)
-        {
-            return descendant?.GetTypeInfo().IsAssignableFrom(parent) ?? false;
-        }
-
         public static Delegate MakeSetterFromLambda(LambdaExpression lambda)
         {
             var member = (MemberExpression)lambda.Body;
@@ -211,6 +206,11 @@
                 return typeof(NonNullable<>).MakeGenericType(type);
 
             return type;
+        }
+
+        internal static bool IsDescendant(Type parent, Type descendant)
+        {
+            return descendant?.GetTypeInfo().IsAssignableFrom(parent) ?? false;
         }
 
         internal static Type CreateListTypeOf(Type type)

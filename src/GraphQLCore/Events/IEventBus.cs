@@ -1,12 +1,7 @@
-﻿using GraphQLCore.Language.AST;
-using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GraphQLCore.Events
+﻿namespace GraphQLCore.Events
 {
+    using System.Threading.Tasks;
+
     public delegate Task MessageReceived(OnMessageReceivedEventArgs args);
 
     public interface IEventBus
@@ -14,7 +9,7 @@ namespace GraphQLCore.Events
         event MessageReceived OnMessageReceived;
         Task Publish(object data, string channel);
         Task Subscribe(EventBusSubscription eventBusSubscription);
-        void Unsubscribe(string clientId, int subscriptionId);
+        void Unsubscribe(string clientId, string subscriptionId);
         void Unsubscribe(string clientId);
     }
 }

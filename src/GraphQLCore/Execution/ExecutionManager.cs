@@ -9,6 +9,8 @@
     using System.Dynamic;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Reactive.Linq;
+    using System.Reactive.Threading.Tasks;
     using System.Threading.Tasks;
     using Type;
     using Type.Introspection;
@@ -20,56 +22,217 @@
         private string expression;
         private GraphQLDocument ast;
         private ValidationContext validationContext;
-        private Dictionary<string, GraphQLFragmentDefinition> fragments;
-        private GraphQLSchema graphQLSchema;
+        protected Dictionary<string, GraphQLFragmentDefinition> Fragments { get; }
+        protected GraphQLSchema GraphQLSchema { get; }
         private dynamic variables;
-        private int? subscriptionId;
+        private string subscriptionId;
         private string clientId;
+        public Queue<FieldExecution> PostponedExecutions { get; set; }
+        private IFieldCollector fieldCollector;
 
         public GraphQLOperationDefinition Operation { get; private set; }
 
-        private ExecutionManager(GraphQLSchema graphQLSchema, dynamic variables, string clientId, int? subscriptionId)
-        {
-            this.graphQLSchema = graphQLSchema;
-            this.fragments = new Dictionary<string, GraphQLFragmentDefinition>();
-            this.validationContext = new ValidationContext();
-
-            this.variables = variables ?? new ExpandoObject();
-            this.subscriptionId = subscriptionId;
-            this.clientId = clientId;
-        }
-
-        public ExecutionManager(GraphQLSchema graphQLSchema, GraphQLDocument ast, object variables = null, string clientId = null, int? subscriptionId = null)
+        public ExecutionManager(GraphQLSchema graphQLSchema, GraphQLDocument ast, object variables = null, string clientId = null, string subscriptionId = null)
             : this(graphQLSchema, variables, clientId, subscriptionId)
         {
             this.ast = ast;
         }
 
-        public ExecutionManager(GraphQLSchema graphQLSchema, string expression, object variables = null, string clientId = null, int? subscriptionId = null)
+        public ExecutionManager(GraphQLSchema graphQLSchema, string expression, object variables = null, string clientId = null, string subscriptionId = null)
             : this(graphQLSchema, variables, clientId, subscriptionId)
         {
             this.expression = expression;
+        }
+
+        private ExecutionManager(GraphQLSchema graphQLSchema, dynamic variables, string clientId, string subscriptionId)
+        {
+            this.GraphQLSchema = graphQLSchema;
+            this.Fragments = new Dictionary<string, GraphQLFragmentDefinition>();
+            this.validationContext = new ValidationContext();
+
+            this.variables = variables ?? new ExpandoObject();
+            this.subscriptionId = subscriptionId;
+            this.clientId = clientId;
+
+            this.PostponedExecutions = new Queue<FieldExecution>();
         }
 
         public void Dispose()
         {
         }
 
-        public async Task<dynamic> ExecuteAsync()
+        public async Task<ExecutionResult> ExecuteAsync()
         {
             return await this.ExecuteAsync(null);
         }
 
-        private async Task<dynamic> ExecuteAsyncWithErrors(string operationToExecute)
+        public async Task<ExecutionResult> ExecuteAsync(string operationToExecute)
+        {
+            try
+            {
+                return await this.ExecuteAsyncWithErrors(operationToExecute);
+            }
+            catch (GraphQLException ex)
+            {
+                return this.CreateResultObjectForErrors(ex);
+            }
+            catch (GraphQLValidationException ex)
+            {
+                return this.CreateResultObjectForErrors(ex.Errors.ToArray());
+            }
+            catch (Exception ex)
+            {
+                return this.CreateResultObjectForErrors(new GraphQLException(ex));
+            }
+        }
+
+        public IObservable<ExecutionResult> Subscribe(string operationToExecute)
+        {
+            this.GetAstAndResolveDefinitions(operationToExecute);
+            var executionResults = this.Execute(operationToExecute).Select(e => e.ToObservable());
+
+            if (this.Operation.Operation == OperationType.Subscription)
+            {
+                executionResults.First().GetAwaiter().GetResult();
+                var subscriptionResults = Observable.FromEventPattern<EventHandler<OnMessageReceivedEventArgs>, OnMessageReceivedEventArgs>(
+                        handler => this.GraphQLSchema.OnSubscriptionMessageReceived += handler,
+                        handler => this.GraphQLSchema.OnSubscriptionMessageReceived -= handler)
+                    .Select(e => FromEventArgs(e.EventArgs));
+
+                return subscriptionResults;
+            }
+
+            return executionResults.Merge();
+        }
+
+        private static ExecutionResult FromEventArgs(OnMessageReceivedEventArgs args)
+        {
+            var result = args.Data as ExecutionResult;
+
+            return result;
+        }
+
+        public async Task<SubscriptionExecutionResult> ComposeResultForSubscriptions(
+            GraphQLComplexType type, GraphQLOperationDefinition operationDefinition)
+        {
+            this.CheckSubscriptionIds(operationDefinition);
+
+            var context = this.CreateExecutionContext(operationDefinition);
+            var scope = new FieldScope(context, type);
+
+            return await this.ProcessSubscription(
+                (GraphQLSubscriptionType)type,
+                context.FieldCollector,
+                scope);
+        }
+
+        public virtual async Task<ExecutionResult> ComposeResult(
+            GraphQLComplexType type, GraphQLOperationDefinition operationDefinition, object parent = null)
+        {
+            var context = this.CreateExecutionContext(operationDefinition);
+            this.fieldCollector = context.FieldCollector;
+            var scope = new FieldScope(context, type, null, parent);
+
+            var fields = context.FieldCollector.CollectFields(type, operationDefinition.SelectionSet, scope);
+            var resultObject = operationDefinition.Operation == OperationType.Mutation
+                ? await scope.GetObjectSynchronously(fields)
+                : await scope.GetObject(fields);
+
+            await this.AppendIntrospectionInfo(scope, fields, resultObject);
+
+            return new ExecutionResult()
+            {
+                Data = resultObject,
+                Errors = scope.Errors.Any() ? scope.Errors : null
+            };
+        }
+        
+        public void ResolveDefinition(ASTNode definition, string operationToExecute)
+        {
+            switch (definition.Kind)
+            {
+                case ASTNodeKind.OperationDefinition:
+                    this.ResolveOperationDefinition(definition as GraphQLOperationDefinition, operationToExecute); break;
+                case ASTNodeKind.FragmentDefinition:
+                    this.ResolveFragmentDefinition(definition as GraphQLFragmentDefinition); break;
+                default:
+                    throw new GraphQLException($"GraphQL cannot execute a request containing a {definition.Kind}.",
+                        new[] { definition });
+            }
+        }
+
+        protected async Task AppendIntrospectionInfo(
+            FieldScope scope, Dictionary<string, IList<GraphQLFieldSelection>> fields, IDictionary<string, object> resultObject)
+        {
+            var introspectedSchema = await this.IntrospectSchemaIfRequested(scope, fields);
+            var introspectedField = await this.IntrospectTypeIfRequested(scope, fields);
+
+            if (introspectedSchema != null)
+            {
+                resultObject.Remove("__schema");
+                resultObject.Add("__schema", introspectedSchema);
+            }
+
+            if (introspectedField != null)
+            {
+                resultObject.Remove("__type");
+                resultObject.Add("__type", introspectedField);
+            }
+        }
+
+        protected virtual ExecutionContext CreateExecutionContext(GraphQLOperationDefinition operationDefinition)
+        {
+            var variableResolver = this.CreateVariableResolver();
+
+            var fieldCollector = new FieldCollector(
+                this.Fragments,
+                this.GraphQLSchema.SchemaRepository);
+
+            var argumentFetcher = new ArgumentFetcher(this.GraphQLSchema.SchemaRepository);
+
+            var context = new ExecutionContext()
+            {
+                FieldCollector = fieldCollector,
+                OperationType = operationDefinition.Operation,
+                Schema = this.GraphQLSchema,
+                SchemaRepository = this.GraphQLSchema.SchemaRepository,
+                VariableResolver = variableResolver,
+                ArgumentFetcher = argumentFetcher
+            };
+
+            var valueCompleter = new ValueCompleter(context);
+            context.ValueCompleter = valueCompleter;
+
+            return context;
+        }
+
+        protected VariableResolver CreateVariableResolver()
+        {
+            return new VariableResolver(
+                this.variables,
+                this.GraphQLSchema.SchemaRepository,
+                this.Operation?.VariableDefinitions);
+        }
+
+        private void ResolveDefinitions(string operationToExecute)
+        {
+            foreach (var definition in this.ast.Definitions)
+                this.ResolveDefinition(definition, operationToExecute);
+        }
+
+        private void GetAstAndResolveDefinitions(string operationToExecute)
         {
             if (this.ast == null)
                 this.ast = GraphQLDocument.GetAst(this.expression);
 
-            foreach (var definition in this.ast.Definitions)
-                this.ResolveDefinition(definition, operationToExecute);
+            if (this.Operation == null)
+                this.ResolveDefinitions(operationToExecute);
+        }
 
+        private async Task<ExecutionResult> ExecuteAsyncWithErrors(string operationToExecute)
+        {
+            this.GetAstAndResolveDefinitions(operationToExecute);
             this.CreateVariableResolver();
-
             this.ValidateAstAndThrowErrorWhenFaulty();
 
             if (this.Operation == null && !string.IsNullOrWhiteSpace(operationToExecute))
@@ -81,35 +244,58 @@
 
             if (this.Operation.Operation == OperationType.Subscription)
                 return await this.ComposeResultForSubscriptions(operationType, this.Operation);
-            else if (this.Operation.Operation == OperationType.Query)
-                return await this.ComposeResultForQuery(operationType, this.Operation);
-            else //Mutation
-                return await this.ComposeResultForMutation(operationType, this.Operation);
+
+            return await this.ComposeResult(operationType, this.Operation);
         }
 
-        public async Task<dynamic> ExecuteAsync(string operationToExecute)
+        private void CheckSubscriptionIds(GraphQLOperationDefinition operationDefinition)
         {
-            try
+            if (string.IsNullOrWhiteSpace(this.clientId))
             {
-                return await this.ExecuteAsyncWithErrors(operationToExecute);
+                throw new GraphQLException(
+                    "Can't invoke subscription without clientId specified",
+                    new ASTNode[] { operationDefinition });
             }
-            catch (GraphQLException ex)
+
+            if (this.subscriptionId == null)
             {
-                return this.CreateResultObjectForErrors(new[] { ex });
+                throw new GraphQLException(
+                    "Can't invoke subscription without subscriptionId specified",
+                    new ASTNode[] { operationDefinition });
             }
-            catch (GraphQLValidationException ex)
+        }
+
+        private IEnumerable<Task<ExecutionResult>> Execute(string operationToExecute)
+        {
+            var firstTask = this.ExecuteAsync(operationToExecute);
+            Task.WaitAll(firstTask);
+            yield return firstTask;
+            
+            var queue = this.fieldCollector?.PostponedFieldQueue;
+            var isRunning = queue?.Count > 0;
+            var notCompletedTasks = new List<Task>();
+
+            while (isRunning)
             {
-                return this.CreateResultObjectForErrors(ex.Errors);
-            }
-            catch (Exception ex)
-            {
-                return this.CreateResultObjectForErrors(new[] { new GraphQLException(ex) });
+                if (queue.Any())
+                {
+                    var execution = queue.Dequeue();
+                    var task = execution.GetResult();
+                    notCompletedTasks.Add(task);
+
+                    yield return task;
+                }
+
+                Task.WaitAll(notCompletedTasks.ToArray());
+                notCompletedTasks = new List<Task>();
+                if (!queue.Any())
+                    isRunning = false;
             }
         }
 
         private void ValidateAstAndThrowErrorWhenFaulty()
         {
-            var errors = this.validationContext.Validate(this.ast, this.graphQLSchema, this.GetValidationRules());
+            var errors = this.validationContext.Validate(this.ast, this.GraphQLSchema, this.GetValidationRules());
 
             if (errors.Any())
             {
@@ -152,123 +338,13 @@
             };
         }
 
-        private async Task AppendIntrospectionInfo(
-            FieldScope scope, Dictionary<string, IList<GraphQLFieldSelection>> fields, IDictionary<string, object> resultObject)
-        {
-            var introspectedSchema = await this.IntrospectSchemaIfRequested(scope, fields);
-            var introspectedField = await this.IntrospectTypeIfRequested(scope, fields);
-
-            if (introspectedSchema != null)
-            {
-                resultObject.Remove("__schema");
-                resultObject.Add("__schema", introspectedSchema);
-            }
-
-            if (introspectedField != null)
-            {
-                resultObject.Remove("__type");
-                resultObject.Add("__type", introspectedField);
-            }
-        }
-
-        public async Task<ExpandoObject> ComposeResultForSubscriptions(
-            GraphQLComplexType type, GraphQLOperationDefinition operationDefinition)
-        {
-            if (string.IsNullOrWhiteSpace(this.clientId))
-            {
-                throw new GraphQLException(
-                    "Can't invoke subscription without clientId specified",
-                    new ASTNode[] { operationDefinition });
-            }
-
-            if (!this.subscriptionId.HasValue)
-            {
-                throw new GraphQLException(
-                    "Can't invoke subscription without subscriptionId specified",
-                    new ASTNode[] { operationDefinition });
-            }
-
-            var context = this.CreateExecutionContext(operationDefinition);
-
-            var scope = new FieldScope(context, type, null);
-
-            return await this.ProcessSubscription(
-                    (GraphQLSubscriptionType)type,
-                    context.FieldCollector,
-                    scope);
-        }
-
-        public async Task<ExpandoObject> ComposeResultForQuery(
-            GraphQLComplexType type, GraphQLOperationDefinition operationDefinition, object parent = null)
-        {
-            var context = this.CreateExecutionContext(operationDefinition);
-            var scope = new FieldScope(context, type, parent);
-
-            var fields = context.FieldCollector.CollectFields(type, operationDefinition.SelectionSet);
-            var resultObject = await scope.GetObject(fields);
-
-            await this.AppendIntrospectionInfo(scope, fields, resultObject);
-
-            var returnObject = new ExpandoObject();
-            var returnObjectDictionary = (IDictionary<string, object>)returnObject;
-
-            returnObjectDictionary.Add("data", resultObject);
-
-            if (scope.Errors.Any())
-                returnObjectDictionary.Add("errors", scope.Errors);
-
-            return returnObject;
-        }
-
-        public async Task<ExpandoObject> ComposeResultForMutation(
-            GraphQLComplexType type, GraphQLOperationDefinition operationDefinition)
-        {
-            var context = this.CreateExecutionContext(operationDefinition);
-            var scope = new FieldScope(context, type, null);
-
-            var fields = context.FieldCollector.CollectFields(type, operationDefinition.SelectionSet);
-            var resultObject = await scope.GetObjectSynchronously(fields);
-
-            await this.AppendIntrospectionInfo(scope, fields, resultObject);
-
-            var returnObject = new ExpandoObject();
-            var returnObjectDictionary = (IDictionary<string, object>)returnObject;
-
-            returnObjectDictionary.Add("data", resultObject);
-
-            if (scope.Errors.Any())
-                returnObjectDictionary.Add("errors", scope.Errors);
-
-            return returnObject;
-        }
-
-        private ExecutionContext CreateExecutionContext(GraphQLOperationDefinition operationDefinition)
-        {
-            var variableResolver = this.CreateVariableResolver();
-
-            var fieldCollector = new FieldCollector(
-                this.fragments,
-                this.graphQLSchema.SchemaRepository);
-
-            return new ExecutionContext()
-            {
-                FieldCollector = fieldCollector,
-                OperationType = operationDefinition.Operation,
-                Schema = this.graphQLSchema,
-                SchemaRepository = this.graphQLSchema.SchemaRepository,
-                VariableResolver = variableResolver
-            };
-        }
-
-        private async Task<ExpandoObject> ProcessSubscription(
+        private async Task<SubscriptionExecutionResult> ProcessSubscription(
             GraphQLSubscriptionType type,
             IFieldCollector fieldCollector,
             FieldScope scope)
         {
-            var fields = fieldCollector.CollectFields(type, this.Operation.SelectionSet);
-            var field = fields.Single(); //only single subscription field allowed
-            var result = new ExpandoObject();
-            var resultDictionary = (IDictionary<string, object>)result;
+            var fields = fieldCollector.CollectFields(type, this.Operation.SelectionSet, scope);
+            var field = fields.Single(); // only single subscription field allowed
 
             await this.RegisterSubscription(
                 field.Value.Single(),
@@ -276,28 +352,18 @@
                 this.ast,
                 scope);
 
-            resultDictionary.Add("subscriptionId", this.subscriptionId.Value);
-            resultDictionary.Add("clientId", this.clientId);
-
-            var returnObject = new ExpandoObject();
-            var returnObjectDictionary = (IDictionary<string, object>)returnObject;
-
-            returnObjectDictionary.Add("data", result);
-
-            if (scope.Errors.Any())
-                returnObjectDictionary.Add("errors", scope.Errors);
-
-            return returnObject;
+            return new SubscriptionExecutionResult()
+            {
+                SubscriptionId = this.subscriptionId
+            };
         }
 
-        private ExpandoObject CreateResultObjectForErrors(IEnumerable<GraphQLException> errors)
+        private ExecutionResult CreateResultObjectForErrors(params GraphQLException[] errors)
         {
-            var resultObject = new ExpandoObject();
-            var resultObjectDictionary = (IDictionary<string, object>)resultObject;
-
-            resultObjectDictionary.Add("errors", errors);
-
-            return resultObject;
+            return new ExecutionResult()
+            {
+                Errors = errors
+            };
         }
 
         private async Task RegisterSubscription(
@@ -319,19 +385,11 @@
             await type.EventBus.Subscribe(EventBusSubscription.Create(
                 fieldInfo.Channel,
                 this.clientId,
-                this.subscriptionId.Value,
+                this.subscriptionId,
                 this.Operation?.Name?.Value ?? "Anonymous",
                 this.variables,
                 filter,
                 this.ast));
-        }
-
-        private VariableResolver CreateVariableResolver()
-        {
-            return new VariableResolver(
-                            this.variables,
-                            this.graphQLSchema.SchemaRepository,
-                            this.Operation?.VariableDefinitions);
         }
 
         private GraphQLComplexType GetOperationRootType()
@@ -339,19 +397,19 @@
             switch (this.Operation.Operation)
             {
                 case OperationType.Query:
-                    return this.graphQLSchema.QueryType;
+                    return this.GraphQLSchema.QueryType;
 
                 case OperationType.Mutation:
-                    if (this.graphQLSchema.MutationType == null)
+                    if (this.GraphQLSchema.MutationType == null)
                         throw new GraphQLException("Schema is not configured for mutations",
                             new[] { this.Operation });
-                    return this.graphQLSchema.MutationType;
+                    return this.GraphQLSchema.MutationType;
 
                 case OperationType.Subscription:
-                    if (this.graphQLSchema.SubscriptionType == null)
+                    if (this.GraphQLSchema.SubscriptionType == null)
                         throw new GraphQLException("Schema is not configured for subscriptions",
                             new[] { this.Operation });
-                    return this.graphQLSchema.SubscriptionType;
+                    return this.GraphQLSchema.SubscriptionType;
 
                 default:
                     throw new GraphQLException("Can only execute queries, mutations and subscriptions",
@@ -361,7 +419,7 @@
 
         private Expression<Func<string, IntrospectedType>> GetTypeIntrospectionLambda()
         {
-            return (string name) => this.graphQLSchema.IntrospectType(name);
+            return (string name) => this.GraphQLSchema.IntrospectType(name);
         }
 
         private async Task<object> IntrospectSchemaIfRequested(
@@ -372,11 +430,13 @@
                 var field = fields["__schema"].Single();
                 fields.Remove("__schema");
 
-                return await scope.CompleteValue(
-                    this.graphQLSchema.IntrospectedSchema,
-                    this.graphQLSchema.IntrospectedSchema.GetType(),
-                    field,
-                    field.Arguments.ToList());
+                var executedField = new ExecutedField()
+                {
+                    Selection = field,
+                    Path = new List<object>()
+                };
+
+                return await scope.Context.ValueCompleter.CompleteValue(executedField, this.GraphQLSchema.IntrospectedSchema);
             }
 
             return null;
@@ -394,38 +454,27 @@
                         field.Arguments.ToList(),
                         this.GetTypeIntrospectionLambda());
 
-                return await scope.CompleteValue(
-                    value,
-                    value?.GetType(),
-                    field,
-                    field.Arguments.ToList());
+                var executedField = new ExecutedField()
+                {
+                    Selection = field,
+                    Path = new List<object>()
+                };
+
+                return await scope.Context.ValueCompleter.CompleteValue(executedField, value);
             }
 
             return null;
         }
 
-        public void ResolveDefinition(ASTNode definition, string operationToExecute)
-        {
-            switch (definition.Kind)
-            {
-                case ASTNodeKind.OperationDefinition:
-                    this.ResolveOperationDefinition(definition as GraphQLOperationDefinition, operationToExecute); break;
-                case ASTNodeKind.FragmentDefinition:
-                    this.ResolveFragmentDefinition(definition as GraphQLFragmentDefinition); break;
-                default: throw new GraphQLException($"GraphQL cannot execute a request containing a {definition.Kind}.",
-                    new[] { definition });
-            }
-        }
-
         private void ResolveFragmentDefinition(GraphQLFragmentDefinition graphQLFragmentDefinition)
         {
-            if (!this.fragments.ContainsKey(graphQLFragmentDefinition.Name.Value))
-                this.fragments.Add(graphQLFragmentDefinition.Name.Value, graphQLFragmentDefinition);
+            if (!this.Fragments.ContainsKey(graphQLFragmentDefinition.Name.Value))
+                this.Fragments.Add(graphQLFragmentDefinition.Name.Value, graphQLFragmentDefinition);
         }
 
         private void ResolveOperationDefinition(GraphQLOperationDefinition graphQLOperationDefinition, string operationToExecute)
         {
-            if (this.Operation != null && string.IsNullOrWhiteSpace(operationToExecute))
+            if (this.Operation != null && string.IsNullOrWhiteSpace(operationToExecute) && this.Operation.Name.Value != operationToExecute)
                 throw new GraphQLException("Must provide operation name if query contains multiple operations.");
 
             if (!string.IsNullOrWhiteSpace(operationToExecute) && graphQLOperationDefinition.Name.Value == operationToExecute)

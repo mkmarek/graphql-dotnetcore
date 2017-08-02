@@ -9,6 +9,8 @@
         public ISchemaRepository SchemaRepository { get; set; }
         public IVariableResolver VariableResolver { get; set; }
         public IFieldCollector FieldCollector { get; set; }
+        public IArgumentFetcher ArgumentFetcher { get; set; }
+        public IValueCompleter ValueCompleter { get; set; }
         public IGraphQLSchema Schema { get; set; }
         public OperationType OperationType { get; set; }
     }

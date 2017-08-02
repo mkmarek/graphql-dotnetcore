@@ -18,6 +18,11 @@ namespace GraphQLCore.Language.AST
             }
         }
 
+        public string GetPathName()
+        {
+            return this.Alias?.Value ?? this.Name.Value;
+        }
+
         public GraphQLName Name { get; set; }
         public GraphQLSelectionSet SelectionSet { get; set; }
     }

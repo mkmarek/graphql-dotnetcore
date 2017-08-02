@@ -41,7 +41,7 @@ namespace GraphQLCore.Tests.Events
             await this.eventBus.Subscribe(EventBusSubscription.Create<Message>(
                 "testChannel",
                 "someClientId",
-                0,
+                "0",
                 null,
                 new { },
                 e => e.Author == "Bob",
@@ -86,7 +86,7 @@ namespace GraphQLCore.Tests.Events
             await this.eventBus.Subscribe(EventBusSubscription.Create<Message>(
                 "testChannel",
                 "someClientId",
-                0,
+                "0",
                 null,
                 new { },
                 e => e.Author == "Sam",
@@ -113,7 +113,7 @@ namespace GraphQLCore.Tests.Events
             await this.eventBus.Subscribe(EventBusSubscription.Create<Message>(
                 "testChannel",
                 "someClientId",
-                0,
+                "0",
                 null,
                 new { },
                 e => e.Author == "Sam",
@@ -122,7 +122,7 @@ namespace GraphQLCore.Tests.Events
             await this.eventBus.Subscribe(EventBusSubscription.Create<Message>(
                 "testChannel",
                 "someAnotherClientId",
-                0,
+                "0",
                 null,
                 new { },
                 e => e.Author == "Sam",
@@ -149,7 +149,7 @@ namespace GraphQLCore.Tests.Events
             await this.eventBus.Subscribe(EventBusSubscription.Create<Message>(
                 "testChannel",
                 "someClientId",
-                0,
+                "0",
                 null,
                 new { },
                 e => e.Author == "Sam",
@@ -158,7 +158,7 @@ namespace GraphQLCore.Tests.Events
             await this.eventBus.Subscribe(EventBusSubscription.Create<Message>(
                 "testChannel",
                 "someClientId",
-                0,
+                "0",
                 null,
                 new { },
                 e => e.Author == "Sam",

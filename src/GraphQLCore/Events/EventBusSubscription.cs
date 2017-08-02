@@ -1,9 +1,8 @@
 ﻿namespace GraphQLCore.Events
 {
     using GraphQLCore.Language.AST;
-    using System.Collections.Generic;
-    using System.Linq.Expressions;
     using System;
+    using System.Linq.Expressions;
 
     public class EventBusSubscription
     {
@@ -13,14 +12,14 @@
         public string OperationToExecute { get; private set; }
         public GraphQLDocument Document { get; private set; }
         public object Variables { get; private set; }
-        public int SubscriptionId { get; private set; }
+        public string SubscriptionId { get; private set; }
 
         private EventBusSubscription() { }
 
         public static EventBusSubscription Create<EntityType>(
             string channel,
             string clientId,
-            int subscriptionId,
+            string subscriptionId,
             string operationToExecute,
             object variables,
             Expression<Func<EntityType, bool>> filter,
@@ -42,7 +41,7 @@
         public static EventBusSubscription Create(
             string channel,
             string clientId,
-            int subscriptionId,
+            string subscriptionId,
             string operationToExecute,
             object variables,
             LambdaExpression filter,

@@ -4,7 +4,9 @@
     using GraphQLCore.Type.Translation;
     using Language.AST;
     using System.Collections.Generic;
+    using System.Dynamic;
     using System.Linq;
+    using System.Threading.Tasks;
     using Type;
     using Utils;
 
@@ -12,6 +14,7 @@
     {
         private Dictionary<string, GraphQLFragmentDefinition> fragments;
         private ISchemaRepository schemaRepository;
+        public Queue<FieldExecution> PostponedFieldQueue { get; }
 
         public FieldCollector(
             Dictionary<string, GraphQLFragmentDefinition> fragments,
@@ -19,22 +22,23 @@
         {
             this.fragments = fragments;
             this.schemaRepository = schemaRepository;
+            this.PostponedFieldQueue = new Queue<FieldExecution>();
         }
 
         public Dictionary<string, IList<GraphQLFieldSelection>> CollectFields(
-            GraphQLComplexType runtimeType, GraphQLSelectionSet selectionSet)
+            GraphQLComplexType runtimeType, GraphQLSelectionSet selectionSet, FieldScope scope)
         {
             var fields = new Dictionary<string, IList<GraphQLFieldSelection>>();
 
             foreach (var selection in selectionSet.Selections)
-                this.CollectFieldsInSelection(runtimeType, selection, fields);
+                this.CollectFieldsInSelection(runtimeType, selection, fields, scope);
 
             return fields;
         }
 
-        private void CollectField(GraphQLFieldSelection selection, Dictionary<string, IList<GraphQLFieldSelection>> fields)
+        protected virtual void CollectField(GraphQLFieldSelection selection, Dictionary<string, IList<GraphQLFieldSelection>> fields, FieldScope scope)
         {
-            if (!this.ShouldIncludeNode(selection.Directives, DirectiveLocation.FIELD))
+            if (!this.ShouldIncludeNode(selection.Directives, DirectiveLocation.FIELD, scope, selection))
                 return;
 
             var entryKey = this.GetFieldEntryKey(selection);
@@ -45,35 +49,35 @@
             fields[entryKey].Add(selection);
         }
 
-        private void CollectFieldsInSelection(GraphQLComplexType runtimeType, ASTNode selection, Dictionary<string, IList<GraphQLFieldSelection>> fields)
+        private void CollectFieldsInSelection(GraphQLComplexType runtimeType, ASTNode selection, Dictionary<string, IList<GraphQLFieldSelection>> fields, FieldScope scope)
         {
             switch (selection.Kind)
             {
-                case ASTNodeKind.Field: this.CollectField((GraphQLFieldSelection)selection, fields); break;
-                case ASTNodeKind.FragmentSpread: this.CollectFragmentSpreadFields(runtimeType, (GraphQLFragmentSpread)selection, fields); break;
-                case ASTNodeKind.InlineFragment: this.CollectFragmentFields(runtimeType, (GraphQLInlineFragment)selection, fields); break;
+                case ASTNodeKind.Field: this.CollectField((GraphQLFieldSelection)selection, fields, scope); break;
+                case ASTNodeKind.FragmentSpread: this.CollectFragmentSpreadFields(runtimeType, (GraphQLFragmentSpread)selection, fields, scope); break;
+                case ASTNodeKind.InlineFragment: this.CollectFragmentFields(runtimeType, (GraphQLInlineFragment)selection, fields, scope); break;
             }
         }
 
-        private void CollectFragmentFields(GraphQLComplexType runtimeType, GraphQLInlineFragment fragment, Dictionary<string, IList<GraphQLFieldSelection>> fields)
+        private void CollectFragmentFields(GraphQLComplexType runtimeType, GraphQLInlineFragment fragment, Dictionary<string, IList<GraphQLFieldSelection>> fields, FieldScope scope)
         {
-            if (!this.ShouldIncludeNode(fragment.Directives, DirectiveLocation.INLINE_FRAGMENT))
+            if (!this.ShouldIncludeNode(fragment.Directives, DirectiveLocation.INLINE_FRAGMENT, scope, fragment))
                 return;
 
             if (!this.DoesFragmentConditionMatch(runtimeType, fragment))
                 return;
 
-            this.CollectFields(runtimeType, fragment.SelectionSet)
+            this.CollectFields(runtimeType, fragment.SelectionSet, scope)
                 .ToList().ForEach(e => fields.Add(e.Key, e.Value));
         }
 
-        private void CollectFragmentSpreadFields(GraphQLComplexType runtimeType, GraphQLFragmentSpread fragmentSpread, Dictionary<string, IList<GraphQLFieldSelection>> fields)
+        private void CollectFragmentSpreadFields(GraphQLComplexType runtimeType, GraphQLFragmentSpread fragmentSpread, Dictionary<string, IList<GraphQLFieldSelection>> fields, FieldScope scope)
         {
-            if (!this.ShouldIncludeNode(fragmentSpread.Directives, DirectiveLocation.FRAGMENT_SPREAD))
+            if (!this.ShouldIncludeNode(fragmentSpread.Directives, DirectiveLocation.FRAGMENT_SPREAD, scope, fragmentSpread))
                 return;
 
             var fragment = this.fragments[fragmentSpread.Name.Value];
-            this.CollectFragmentFields(runtimeType, fragment, fields);
+            this.CollectFragmentFields(runtimeType, fragment, fields, scope);
         }
 
         private bool DoesFragmentConditionMatch(GraphQLComplexType runtimeType, GraphQLInlineFragment fragment)
@@ -95,7 +99,9 @@
 
         private bool ShouldIncludeNode(
             IEnumerable<GraphQLDirective> directives,
-            DirectiveLocation location)
+            DirectiveLocation location,
+            FieldScope scope,
+            IWithDirectives node)
         {
             foreach (var directive in directives)
             {
@@ -104,6 +110,19 @@
                 {
                     if (!directiveType.Locations.Any(e => e == location))
                         continue;
+                    IEnumerable<Task<dynamic>> postponedExecutions;
+                    if (directiveType.PostponeNodeResolve(scope, node, out postponedExecutions))
+                    {
+                        foreach (var execution in postponedExecutions)
+                        {
+                            this.PostponedFieldQueue.Enqueue(new FieldExecution()
+                            {
+                                Path = scope.Path.Append(((GraphQLFieldSelection)node).GetPathName()),
+                                Result = execution
+                            });
+                        }
+                    }
+
                     if (!directiveType.PreExecutionIncludeFieldIntoResult(directive, this.schemaRepository))
                         return false;
                 }

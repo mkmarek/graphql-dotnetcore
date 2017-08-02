@@ -13,7 +13,8 @@
       "type": "build"
     },
     "System.Linq": "4.1.0",
-    "Newtonsoft.Json": "10.0.2"
+    "Newtonsoft.Json": "10.0.2",
+    "System.Reactive": "3.1.1"
   },
   "buildOptions": {
     "additionalArguments": [ "/ruleset:ruleset.ruleset", "/additionalfile:stylecop.json" ]

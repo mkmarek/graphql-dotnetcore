@@ -18,116 +18,116 @@
         [Test]
         public void Execute_ArrayViaArgument_PrintsCorrectList()
         {
-            dynamic result = this.schema.Execute("{ withArray(ids: [1,2,3]) }");
+            var result = this.schema.Execute("{ withArray(ids: [1,2,3]) }");
 
-            Assert.AreEqual(3, result.data.withArray);
+            Assert.AreEqual(3, result.Data.withArray);
         }
 
         [Test]
         public void Execute_EntityFetchedWithIntegerArgument_PrintsCorrectValues()
         {
-            dynamic result = this.schema.Execute("{ nested(id: 42) { Id, StringField } }");
+            var result = this.schema.Execute("{ nested(id: 42) { Id, StringField } }");
 
-            Assert.AreEqual(42, result.data.nested.Id);
-            Assert.AreEqual("Test with id 42", result.data.nested.StringField);
+            Assert.AreEqual(42, result.Data.nested.Id);
+            Assert.AreEqual("Test with id 42", result.Data.nested.StringField);
         }
 
         [Test]
         public void Execute_FloatViaArgument_PrintsCorrectFloat()
         {
-            dynamic result = this.schema.Execute("{ withFloat(value: 3.14) }");
+            var result = this.schema.Execute("{ withFloat(value: 3.14) }");
 
-            Assert.AreEqual(3.14f, result.data.withFloat);
+            Assert.AreEqual(3.14f, result.Data.withFloat);
         }
 
         [Test]
         public void Execute_FloatViaArgumentWithInt_PrintsCorrectFloat()
         {
-            dynamic result = this.schema.Execute("{ withFloat(value: 3) }");
+            var result = this.schema.Execute("{ withFloat(value: 3) }");
 
-            Assert.AreEqual(3.0f, result.data.withFloat);
+            Assert.AreEqual(3.0f, result.Data.withFloat);
         }
 
         [Test]
         public void Execute_IEnumerableViaArgument_PrintsCorrectList()
         {
-            dynamic result = this.schema.Execute("{ withIEnumerable(ids: [1,2,3]) }");
+            var result = this.schema.Execute("{ withIEnumerable(ids: [1,2,3]) }");
 
-            Assert.AreEqual(3, result.data.withIEnumerable);
+            Assert.AreEqual(3, result.Data.withIEnumerable);
         }
 
         [Test]
         public void Execute_NestedEntityFetchedWithArguments_PrintsCorrectValues()
         {
-            dynamic result = this.schema.Execute("{ nested(id: 42) { nested(id: 24) { text(id: 12 str: \"string argument\") } } }");
+            var result = this.schema.Execute("{ nested(id: 42) { nested(id: 24) { text(id: 12 str: \"string argument\") } } }");
 
-            Assert.AreEqual("I received 12 with string argument", result.data.nested.nested.text);
+            Assert.AreEqual("I received 12 with string argument", result.Data.nested.nested.text);
         }
 
         [Test]
         public void Execute_NothingInNonMandatoryValue_InvokesResolverWithNullValue()
         {
-            dynamic result = this.schema.Execute("{ isNull }");
+            var result = this.schema.Execute("{ isNull }");
 
-            Assert.AreEqual(true, result.data.isNull);
+            Assert.AreEqual(true, result.Data.isNull);
         }
 
         [Test]
         public void Execute_ValueInNonMandatoryValue_InvokesResolverWitCorrecthNullValue()
         {
-            dynamic result = this.schema.Execute("{ isNull(nonMandatory: 1) }");
+            var result = this.schema.Execute("{ isNull(nonMandatory: 1) }");
 
-            Assert.AreEqual(false, result.data.isNull);
+            Assert.AreEqual(false, result.Data.isNull);
         }
 
         [Test]
         public void Execute_AstObjectArgument_ReturnsCorrectValue()
         {
-            dynamic result = this.schema.Execute("{ withObjectArg(obj: { stringField: \"abc\" }) { StringField } }");
+            var result = this.schema.Execute("{ withObjectArg(obj: { stringField: \"abc\" }) { StringField } }");
 
-            Assert.AreEqual("abc", result.data.withObjectArg.StringField);
+            Assert.AreEqual("abc", result.Data.withObjectArg.StringField);
         }
 
         [Test]
         public void Execute_WithList_SingleValue()
         {
-            dynamic result = this.schema.Execute("{ withList(ids: 1) }");
+            var result = this.schema.Execute("{ withList(ids: 1) }");
 
-            Assert.AreEqual(1, ((IEnumerable<object>)result.data.withList).ElementAt(0));
+            Assert.AreEqual(1, ((IEnumerable<object>)result.Data.withList).ElementAt(0));
         }
 
         [Test]
         public void Execute_WithList_MultipleValues()
         {
-            dynamic result = this.schema.Execute("{ withList(ids: [4 8 6]) }");
+            var result = this.schema.Execute("{ withList(ids: [4 8 6]) }");
 
-            Assert.AreEqual(4, ((IEnumerable<object>)result.data.withList).ElementAt(0));
-            Assert.AreEqual(8, ((IEnumerable<object>)result.data.withList).ElementAt(1));
-            Assert.AreEqual(6, ((IEnumerable<object>)result.data.withList).ElementAt(2));
+            Assert.AreEqual(4, ((IEnumerable<object>)result.Data.withList).ElementAt(0));
+            Assert.AreEqual(8, ((IEnumerable<object>)result.Data.withList).ElementAt(1));
+            Assert.AreEqual(6, ((IEnumerable<object>)result.Data.withList).ElementAt(2));
         }
 
         [Test]
         public void Execute_AstObjectListArgument_CorrectlyTranslatesIntoOutput()
         {
-            dynamic result = this.schema.Execute("{ withObjectListArg(obj: [{ stringField: \"abc\" }, { stringField: \"efg\" }]) { StringField } }");
+            var result = this.schema.Execute("{ withObjectListArg(obj: [{ stringField: \"abc\" }, { stringField: \"efg\" }]) { StringField } }");
 
-            Assert.AreEqual("abc", ((IEnumerable<dynamic>)result.data.withObjectListArg).ElementAt(0).StringField);
-            Assert.AreEqual("efg", ((IEnumerable<dynamic>)result.data.withObjectListArg).ElementAt(1).StringField);
+            Assert.AreEqual("abc", ((IEnumerable<dynamic>)result.Data.withObjectListArg).ElementAt(0).StringField);
+            Assert.AreEqual("efg", ((IEnumerable<dynamic>)result.Data.withObjectListArg).ElementAt(1).StringField);
         }
 
         [Test]
         public void Execute_AstObjectListArgumentWithListProperty_CorrectlyTranslatesIntoOutput()
         {
-            dynamic result = this.schema.Execute("{ withObjectListArg(obj: { stringArray: [\"abc\", \"efg\"] }) { StringArray } }");
+            var result = this.schema.Execute("{ withObjectListArg(obj: { stringArray: [\"abc\", \"efg\"] }) { StringArray } }");
 
-            Assert.AreEqual("abc", ((IEnumerable<dynamic>)((IEnumerable<dynamic>)result.data.withObjectListArg).ElementAt(0).StringArray).ElementAt(0));
-            Assert.AreEqual("efg", ((IEnumerable<dynamic>)((IEnumerable<dynamic>)result.data.withObjectListArg).ElementAt(0).StringArray).ElementAt(1));
+            Assert.AreEqual("abc", ((IEnumerable<dynamic>)((IEnumerable<dynamic>)result.Data.withObjectListArg).ElementAt(0).StringArray).ElementAt(0));
+            Assert.AreEqual("efg", ((IEnumerable<dynamic>)((IEnumerable<dynamic>)result.Data.withObjectListArg).ElementAt(0).StringArray).ElementAt(1));
         }
 
         [Test]
         public void Execute_WithNestedListSingleValueArgument_CorrectlyTranslatesIntoOutput()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
                 {
                     withObjectNestedListArg(obj: [
                         [
@@ -140,14 +140,14 @@
                     }
                 }");
             
-            Assert.AreEqual("abc", result.data.withObjectNestedListArg[0][0].StringArray[0]);
-            Assert.AreEqual("klm", result.data.withObjectNestedListArg[1][0].StringArray[1]);
+            Assert.AreEqual("abc", result.Data.withObjectNestedListArg[0][0].StringArray[0]);
+            Assert.AreEqual("klm", result.Data.withObjectNestedListArg[1][0].StringArray[1]);
         }
 
         [Test]
         public void Execute_SingleValueInNestedList_CorrectlyTranslatesIntoOutput()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
                 {
                     withNestedArray(matrix: [
                         [
@@ -178,13 +178,13 @@
                 }
             };
 
-            Assert.AreEqual(expectedResult, result.data.withNestedArray);
+            Assert.AreEqual(expectedResult, result.Data.withNestedArray);
         }
 
         [Test]
         public void Execute_EnumSingleValue_CorrectlyTranslatesIntoOutput()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
                 {
                     withObjectArg(obj: {
                         enumField: [One]
@@ -193,48 +193,48 @@
                     }
                 }");
 
-            Assert.AreEqual(new string[] { TestEnum.One.ToString() }, result.data.withObjectArg.enumField);
+            Assert.AreEqual(new string[] { TestEnum.One.ToString() }, result.Data.withObjectArg.enumField);
         }
 
         [Test]
         public void Execute_NullValue_CorrectlyTranslatesIntoOutput()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
                 {
                     isNull(nonMandatory: null)
                 }");
 
-            Assert.IsTrue(result.data.isNull);
+            Assert.IsTrue(result.Data.isNull);
         }
 
         [Test]
         public void Execute_WithDefaultValue_ReturnsDefaultValue()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
                 {
                     withDefaultValue
                 }");
 
-            Assert.AreEqual("default", result.data.withDefaultValue);
+            Assert.AreEqual("default", result.Data.withDefaultValue);
         }
 
         [Test]
         public void Execute_WithComplexDefaultValue_ReturnsDefaultValue()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
                 {
                     withDefaultComplexValue {
                         stringField : StringField
                     }
                 }");
 
-            Assert.AreEqual("defaultCreatedByObject", result.data.withDefaultComplexValue.stringField);
+            Assert.AreEqual("defaultCreatedByObject", result.Data.withDefaultComplexValue.stringField);
         }
 
         [Test]
         public void Execute_WithComplexDefaultValueInField_ReturnsDefaultValue()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
                 {
                     withDefaultComplexValue (obj: {}) {
                         stringField : StringField
@@ -244,23 +244,23 @@
                     }
                 }");
 
-            Assert.AreEqual("default", result.data.withDefaultComplexValue.stringField);
-            Assert.AreEqual("default+abc", result.data.withDefaultComplexValue.withSupplied);
-            Assert.AreEqual("default+", result.data.withDefaultComplexValue.withNull);
-            Assert.AreEqual("default+defaultArgument", result.data.withDefaultComplexValue.withDefault);
+            Assert.AreEqual("default", result.Data.withDefaultComplexValue.stringField);
+            Assert.AreEqual("default+abc", result.Data.withDefaultComplexValue.withSupplied);
+            Assert.AreEqual("default+", result.Data.withDefaultComplexValue.withNull);
+            Assert.AreEqual("default+defaultArgument", result.Data.withDefaultComplexValue.withDefault);
         }
 
         [Test]
         public void Execute_WithDirectiveWithDefaultValue_UsesDefaultValue()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
                 {
                     withDefaultComplexValue {
                         stringField : StringField @default
                     }
                 }");
 
-            Assert.AreEqual("default value", result.data.withDefaultComplexValue.stringField);
+            Assert.AreEqual("default value", result.Data.withDefaultComplexValue.stringField);
         }
 
         [SetUp]

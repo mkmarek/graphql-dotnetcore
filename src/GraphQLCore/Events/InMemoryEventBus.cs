@@ -1,10 +1,7 @@
 ﻿namespace GraphQLCore.Events
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Linq.Expressions;
-    using System.Text;
     using System.Threading.Tasks;
 
     public class InMemoryEventBus : IEventBus
@@ -50,7 +47,7 @@
             }
         }
 
-        public void Unsubscribe(string clientId, int subscriptionId)
+        public void Unsubscribe(string clientId, string subscriptionId)
         {
             var key = this.BuildKey(clientId, subscriptionId);
 
@@ -70,7 +67,7 @@
             }
         }
 
-        private string BuildKey(string clientId, int subscriptionId)
+        private string BuildKey(string clientId, string subscriptionId)
         {
             return clientId + "_" + subscriptionId;
         }

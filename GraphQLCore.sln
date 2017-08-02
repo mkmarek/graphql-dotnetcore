@@ -49,6 +49,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "input-object-definition", "
 		docs\input-object-definition\overview.md = docs\input-object-definition\overview.md
 	EndProjectSection
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "GraphQLCore.WsMiddleware", "src\GraphQLCore.WsMiddleware\GraphQLCore.WsMiddleware.xproj", "{01DBBA59-F867-43B5-9525-C620D82F4A31}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,10 @@ Global
 		{7461D627-8C7A-4DDB-98A1-22C396AF749F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7461D627-8C7A-4DDB-98A1-22C396AF749F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7461D627-8C7A-4DDB-98A1-22C396AF749F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01DBBA59-F867-43B5-9525-C620D82F4A31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01DBBA59-F867-43B5-9525-C620D82F4A31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01DBBA59-F867-43B5-9525-C620D82F4A31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01DBBA59-F867-43B5-9525-C620D82F4A31}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -79,5 +85,6 @@ Global
 		{95724C1A-471A-4FDF-89A1-B47A7CCB65F3} = {F484E37E-9227-4DDC-BA9F-DE3239BFB4D8}
 		{E08A50B9-BF75-4D71-9141-AF14C9740150} = {F484E37E-9227-4DDC-BA9F-DE3239BFB4D8}
 		{A36BE8A6-BCA4-43D2-A37A-27A165C9EECB} = {F484E37E-9227-4DDC-BA9F-DE3239BFB4D8}
+		{01DBBA59-F867-43B5-9525-C620D82F4A31} = {20410A75-C8E6-45E4-B70A-9E88F8267359}
 	EndGlobalSection
 EndGlobal

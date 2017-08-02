@@ -16,109 +16,109 @@
         [Test]
         public void Execute_AcessorBasedProperty_ReturnsDefinedValue()
         {
-            dynamic result = this.schema.Execute("{ acessorBasedProp { Hello } }");
+            var result = this.schema.Execute("{ acessorBasedProp { Hello } }");
 
-            Assert.AreEqual("world", result.data.acessorBasedProp.Hello);
+            Assert.AreEqual("world", result.Data.acessorBasedProp.Hello);
         }
 
         [Test]
         public void Execute_FieldSelectionQuery_DoesntOutputFieldWhenNotSelected()
         {
-            dynamic result = this.schema.Execute("{ hello }");
+            var result = this.schema.Execute("{ hello }");
 
-            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string a = result.data.test; }));
+            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string a = result.Data.test; }));
         }
 
         [Test]
         public void Execute_FieldSelectionQuery_OutputsFieldBasedOnResolver()
         {
-            dynamic result = this.schema.Execute("{ hello }");
+            var result = this.schema.Execute("{ hello }");
 
-            Assert.AreEqual("world", result.data.hello);
+            Assert.AreEqual("world", result.Data.hello);
         }
 
         [Test]
         public void Execute_FieldSelectionQuery_OutputsFieldWithAlias()
         {
-            dynamic result = this.schema.Execute("{ aliased : hello, test }");
+            var result = this.schema.Execute("{ aliased : hello, test }");
 
-            Assert.AreEqual("world", result.data.aliased);
-            Assert.AreEqual("test", result.data.test);
+            Assert.AreEqual("world", result.Data.aliased);
+            Assert.AreEqual("test", result.Data.test);
         }
 
         [Test]
         public void Execute_FieldSelectionQuery_OutputsTwoFieldsBasedOnResolver()
         {
-            dynamic result = this.schema.Execute("{ hello, test }");
+            var result = this.schema.Execute("{ hello, test }");
 
-            Assert.AreEqual("world", result.data.hello);
-            Assert.AreEqual("test", result.data.test);
+            Assert.AreEqual("world", result.Data.hello);
+            Assert.AreEqual("test", result.Data.test);
         }
 
         [Test]
         public void Execute_FieldSelectionTwoIdenticalFieldsQuery_IgnoresDuplicates()
         {
-            dynamic result = this.schema.Execute("{ hello, hello }");
+            var result = this.schema.Execute("{ hello, hello }");
 
-            Assert.AreEqual("world", result.data.hello);
+            Assert.AreEqual("world", result.Data.hello);
         }
 
         [Test]
         public void Execute_NestedFieldSelectionQuery_OutputsNestedField()
         {
-            dynamic result = this.schema.Execute("{ nested { howdy } }");
+            var result = this.schema.Execute("{ nested { howdy } }");
 
-            Assert.AreEqual("xzyt", result.data.nested.howdy);
+            Assert.AreEqual("xzyt", result.Data.nested.howdy);
         }
 
         [Test]
         public void Execute_NestedPropertyWithParentAlias_ReturnsDefinedValue()
         {
-            dynamic result = this.schema.Execute("{ aliasedProp : acessorBasedProp { Test } }");
+            var result = this.schema.Execute("{ aliasedProp : acessorBasedProp { Test } }");
 
-            Assert.AreEqual("stuff", result.data.aliasedProp.Test);
+            Assert.AreEqual("stuff", result.Data.aliasedProp.Test);
         }
 
         [Test]
         public void Execute_TwicelyNestedFieldSelectionQuery_OutputsNestedField()
         {
-            dynamic result = this.schema.Execute("{ nested { anotherNested { stuff } } }");
+            var result = this.schema.Execute("{ nested { anotherNested { stuff } } }");
 
-            Assert.AreEqual("a", result.data.nested.anotherNested.stuff);
+            Assert.AreEqual("a", result.Data.nested.anotherNested.stuff);
         }
 
         [Test]
         public void Execute_ObjectField_ReturnsCorrectTypeName()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
             {
                 acessorBasedProp {
                     __typename
                 }
             }");
 
-            Assert.AreEqual("CustomObject", result.data.acessorBasedProp.__typename);
+            Assert.AreEqual("CustomObject", result.Data.acessorBasedProp.__typename);
         }
 
         [Test]
         public void Execute_InterfaceField_ReturnsCorrectTypeName()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
             {
                 testTypes {
                     __typename
                 }
             }");
 
-            Assert.AreEqual(2, result.data.testTypes.Count);
-            Assert.AreEqual("CustomObject", result.data.testTypes[0].__typename);
-            Assert.AreEqual("AnotherCustomObject", result.data.testTypes[1].__typename);
+            Assert.AreEqual(2, result.Data.testTypes.Count);
+            Assert.AreEqual("CustomObject", result.Data.testTypes[0].__typename);
+            Assert.AreEqual("AnotherCustomObject", result.Data.testTypes[1].__typename);
         }
 
         [Test]
         public void Execute_Introspection_DoesNotReturnTypeNameField()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
             {
                 __type(name: ""CustomObject"") {
                     fields {
@@ -127,7 +127,7 @@
                 }
             }");
 
-            var fieldNames = result.data.__type.fields;
+            var fieldNames = result.Data.__type.fields;
 
             Assert.IsFalse(fieldNames.Contains("__typename"));
         }
@@ -135,12 +135,12 @@
         [Test]
         public void Execute_Enum_CorrectlyReturnsEnumValue()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
             {
                 enum
             }");
 
-            var value = result.data.@enum;
+            var value = result.Data.@enum;
 
             Assert.AreEqual("One", value);
         }
@@ -148,7 +148,7 @@
         [Test]
         public void Execute_Introspection_ReturnsCorrectlyNonNullEnumField()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
             {
                 __type(name: ""RootQueryType"") {
                     fields {
@@ -163,7 +163,7 @@
                 }
             }");
 
-            var fields = result.data.__type.fields as IEnumerable<dynamic>;
+            var fields = result.Data.__type.fields as IEnumerable<dynamic>;
             var emumField = fields.Single(e => e.name == "enum");
 
             Assert.AreEqual("NON_NULL", emumField.type.kind);
@@ -173,7 +173,7 @@
         [Test]
         public void Execute_Introspection_ReturnsCorrectlyNullableEnumField()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
             {
                 __type(name: ""RootQueryType"") {
                     fields {
@@ -185,7 +185,7 @@
                 }
             }");
 
-            var fields = result.data.__type.fields as IEnumerable<dynamic>;
+            var fields = result.Data.__type.fields as IEnumerable<dynamic>;
             var emumField = fields.Single(e => e.name == "nullableEnum");
 
             Assert.AreEqual("TestEnum", emumField.type.name);
@@ -194,12 +194,12 @@
         [Test]
         public void Execute_NullableEnum_CorrectlyReturnsEnumValue()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
             {
                 nullableEnum
             }");
 
-            var value = result.data.nullableEnum;
+            var value = result.Data.nullableEnum;
 
             Assert.AreEqual("Two", value);
         }
@@ -207,12 +207,12 @@
         [Test]
         public void Execute_NullableEnumWithNull_CorrectlyReturnsEnumValue()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
             {
                 nullableEnumWithNull
             }");
 
-            var value = result.data.nullableEnumWithNull;
+            var value = result.Data.nullableEnumWithNull;
 
             Assert.AreEqual(null, value);
         }
@@ -238,14 +238,11 @@
             }
             ", null, "fetch");
 
-            var errors = result.errors as IList<GraphQLException>;
-            var objectResult = result as IDictionary<string, object>;
+            var errors = result.Errors;
 
-            Assert.IsFalse(objectResult.ContainsKey("data"));
-            Assert.AreEqual(3, errors.Count);
+            Assert.IsNull(result.Data);
+            Assert.AreEqual(3, errors.Count());
         }
-
-
 
         [SetUp]
         public void SetUp()

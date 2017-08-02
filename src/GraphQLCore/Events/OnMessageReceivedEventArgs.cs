@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using GraphQLCore.Language.AST;
-
-namespace GraphQLCore.Events
+﻿namespace GraphQLCore.Events
 {
+    using GraphQLCore.Language.AST;
+
     public class OnMessageReceivedEventArgs
     {
         public string ClientId { get; set; }
-        public int SubscriptionId { get; set; }
+        public string SubscriptionId { get; set; }
         public string Channel { get; set; }
         public GraphQLDocument Document { get; set; }
         public string OperationToExecute { get; set; }

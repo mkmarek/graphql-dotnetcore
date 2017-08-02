@@ -1,6 +1,7 @@
 ﻿namespace GraphQLCore.Type.Directives
 {
     using Complex;
+    using Execution;
     using Introspection;
     using Language.AST;
     using System;
@@ -29,6 +30,12 @@
                 ?? new Dictionary<string, GraphQLObjectTypeArgumentInfo>();
         }
 
+        public virtual bool PostponeNodeResolve(FieldScope scope, IWithDirectives node, out IEnumerable<Task<dynamic>> postponedNodes)
+        {
+            postponedNodes = null;
+            return false;
+        }
+
         public virtual bool PreExecutionIncludeFieldIntoResult(
             GraphQLDirective directive, ISchemaRepository schemaRepository)
         {
@@ -44,7 +51,12 @@
             return true;
         }
 
-        public abstract LambdaExpression GetResolver(Func<Task<object>> valueGetter, object parentValue);
+        public virtual LambdaExpression GetResolver(Func<Task<object>> valueGetter, object parentValue)
+        {
+            Expression<Func<Task<object>>> resolver = () => valueGetter();
+
+            return resolver;
+        }
 
         public IntrospectedDirective Introspect(ISchemaRepository schemaRepository)
         {

@@ -18,7 +18,7 @@
         [Test]
         public void Execute_NullsOutExceptions()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
             {
                 sync
                 graphQLError
@@ -27,10 +27,10 @@
             }
             ");
 
-            Assert.AreEqual("foo", result.data.sync);
-            Assert.AreEqual(null, result.data.graphQLError);
+            Assert.AreEqual("foo", result.Data.sync);
+            Assert.AreEqual(null, result.Data.graphQLError);
 
-            var errors = result.errors as IList<GraphQLException>;
+            var errors = result.Errors;
             Assert.AreEqual(3, errors.Count());
 
             ErrorAssert.AreEqual("Error getting graphQLError", errors.ElementAt(0), 4, 17, new[] { "graphQLError" });
@@ -41,7 +41,7 @@
         [Test]
         public void Execute_FullPathForNonNullFields()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
             query {
                 nullableA {
                     aliasedA: nullableA {
@@ -55,9 +55,9 @@
             }
             ");
 
-            Assert.AreEqual(null, result.data.nullableA.aliasedA);
+            Assert.AreEqual(null, result.Data.nullableA.aliasedA);
 
-            var errors = result.errors as IList<GraphQLException>;
+            var errors = result.Errors;
             
             ErrorAssert.AreEqual("Catch me if you can", errors.Single(), 7, 33, new[] { "nullableA", "aliasedA", "nonNullA", "anotherA", "throws" });
         }
@@ -65,7 +65,7 @@
         [Test]
         public void Execute_FullPathForFieldsInList()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
             query {
                 nullableAList {
                     foo
@@ -74,7 +74,7 @@
             }
             ");
 
-            var nullableAList = (IList<object>)result.data.nullableAList;
+            var nullableAList = (IList<object>)result.Data.nullableAList;
             Assert.AreEqual(4, nullableAList.Count);
 
             Assert.IsNotNull(nullableAList.ElementAt(0));
@@ -82,7 +82,7 @@
             Assert.IsNotNull(nullableAList.ElementAt(2));
             Assert.IsNull(nullableAList.ElementAt(3));
 
-            var errors = result.errors as IEnumerable<GraphQLException>;
+            var errors = result.Errors;
             Assert.AreEqual(2, errors.Count());
 
             ErrorAssert.AreEqual("Catch me if you can", errors.ElementAt(0), 5, 21, new object[] { "nullableAList", 1, "throwAlias" });
@@ -92,7 +92,7 @@
         [Test]
         public void Execute_FullPathForFieldsInNestedList()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
             query {
                 nullableA {
                     nullableAList {
@@ -106,13 +106,13 @@
             }
             ");
 
-            dynamic nullableAList = result.data.nullableA.nullableAList as IList<object>;
+            dynamic nullableAList = result.Data.nullableA.nullableAList as IList<object>;
 
             Assert.AreEqual(4, nullableAList.Count);
             Assert.AreEqual("did not throw", nullableAList[0].nullableAList[0].nullableA.throws);
             Assert.AreEqual(null, nullableAList[3].nullableAList[3].nullableA);
 
-            var errors = result.errors as IList<GraphQLException>;
+            var errors = result.Errors.ToList();
             Assert.AreEqual(8, errors.Count);
 
             for (var i = 0; i < 4; i++)

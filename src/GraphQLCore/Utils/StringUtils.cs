@@ -1,10 +1,10 @@
 ﻿namespace GraphQLCore.Utils
 {
+    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text.RegularExpressions;
-    using Newtonsoft.Json;
 
     public static class StringUtils
     {

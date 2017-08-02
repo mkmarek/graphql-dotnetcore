@@ -13,7 +13,7 @@
         [Test]
         public void Execute_FragmentWithFalsyInclude_DoesntPrintFragment()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
             query fetch {
                 nested {
                     ...frag @include(if : false)
@@ -26,14 +26,14 @@
             }
             ");
 
-            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string a = result.data.nested.a; }));
-            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.data.nested.b; }));
+            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string a = result.Data.nested.a; }));
+            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.Data.nested.b; }));
         }
 
         [Test]
         public void Execute_FragmentWithFalsySkip_PrintsFragment()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
             query fetch {
                 nested {
                     ...frag @skip(if : false)
@@ -46,14 +46,14 @@
             }
             ");
 
-            Assert.AreEqual("1", result.data.nested.a);
-            Assert.AreEqual("2", result.data.nested.b);
+            Assert.AreEqual("1", result.Data.nested.a);
+            Assert.AreEqual("2", result.Data.nested.b);
         }
 
         [Test]
         public void Execute_FragmentWithTruthyInclude_PrintsFragment()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
             query fetch {
                 nested {
                     ...frag @include(if : true)
@@ -66,14 +66,14 @@
             }
             ");
 
-            Assert.AreEqual("1", result.data.nested.a);
-            Assert.AreEqual("2", result.data.nested.b);
+            Assert.AreEqual("1", result.Data.nested.a);
+            Assert.AreEqual("2", result.Data.nested.b);
         }
 
         [Test]
         public void Execute_FragmentWithTruthySkip_DoesntPrintFragment()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
             query fetch {
                 nested {
                     ...frag @skip(if : true)
@@ -86,89 +86,89 @@
             }
             ");
 
-            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string a = result.data.nested.a; }));
-            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.data.nested.b; }));
+            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string a = result.Data.nested.a; }));
+            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.Data.nested.b; }));
         }
 
         [Test]
         public void Execute_ScalarBasedFalsyIncludeAndFalsySkipDirective_PrintsTheField()
         {
-            dynamic result = this.schema.Execute("{ a, b @include(if: false) @skip(if: false) }");
+            var result = this.schema.Execute("{ a, b @include(if: false) @skip(if: false) }");
 
-            Assert.AreEqual("world", result.data.a);
-            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.data.b; }));
+            Assert.AreEqual("world", result.Data.a);
+            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.Data.b; }));
         }
 
         [Test]
         public void Execute_ScalarBasedFalsyIncludeAndTruthySkipDirective_DoesntPrintTheField()
         {
-            dynamic result = this.schema.Execute("{ a, b @include(if: false) @skip(if: true) }");
+            var result = this.schema.Execute("{ a, b @include(if: false) @skip(if: true) }");
 
-            Assert.AreEqual("world", result.data.a);
-            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.data.b; }));
+            Assert.AreEqual("world", result.Data.a);
+            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.Data.b; }));
         }
 
         [Test]
         public void Execute_ScalarBasedFalsyIncludeDirective_DoesntPrintTheField()
         {
-            dynamic result = this.schema.Execute("{ a, b @include(if: false) }");
+            var result = this.schema.Execute("{ a, b @include(if: false) }");
 
-            Assert.AreEqual("world", result.data.a);
-            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.data.b; }));
+            Assert.AreEqual("world", result.Data.a);
+            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.Data.b; }));
         }
 
         [Test]
         public void Execute_ScalarBasedFalsySkipDirective_PrintsTheField()
         {
-            dynamic result = this.schema.Execute("{ a, b @skip(if: false) }");
+            var result = this.schema.Execute("{ a, b @skip(if: false) }");
 
-            Assert.AreEqual("world", result.data.a);
-            Assert.AreEqual("test", result.data.b);
+            Assert.AreEqual("world", result.Data.a);
+            Assert.AreEqual("test", result.Data.b);
         }
 
         [Test]
         public void Execute_ScalarBasedTruthyIncludeAndFalsySkipDirective_PrintsTheField()
         {
-            dynamic result = this.schema.Execute("{ a, b @include(if: true) @skip(if: false) }");
+            var result = this.schema.Execute("{ a, b @include(if: true) @skip(if: false) }");
 
-            Assert.AreEqual("world", result.data.a);
-            Assert.AreEqual("test", result.data.b);
+            Assert.AreEqual("world", result.Data.a);
+            Assert.AreEqual("test", result.Data.b);
         }
 
         [Test]
         public void Execute_ScalarBasedTruthyIncludeAndTruthySkipDirective_DoesntPrintTheField()
         {
-            dynamic result = this.schema.Execute("{ a, b @include(if: true) @skip(if: true) }");
+            var result = this.schema.Execute("{ a, b @include(if: true) @skip(if: true) }");
 
-            Assert.AreEqual("world", result.data.a);
-            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.data.b; }));
+            Assert.AreEqual("world", result.Data.a);
+            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.Data.b; }));
         }
 
         [Test]
         public void Execute_ScalarBasedTruthyIncludeDirective_PrintsTheField()
         {
-            dynamic result = this.schema.Execute("{ a, b @include(if: true) }");
+            var result = this.schema.Execute("{ a, b @include(if: true) }");
 
-            Assert.AreEqual("world", result.data.a);
-            Assert.AreEqual("test", result.data.b);
+            Assert.AreEqual("world", result.Data.a);
+            Assert.AreEqual("test", result.Data.b);
         }
 
         [Test]
         public void Execute_ScalarBasedTruthySkipDirective_DoesntPrintTheField()
         {
-            dynamic result = this.schema.Execute("{ a, b @skip(if: true) }");
+            var result = this.schema.Execute("{ a, b @skip(if: true) }");
 
-            Assert.AreEqual("world", result.data.a);
-            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.data.b; }));
+            Assert.AreEqual("world", result.Data.a);
+            Assert.Throws<RuntimeBinderException>(new TestDelegate(() => { string b = result.Data.b; }));
         }
 
         [Test]
         public void Execute_CustomDirective_ResolvesCorrectly()
         {
             var schema = new TestSchema();
-            dynamic result = schema.Execute("{ foo @onField }");
+            var result = schema.Execute("{ foo @onField }");
 
-            Assert.AreEqual("replacedByDirective", result.data.foo);
+            Assert.AreEqual("replacedByDirective", result.Data.foo);
         }
 
         [SetUp]

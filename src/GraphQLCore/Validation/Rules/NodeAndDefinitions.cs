@@ -1,4 +1,4 @@
-namespace GraphQLCore.Validation.Rules
+﻿namespace GraphQLCore.Validation.Rules
 {
     using GraphQLCore.Language.AST;
     using GraphQLCore.Type;

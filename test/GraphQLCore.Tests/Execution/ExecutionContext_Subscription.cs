@@ -9,6 +9,7 @@
     using GraphQLCore.Events;
     using System.Threading.Tasks;
     using GraphQLCore.Exceptions;
+    using GraphQLCore.Execution;
 
     [TestFixture]
     public class ExecutionContext_Subscription
@@ -18,50 +19,46 @@
         [Test]
         public void Execute_ReturnsCorrectResult()
         {
-            dynamic result = this.schema.Execute("subscription { test }", null, null, "1", 0);
+            var result = this.schema.Execute("subscription { test }", null, null, "1", "0") as SubscriptionExecutionResult;
 
-            Assert.AreEqual(0, result.data.subscriptionId);
-            Assert.AreEqual("1", result.data.clientId);
+            Assert.AreEqual("0", result.SubscriptionId);
         }
 
         [Test]
         public void Execute_ReturnsValueWithCorrectSubIdAfterMutationIsInvoked()
         {
-            dynamic result = null;
-            int? subId = null;
+            ExecutionResult result = null;
+            string subId = null;
             string cliId = null;
 
-            this.schema.Execute("subscription { test }", null, null, "1", 0);
+            this.schema.Execute("subscription { test }", null, null, "1", "0");
 
-            this.schema.OnSubscriptionMessageReceived += async (string clientId, int subscriptionId, dynamic data) => {
-                await Task.Yield();
-
-                result = data;
-                subId = subscriptionId;
-                cliId = clientId;
+            this.schema.OnSubscriptionMessageReceived += (sender, e) =>
+            {
+                result = e.Data as ExecutionResult;
+                subId = e.SubscriptionId;
+                cliId = e.ClientId;
             };
-
             this.schema.Execute("mutation { test }");
 
-            Assert.AreEqual(42, result.data.test);
+            Assert.AreEqual(42, result.Data.test);
             Assert.AreEqual("1", cliId);
-            Assert.AreEqual(0, subId);
+            Assert.AreEqual("0", subId);
         }
 
         [Test]
         public void Execute_DoesntReturnDataWhenUserUnsubscribed()
         {
-            dynamic result = null;
+            ExecutionResult result = null;
 
-            this.schema.Execute("subscription { test }", null, null, "1", 0);
-            this.schema.Unsubscribe("1", 0);
+            this.schema.Execute("subscription { test }", null, null, "1", "0");
+            this.schema.Unsubscribe("1", "0");
 
-            this.schema.OnSubscriptionMessageReceived += async (string clientId, int subscriptionId, dynamic data) => {
-                await Task.Yield();
-
-                if (clientId == "1" && subscriptionId == 0)
+            this.schema.OnSubscriptionMessageReceived += (sender, e) =>
+            {
+                if (e.ClientId == "1" && e.SubscriptionId == "0")
                 {
-                    result = data;
+                    result = e.Data as ExecutionResult;
                 }
             };
 
@@ -75,7 +72,7 @@
         {
             var result = this.schema.Execute("subscription { test }");
 
-            var errors = result.errors as IList<GraphQLException>;
+            var errors = result.Errors;
             Assert.IsInstanceOf<GraphQLException>(errors.Single());
         }
 

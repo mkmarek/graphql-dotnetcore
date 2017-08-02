@@ -418,7 +418,7 @@
 
             var result = emptySchema.Execute("{ __schema { mutationType { name } } }");
 
-            Assert.IsNull(result.data.__schema.mutationType);
+            Assert.IsNull(result.Data.__schema.mutationType);
         }
 
         [SetUp]
@@ -550,7 +550,7 @@
                   }
                 }
               }
-            ").data.__schema;
+            ").Data.__schema;
         }
 
         private IEnumerable<dynamic> GetSchemaTypes()
@@ -631,7 +631,7 @@
                 kind
               }
             }
-            ").data.__type;
+            ").Data.__type;
         }
 
         private class RootQueryType : GraphQLObjectType

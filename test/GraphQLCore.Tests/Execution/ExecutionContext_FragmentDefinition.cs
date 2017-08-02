@@ -1,6 +1,7 @@
 ﻿namespace GraphQLCore.Tests.Execution
 {
     using System.Collections.Generic;
+    using System.Linq;
     using GraphQLCore.Exceptions;
     using GraphQLCore.Type;
     using Microsoft.CSharp.RuntimeBinder;
@@ -14,7 +15,7 @@
         [Test]
         public void Execute_Fragment_ShouldResolveAndExecuteFragment()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
             query fetch {
                 nested {
                     ...frag
@@ -27,8 +28,8 @@
             }
             ");
 
-            Assert.AreEqual("1", result.data.nested.a);
-            Assert.AreEqual("2", result.data.nested.b);
+            Assert.AreEqual("1", result.Data.nested.a);
+            Assert.AreEqual("2", result.Data.nested.b);
         }
 
         [Test]
@@ -50,18 +51,17 @@
             }
             ");
 
-            var errors = result.errors as IList<GraphQLException>;
-            var objectResult = result as IDictionary<string, object>;
+            var errors = result.Errors;
 
-            Assert.IsFalse(objectResult.ContainsKey("data"));
-            Assert.AreEqual(1, errors.Count);
+            Assert.IsNull(result.Data);
+            Assert.AreEqual(1, errors.Count());
         }
 
 
         [Test]
         public void Execute_FragmentInFragment_ShouldResolveAndExecuteFragments()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
             query fetch {
                 ...frag1
             }
@@ -78,14 +78,14 @@
             }
             ");
 
-            Assert.AreEqual("1", result.data.nested.a);
-            Assert.AreEqual("2", result.data.nested.b);
+            Assert.AreEqual("1", result.Data.nested.a);
+            Assert.AreEqual("2", result.Data.nested.b);
         }
 
         [Test]
         public void Execute_InlineFragment_ShouldResolveAndExecuteFragment()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
             query fetch {
                 nested {
                     ... on NestedQueryType {
@@ -96,14 +96,14 @@
             }
             ");
 
-            Assert.AreEqual("1", result.data.nested.a);
-            Assert.AreEqual("2", result.data.nested.b);
+            Assert.AreEqual("1", result.Data.nested.a);
+            Assert.AreEqual("2", result.Data.nested.b);
         }
 
         [Test]
         public void Execute_InlineFragmentInInlineFragment_ShouldResolveAndExecuteFragments()
         {
-            dynamic result = this.schema.Execute(@"
+            var result = this.schema.Execute(@"
             query fetch {
                 ... on RootQueryType {
                     nested {
@@ -116,8 +116,8 @@
             }
             ");
 
-            Assert.AreEqual("1", result.data.nested.a);
-            Assert.AreEqual("2", result.data.nested.b);
+            Assert.AreEqual("1", result.Data.nested.a);
+            Assert.AreEqual("2", result.Data.nested.b);
         }
 
         [SetUp]

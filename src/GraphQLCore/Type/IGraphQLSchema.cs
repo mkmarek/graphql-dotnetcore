@@ -1,36 +1,41 @@
 ﻿namespace GraphQLCore.Type
 {
-    using GraphQLCore.Type.Complex;
+    using Complex;
     using Introspection;
+    using System;
     using System.Threading.Tasks;
+    using Events;
+    using Execution;
     using Translation;
 
     public interface IGraphQLSchema
     {
-        event SubscriptionMessageReceived OnSubscriptionMessageReceived;
+        event EventHandler<OnMessageReceivedEventArgs> OnSubscriptionMessageReceived;
         GraphQLObjectType MutationType { get; }
         GraphQLObjectType QueryType { get; }
         GraphQLSubscriptionType SubscriptionType { get; }
         IntrospectedSchemaType IntrospectedSchema { get; }
         ISchemaRepository SchemaRepository { get; }
 
-        dynamic Execute(string expression);
+        ExecutionResult Execute(string expression);
 
-        dynamic Execute(string query, dynamic variables);
+        ExecutionResult Execute(string query, dynamic variables);
 
-        dynamic Execute(string query, dynamic variables, string operationToExecute);
+        ExecutionResult Execute(string query, dynamic variables, string operationToExecute);
 
-        dynamic Execute(string query, dynamic variables, string operationToExecute, string clientId, int subscriptionId);
+        ExecutionResult Execute(string query, dynamic variables, string operationToExecute, string clientId, string subscriptionId);
 
-        Task<dynamic> ExecuteAsync(string expression);
+        Task<ExecutionResult> ExecuteAsync(string expression);
 
-        Task<dynamic> ExecuteAsync(string query, dynamic variables);
+        Task<ExecutionResult> ExecuteAsync(string query, dynamic variables);
 
-        Task<dynamic> ExecuteAsync(string query, dynamic variables, string operationToExecute);
+        Task<ExecutionResult> ExecuteAsync(string query, dynamic variables, string operationToExecute);
 
-        Task<dynamic> ExecuteAsync(string query, dynamic variables, string operationToExecute, string clientId, int subscriptionId);
+        Task<ExecutionResult> ExecuteAsync(string query, dynamic variables, string operationToExecute, string clientId, string subscriptionId);
 
-        void Unsubscribe(string clientId, int subscriptionId);
+        IObservable<ExecutionResult> Subscribe(string query, dynamic variables, string operationToExecute, string clientId = null, string subscriptionId = null);
+
+        void Unsubscribe(string clientId, string subscriptionId);
 
         void Query(GraphQLObjectType root);
 

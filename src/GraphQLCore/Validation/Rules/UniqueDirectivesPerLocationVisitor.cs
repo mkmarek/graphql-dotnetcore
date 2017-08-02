@@ -14,11 +14,6 @@
 
         public List<GraphQLException> Errors { get; private set; }
 
-        private string DuplicateDirectiveMessage(string directiveName)
-        {
-            return $"The directive {directiveName} can only be used once at this location.";
-        }
-
         public override ASTNode BeginVisitNode(ASTNode node)
         {
             var appliedDirectives = new Dictionary<string, GraphQLDirective>();
@@ -43,6 +38,11 @@
             }
 
             return base.BeginVisitNode(node);
+        }
+
+        private string DuplicateDirectiveMessage(string directiveName)
+        {
+            return $"The directive {directiveName} can only be used once at this location.";
         }
     }
 }

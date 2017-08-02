@@ -6,6 +6,7 @@
 
     public interface IFieldCollector
     {
-        Dictionary<string, IList<GraphQLFieldSelection>> CollectFields(GraphQLComplexType runtimeType, GraphQLSelectionSet selectionSet);
+        Queue<FieldExecution> PostponedFieldQueue { get; }
+        Dictionary<string, IList<GraphQLFieldSelection>> CollectFields(GraphQLComplexType runtimeType, GraphQLSelectionSet selectionSet, FieldScope scope);
     }
 }

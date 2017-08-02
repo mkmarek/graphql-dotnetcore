@@ -45,19 +45,6 @@
             this.Path = path;
         }
 
-        public void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            info.AddValue("message", this.Message);
-
-            this.AddFieldIfNotNull("locations", this.Locations, info);
-            this.AddFieldIfNotNull("path", this.Path, info);
-        }
-
-        public override string ToString()
-        {
-            return JsonConvert.SerializeObject(this);
-        }
-
         public static GraphQLException LocateException(GraphQLException originalException = null, IEnumerable<ASTNode> nodes = null,
             IEnumerable path = null)
         {
@@ -75,6 +62,19 @@
                 originalException);
 
             return error;
+        }
+
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("message", this.Message);
+
+            this.AddFieldIfNotNull("locations", this.Locations, info);
+            this.AddFieldIfNotNull("path", this.Path, info);
+        }
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this);
         }
 
         private void AddFieldIfNotNull(string name, object field, SerializationInfo info)

@@ -31,6 +31,21 @@
             return base.BeginVisitSelectionSet(node);
         }
 
+        private static bool DoParentTypesNotMatch(NodeAndDefinitions field1, NodeAndDefinitions field2)
+        {
+            if (field1.ParentType != null && field2.ParentType != null)
+            {
+                return field1.ParentType.Name != field2.ParentType.Name;
+            }
+
+            if (field1.PresumedParentName != null || field2.PresumedParentName != null)
+            {
+                return field1.PresumedParentName != field2.PresumedParentName;
+            }
+
+            return false;
+        }
+
         private string FieldsConflictMessage(Conflict conflict)
         {
             return $"Fields \"{conflict.ResponseName}\" conflict because {this.ProcessReason(conflict)}" +
@@ -333,21 +348,6 @@
             }
 
             return null;
-        }
-
-        private static bool DoParentTypesNotMatch(NodeAndDefinitions field1, NodeAndDefinitions field2)
-        {
-            if (field1.ParentType != null && field2.ParentType != null)
-            {
-                return field1.ParentType.Name != field2.ParentType.Name;
-            }
-
-            if (field1.PresumedParentName != null || field2.PresumedParentName != null)
-            {
-                return field1.PresumedParentName != field2.PresumedParentName;
-            }
-
-            return false;
         }
 
         private Conflict SubfieldConflicts(

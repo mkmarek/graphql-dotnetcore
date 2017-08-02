@@ -5,16 +5,15 @@
     using Events;
     using Execution;
     using Introspection;
+    using System;
     using System.Linq;
     using System.Threading.Tasks;
     using Translation;
-
-    public delegate Task SubscriptionMessageReceived(string clientId, int subscriptionId, dynamic data);
-
+    
     public class GraphQLSchema : IGraphQLSchema
     {
         public ISchemaRepository SchemaRepository { get; private set; }
-        public event SubscriptionMessageReceived OnSubscriptionMessageReceived;
+        public event EventHandler<OnMessageReceivedEventArgs> OnSubscriptionMessageReceived;
 
         public GraphQLSchema()
         {
@@ -35,29 +34,29 @@
             this.SchemaRepository.AddKnownType(type);
         }
 
-        public dynamic Execute(string expression)
+        public ExecutionResult Execute(string expression)
         {
             return this.ExecuteAsync(expression).GetAwaiter().GetResult();
         }
 
-        public dynamic Execute(string expression, dynamic variables)
+        public ExecutionResult Execute(string expression, dynamic variables)
         {
             return this.ExecuteAsync(expression, variables).GetAwaiter().GetResult();
         }
 
-        public dynamic Execute(string expression, dynamic variables, string operationToExecute)
+        public ExecutionResult Execute(string expression, dynamic variables, string operationToExecute)
         {
             return this.ExecuteAsync(expression, variables, operationToExecute).GetAwaiter().GetResult();
         }
 
-        public dynamic Execute(
-            string expression, dynamic variables, string operationToExecute, string clientId, int subscriptionId)
+        public ExecutionResult Execute(
+            string expression, dynamic variables, string operationToExecute, string clientId, string subscriptionId)
         {
             return this.ExecuteAsync(expression, variables, operationToExecute, clientId, subscriptionId)
                 .GetAwaiter().GetResult();
         }
 
-        public async Task<dynamic> ExecuteAsync(string expression)
+        public async Task<ExecutionResult> ExecuteAsync(string expression)
         {
             using (var context = new ExecutionManager(this, expression))
             {
@@ -65,7 +64,7 @@
             }
         }
 
-        public async Task<dynamic> ExecuteAsync(string expression, dynamic variables)
+        public async Task<ExecutionResult> ExecuteAsync(string expression, dynamic variables)
         {
             using (var context = new ExecutionManager(this, expression, variables))
             {
@@ -73,7 +72,7 @@
             }
         }
 
-        public async Task<dynamic> ExecuteAsync(
+        public async Task<ExecutionResult> ExecuteAsync(
             string expression, dynamic variables, string operationToExecute)
         {
             using (var context = new ExecutionManager(this, expression, variables))
@@ -82,13 +81,22 @@
             }
         }
 
-        public async Task<dynamic> ExecuteAsync(
-            string expression, dynamic variables, string operationToExecute, string clientId, int subscriptionId)
+        public async Task<ExecutionResult> ExecuteAsync(
+            string expression, dynamic variables, string operationToExecute, string clientId, string subscriptionId)
         {
             using (var context = new ExecutionManager(
                 this, expression, variables, clientId, subscriptionId))
             {
                 return await context.ExecuteAsync(operationToExecute);
+            }
+        }
+
+        public IObservable<ExecutionResult> Subscribe(string expression, dynamic variables, string operationToExecute, string clientId = null, string subscriptionId = null)
+        {
+            using (var context = new ExecutionManager(
+                this, expression, variables, clientId, subscriptionId))
+            {
+                return context.Subscribe(operationToExecute);
             }
         }
 
@@ -118,7 +126,7 @@
             this.SchemaRepository.AddOrReplaceDirective(directive);
         }
 
-        public void Unsubscribe(string clientId, int subscriptionId)
+        public void Unsubscribe(string clientId, string subscriptionId)
         {
             this.SubscriptionType?.EventBus?.Unsubscribe(clientId, subscriptionId);
         }
@@ -153,9 +161,9 @@
                 foreach (var definition in args.Document.Definitions)
                     context.ResolveDefinition(definition, args.OperationToExecute);
 
-                var data = await context.ComposeResultForQuery(this.SubscriptionType, context.Operation, args.Data);
+                args.Data = await context.ComposeResult(this.SubscriptionType, context.Operation, args.Data);
 
-                await this.OnSubscriptionMessageReceived?.Invoke(args.ClientId, args.SubscriptionId, data);
+                this.OnSubscriptionMessageReceived?.Invoke(this, args);
             }
         }
 

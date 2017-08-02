@@ -1,4 +1,4 @@
-namespace GraphQLCore.Type
+﻿namespace GraphQLCore.Type
 {
     using Introspection;
     using System;

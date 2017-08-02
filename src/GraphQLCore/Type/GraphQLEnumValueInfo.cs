@@ -9,11 +9,6 @@
     {
         public override Type SystemType { get; set; }
 
-        protected override GraphQLBaseType GetSchemaType(Type type, ISchemaRepository schemaRepository)
-        {
-            return this.GetGraphQLType(schemaRepository);
-        }
-
         public NonNullable<IntrospectedEnumValue> Introspect()
         {
             return new IntrospectedEnumValue()
@@ -23,6 +18,11 @@
                 IsDeprecated = this.IsDeprecated,
                 DeprecationReason = this.DeprecationReason
             };
+        }
+
+        protected override GraphQLBaseType GetSchemaType(Type type, ISchemaRepository schemaRepository)
+        {
+            return this.GetGraphQLType(schemaRepository);
         }
     }
 }

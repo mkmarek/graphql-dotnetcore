@@ -2,6 +2,7 @@
 {
     using GraphQLCore.GraphiQLExample.Schema;
     using GraphQLCore.Type;
+    using GraphQLCore.WsMiddleware;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
@@ -9,7 +10,6 @@
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.FileProviders;
     using Microsoft.Extensions.Logging;
-    using Middlewares;
     using System;
     using System.IO;
 

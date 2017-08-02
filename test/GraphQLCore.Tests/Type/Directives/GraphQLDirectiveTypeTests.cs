@@ -57,7 +57,7 @@ namespace GraphQLCore.Tests.Type.Directives
             }
             ");
 
-            Assert.AreEqual("modified", result.data.foo);
+            Assert.AreEqual("modified", result.Data.foo);
         }
 
         [Test]

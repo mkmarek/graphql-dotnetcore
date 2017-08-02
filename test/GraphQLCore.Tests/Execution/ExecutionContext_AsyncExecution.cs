@@ -16,12 +16,12 @@
             Stopwatch sw = new Stopwatch();
 
             sw.Start();
-            dynamic result = this.schema.Execute("{ async1, async2 }");
+            var result = this.schema.Execute("{ async1, async2 }");
             sw.Stop();
 
             Assert.AreEqual(1, sw.ElapsedMilliseconds / 1000);
-            Assert.AreEqual(42, result.data.async1);
-            Assert.AreEqual(42, result.data.async2);
+            Assert.AreEqual(42, result.Data.async1);
+            Assert.AreEqual(42, result.Data.async2);
         }
 
         [Test]
@@ -30,12 +30,12 @@
             Stopwatch sw = new Stopwatch();
 
             sw.Start();
-            dynamic result = this.schema.Execute("{ nested { async1, async2 } }");
+            var result = this.schema.Execute("{ nested { async1, async2 } }");
             sw.Stop();
 
             Assert.AreEqual(1, sw.ElapsedMilliseconds / 1000);
-            Assert.AreEqual(42, result.data.nested.async1);
-            Assert.AreEqual(42, result.data.nested.async2);
+            Assert.AreEqual(42, result.Data.nested.async1);
+            Assert.AreEqual(42, result.Data.nested.async2);
         }
 
         [Test]
@@ -44,12 +44,12 @@
             Stopwatch sw = new Stopwatch();
 
             sw.Start();
-            dynamic result = this.schema.Execute("{ nested { nested { nested { async1, async2 }}} }");
+            var result = this.schema.Execute("{ nested { nested { nested { async1, async2 }}} }");
             sw.Stop();
 
             Assert.AreEqual(1, sw.ElapsedMilliseconds / 1000);
-            Assert.AreEqual(42, result.data.nested.nested.nested.async1);
-            Assert.AreEqual(42, result.data.nested.nested.nested.async2);
+            Assert.AreEqual(42, result.Data.nested.nested.nested.async1);
+            Assert.AreEqual(42, result.Data.nested.nested.nested.async2);
         }
 
         [Test]
@@ -58,13 +58,13 @@
             Stopwatch sw = new Stopwatch();
 
             sw.Start();
-            dynamic result = this.schema.Execute(
+            var result = this.schema.Execute(
                 "mutation { a, b }");
             sw.Stop();
 
             Assert.AreEqual(1, sw.ElapsedMilliseconds / 1000);
-            Assert.AreEqual(42, result.data.a);
-            Assert.AreEqual(42, result.data.b);
+            Assert.AreEqual(42, result.Data.a);
+            Assert.AreEqual(42, result.Data.b);
         }
 
         [SetUp]

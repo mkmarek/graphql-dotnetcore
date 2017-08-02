@@ -4,6 +4,7 @@
     using NUnit.Framework;
     using System.Collections.Generic;
     using System.Linq;
+    using GraphQLCore.Execution;
 
     [TestFixture]
     public class ExecutionContext_NonNull
@@ -123,9 +124,9 @@
             schema.Query(graphQLClassBasedModel);
         }
 
-        private static dynamic GetField(dynamic result, string name)
+        private static dynamic GetField(ExecutionResult result, string name)
         {
-            return ((IEnumerable<dynamic>)result.data.__type.fields).SingleOrDefault(e => e.name == name);
+            return ((IEnumerable<dynamic>)result.Data.__type.fields).SingleOrDefault(e => e.name == name);
         }
 
         private string GetIntrospectionQuery()

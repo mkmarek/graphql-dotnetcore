@@ -134,11 +134,14 @@
             foreach (var line in lines)
             {
                 if (line == string.Empty)
+                {
                     description.Append($"{indentation}#\n");
+                }
                 else
                 {
                     var sublines = StringUtils.BreakLine(line, 120 - indentation.Length);
-                    description.Append(string.Join(string.Empty, sublines.Select(subline => $"{indentation}# {subline}\n")));
+                    description.Append(string.Join(string.Empty,
+                        sublines.Select(subline => $"{indentation}# {subline}\n")));
                 }
             }
 
@@ -194,7 +197,7 @@
 
         private string PrintInterface(GraphQLInterfaceType type)
         {
-            return 
+            return
                 PrintDescription(type) +
                 $"interface {type.Name} {{\n" +
                 $"{this.PrintFields(type)}\n}}";

@@ -86,15 +86,15 @@ namespace GraphQLCore.Tests.Type
         }
 
         [Test]
-        public void SubscriptionReturnsSubscriptionIdentifierAsInt()
+        public void SubscriptionReturnsSubscriptionIdentifierAsString()
         {
             var result = this.schema.Execute(@"subscription wasub {
                 testSub {
                     content
                 }
-            }", null, null, "123", 0);
+            }", null, null, "123", "0") as SubscriptionExecutionResult;
 
-            Assert.IsInstanceOf<int>(result.data.subscriptionId);
+            Assert.IsInstanceOf<string>(result.SubscriptionId);
         }
 
         [Test]
@@ -104,7 +104,7 @@ namespace GraphQLCore.Tests.Type
                 testSub(author : ""test"") {
                     content
                 }
-            }", null, null, "1", 0);
+            }", null, null, "1", "0");
 
             OnMessageReceivedEventArgs eventArgs = null;
 
@@ -128,7 +128,7 @@ namespace GraphQLCore.Tests.Type
                 testSub(author : ""other"") {
                     content
                 }
-            }", null, null, "1", 0);
+            }", null, null, "1", "0");
 
             OnMessageReceivedEventArgs eventArgs = null;
 
@@ -151,14 +151,13 @@ namespace GraphQLCore.Tests.Type
                 testSub(author : ""other"") {
                     content
                 }
-            }", null, null, "1", 0);
+            }", null, null, "1", "0");
 
             dynamic receivedData = null;
 
-            this.schema.OnSubscriptionMessageReceived += async (string clientId, int subscriptionId, dynamic data) =>
+            this.schema.OnSubscriptionMessageReceived += (sender, e) =>
             {
-                await Task.Yield();
-                receivedData = data;
+                receivedData = e.Data;
             };
 
             this.schema.Execute(@"mutation mutate {
@@ -177,13 +176,12 @@ namespace GraphQLCore.Tests.Type
                 testSub(author : ""other"") {
                     content
                 }
-            }", null, null, "1", 0);
+            }", null, null, "1", "0");
 
             var counter = 0;
 
-            this.schema.OnSubscriptionMessageReceived += async (string clientId, int subscriptionId, dynamic data) =>
+            this.schema.OnSubscriptionMessageReceived += (sender, e) =>
             {
-                await Task.Yield();
                 counter++;
             };
 
@@ -205,13 +203,12 @@ namespace GraphQLCore.Tests.Type
                 testSub(author : ""other"") {
                     content
                 }
-            }", null, null, "1", 0);
+            }", null, null, "1", "0");
 
             var counter = 0;
 
-            this.schema.OnSubscriptionMessageReceived += async (string clientId, int subscriptionId, dynamic data) =>
+            this.schema.OnSubscriptionMessageReceived += (sender, e) =>
             {
-                await Task.Yield();
                 counter++;
             };
 

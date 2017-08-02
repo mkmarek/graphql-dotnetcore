@@ -20,7 +20,7 @@
         {
             var result = this.schema.Execute(this.singleOperationQuery);
 
-            Assert.IsNotNull(result.data.a);
+            Assert.IsNotNull(result.Data.a);
         }
 
         [Test]
@@ -28,14 +28,14 @@
         {
             var result = this.schema.Execute(this.singleOperationQuery, new ExpandoObject(), "q1");
 
-            Assert.IsNotNull(result.data.a);
+            Assert.IsNotNull(result.Data.a);
         }
 
         [Test]
         public void NotExistingOperationNameProvided_TrowsException()
         {
             var result = this.schema.Execute(this.singleOperationQuery, new ExpandoObject(), "q2");
-            var errors = result.errors as IList<GraphQLException>;
+            var errors = result.Errors;
 
             Assert.AreEqual("Unknown operation named \"q2\".", errors.Single().Message);
         }
@@ -44,7 +44,7 @@
         public void MultipleOperationsNoOperationNameProvided_TrowsException()
         {
             var result = this.schema.Execute(this.multipleOperationQuery);
-            var errors = result.errors as IList<GraphQLException>;
+            var errors = result.Errors;
 
             Assert.AreEqual("Must provide operation name if query contains multiple operations.", errors.Single().Message);
         }
@@ -54,7 +54,7 @@
         {
             var result = this.schema.Execute(this.multipleOperationQuery, new ExpandoObject(), "q1");
 
-            Assert.IsNotNull(result.data.a);
+            Assert.IsNotNull(result.Data.a);
         }
 
         [Test]
@@ -62,14 +62,14 @@
         {
             var result = this.schema.Execute(this.multipleOperationQuery, new ExpandoObject(), "q2");
 
-            Assert.IsNotNull(result.data.b);
+            Assert.IsNotNull(result.Data.b);
         }
 
         [Test]
         public void NoOperationProvided_ThrowsError()
         {
             var result = this.schema.Execute("");
-            var errors = result.errors as IList<GraphQLException>;
+            var errors = result.Errors;
 
             Assert.AreEqual("Must provide an operation.", errors.Single().Message);
         }

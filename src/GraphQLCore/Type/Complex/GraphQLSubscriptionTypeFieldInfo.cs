@@ -13,7 +13,7 @@
     {
         public LambdaExpression Filter { get; set; }
 
-        public new static GraphQLSubscriptionTypeFieldInfo CreateResolverFieldInfo(string fieldName, LambdaExpression resolver)
+        public static GraphQLSubscriptionTypeFieldInfo CreateResolverFieldInfo(string fieldName, LambdaExpression resolver)
         {
             return new GraphQLSubscriptionTypeFieldInfo()
             {

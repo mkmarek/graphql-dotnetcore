@@ -131,10 +131,10 @@ namespace GraphQLCore.Tests.Type
             }
             ");
 
-            Assert.AreEqual("Cat", result.data.animal.__typename);
-            Assert.AreEqual(1, result.data.animal.id);
-            Assert.AreEqual("Mourek", result.data.animal.name);
-            Assert.AreEqual("Meow", result.data.animal.whatDoesTheCatSay);
+            Assert.AreEqual("Cat", result.Data.animal.__typename);
+            Assert.AreEqual(1, result.Data.animal.id);
+            Assert.AreEqual("Mourek", result.Data.animal.name);
+            Assert.AreEqual("Meow", result.Data.animal.whatDoesTheCatSay);
         }
 
         [Test]
@@ -160,10 +160,10 @@ namespace GraphQLCore.Tests.Type
             }
             ");
 
-            Assert.AreEqual("Cat", result.data.animal.__typename);
-            Assert.AreEqual(1, result.data.animal.id);
-            Assert.AreEqual("Mourek", result.data.animal.name);
-            Assert.AreEqual("Meow", result.data.animal.whatDoesTheCatSay);
+            Assert.AreEqual("Cat", result.Data.animal.__typename);
+            Assert.AreEqual(1, result.Data.animal.id);
+            Assert.AreEqual("Mourek", result.Data.animal.name);
+            Assert.AreEqual("Meow", result.Data.animal.whatDoesTheCatSay);
         }
 
         [Test]
@@ -189,7 +189,7 @@ namespace GraphQLCore.Tests.Type
             }
             ");
 
-            Assert.AreEqual(null, result.data.unionReturningInvalidType);
+            Assert.AreEqual(null, result.Data.unionReturningInvalidType);
         }
 
         [Test]
@@ -229,15 +229,15 @@ namespace GraphQLCore.Tests.Type
             }
             ");
 
-            Assert.AreEqual("TestUnion", result.data.__type.name);
-            Assert.AreEqual("Some union description", result.data.__type.description);
-            Assert.AreEqual("UNION", result.data.__type.kind);
-            Assert.AreEqual("Dog", ((IEnumerable<dynamic>)result.data.__type.possibleTypes).ElementAt(0).name);
-            Assert.AreEqual("Cat", ((IEnumerable<dynamic>)result.data.__type.possibleTypes).ElementAt(1).name);
-            Assert.IsNull(result.data.__type.interfaces);
-            Assert.IsNull(result.data.__type.fields);
-            Assert.IsNull(result.data.__type.inputFields);
-            Assert.IsNull(result.data.__type.ofType);
+            Assert.AreEqual("TestUnion", result.Data.__type.name);
+            Assert.AreEqual("Some union description", result.Data.__type.description);
+            Assert.AreEqual("UNION", result.Data.__type.kind);
+            Assert.AreEqual("Dog", ((IEnumerable<dynamic>)result.Data.__type.possibleTypes).ElementAt(0).name);
+            Assert.AreEqual("Cat", ((IEnumerable<dynamic>)result.Data.__type.possibleTypes).ElementAt(1).name);
+            Assert.IsNull(result.Data.__type.interfaces);
+            Assert.IsNull(result.Data.__type.fields);
+            Assert.IsNull(result.Data.__type.inputFields);
+            Assert.IsNull(result.Data.__type.ofType);
         }
     }
 }
