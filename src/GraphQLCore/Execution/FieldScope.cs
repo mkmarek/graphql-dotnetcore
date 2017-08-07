@@ -10,6 +10,7 @@
     using System.Linq.Expressions;
     using System.Reflection;
     using System.Threading.Tasks;
+    using Internal;
     using Type;
     using Type.Complex;
     using Type.Directives;
@@ -100,27 +101,28 @@
         public async Task<ExpandoObject> GetObject(
             Dictionary<string, IList<GraphQLFieldSelection>> fields)
         {
-            var result = new ExpandoObject();
-            var dictionary = (IDictionary<string, object>)result;
+            var dictionary = new ResultDictionary();
 
             await Task.WhenAll(fields.Select(
-                  field => this.AddFieldsFromSelectionToResultDictionary(dictionary, field.Key, field.Value)));
+                (field, index) =>
+                this.AddFieldsFromSelectionToResultDictionary(dictionary, field.Key, field.Value, new[] { index })));
 
-            return result;
+            return dictionary.GetOrdered();
         }
 
         public async Task<ExpandoObject> GetObjectSynchronously(
             Dictionary<string, IList<GraphQLFieldSelection>> fields)
         {
-            var result = new ExpandoObject();
-            var dictionary = (IDictionary<string, object>)result;
+            var dictionary = new ResultDictionary();
 
+            var index = 0;
             foreach (var field in fields)
             {
-                await this.AddFieldsFromSelectionToResultDictionary(dictionary, field.Key, field.Value);
+                await this.AddFieldsFromSelectionToResultDictionary(dictionary, field.Key, field.Value, new[] { index });
+                index++;
             }
 
-            return result;
+            return dictionary.GetOrdered();
         }
 
         public async Task<object> InvokeWithArguments(
@@ -162,10 +164,10 @@
         }
 
         private async Task AddFieldsFromSelectionToResultDictionary(
-            IDictionary<string, object> dictionary, string fieldName, IList<GraphQLFieldSelection> fieldSelections)
+            ResultDictionary dictionary, string fieldName, IList<GraphQLFieldSelection> fieldSelections, IEnumerable<int> parentIndex)
         {
             await Task.WhenAll(fieldSelections.Select(
-                selection => this.AddToResultDictionaryIfNotAlreadyPresent(dictionary, fieldName, selection)));
+                (selection, index) => this.AddToResultDictionaryIfNotAlreadyPresent(dictionary, fieldName, selection, parentIndex.Append(index))));
 
             foreach (var selection in fieldSelections)
                 this.ApplyDirectives(dictionary, fieldName, selection);
@@ -204,7 +206,7 @@
         }
 
         private void ApplyDirectives(
-            IDictionary<string, object> dictionary,
+            ResultDictionary dictionary,
             string fieldName,
             GraphQLFieldSelection selection)
         {
@@ -222,9 +224,10 @@
         }
 
         private async Task AddToResultDictionaryIfNotAlreadyPresent(
-            IDictionary<string, object> dictionary,
+            ResultDictionary dictionary,
             string fieldName,
-            GraphQLFieldSelection selection)
+            GraphQLFieldSelection selection,
+            IEnumerable<int> index)
         {
             var fieldData = await this.GetDefinitionAndExecuteField(this.type, selection, dictionary);
 
@@ -232,7 +235,7 @@
             {
                 if (!dictionary.ContainsKey(fieldName))
                 {
-                    dictionary.Add(fieldName, fieldData);
+                    dictionary.Insert(index.ToArray(), fieldName, fieldData);
                 }
             }
         }
@@ -327,7 +330,7 @@
         private async Task<object> GetDefinitionAndExecuteField(
             GraphQLComplexType type,
             GraphQLFieldSelection selection,
-            IDictionary<string, object> dictionary)
+            ResultDictionary dictionary)
         {
             var fieldInfo = this.GetFieldInfo(type, selection);
             var arguments = this.GetArgumentsFromSelection(selection, fieldInfo)?.ToList() ?? new List<GraphQLArgument>();
@@ -356,7 +359,7 @@
             }
         }
 
-        private async Task<object> ApplyDirectivesToResult(GraphQLFieldSelection selection, IDictionary<string, object> dictionary, Func<Task<object>> fieldResolver)
+        private async Task<object> ApplyDirectivesToResult(GraphQLFieldSelection selection, ResultDictionary dictionary, Func<Task<object>> fieldResolver)
         {
             foreach (var directive in selection.Directives)
             {
