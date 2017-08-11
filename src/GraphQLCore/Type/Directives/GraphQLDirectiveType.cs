@@ -30,9 +30,8 @@
                 ?? new Dictionary<string, GraphQLObjectTypeArgumentInfo>();
         }
 
-        public virtual bool PostponeNodeResolve(FieldScope scope, IWithDirectives node, out IEnumerable<Task<dynamic>> postponedNodes)
+        public virtual bool PostponeNodeResolve()
         {
-            postponedNodes = null;
             return false;
         }
 

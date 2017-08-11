@@ -91,7 +91,22 @@
             }
         }
 
-        public IObservable<ExecutionResult> Subscribe(string expression, dynamic variables, string operationToExecute, string clientId = null, string subscriptionId = null)
+        public IObservable<ExecutionResult> Subscribe(string expression)
+        {
+            return this.Subscribe(expression, null, null, null, null);
+        }
+
+        public IObservable<ExecutionResult> Subscribe(string expression, dynamic variables)
+        {
+            return this.Subscribe(expression, variables, null, null, null);
+        }
+
+        public IObservable<ExecutionResult> Subscribe(string expression, dynamic variables, string operationToExecute)
+        {
+            return this.Subscribe(expression, variables, operationToExecute, null, null);
+        }
+
+        public IObservable<ExecutionResult> Subscribe(string expression, dynamic variables, string operationToExecute, string clientId, string subscriptionId)
         {
             using (var context = new ExecutionManager(
                 this, expression, variables, clientId, subscriptionId))

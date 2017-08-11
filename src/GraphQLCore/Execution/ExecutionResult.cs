@@ -7,7 +7,7 @@ namespace GraphQLCore.Execution
 
     public class ExecutionResult
     {
-        [JsonProperty(PropertyName = "data")]
+        [JsonProperty(PropertyName = "data", NullValueHandling = NullValueHandling.Ignore)]
         public virtual dynamic Data { get; set; }
 
         [JsonProperty(PropertyName = "errors", NullValueHandling = NullValueHandling.Ignore)]

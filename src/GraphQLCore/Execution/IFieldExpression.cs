@@ -5,6 +5,5 @@
     public interface IFieldExpression
     {
         Task<object> GetResult();
-        object GetResultSync();
     }
 }

@@ -1,12 +1,16 @@
 namespace GraphQLCore.Tests.Type.Directives
 {
     using System;
+    using System.Collections.Generic;
+    using System.Dynamic;
     using System.Linq.Expressions;
+    using System.Reactive.Linq;
     using GraphQLCore.Tests.Schemas;
     using GraphQLCore.Type.Directives;
     using NSubstitute;
     using NUnit.Framework;
     using System.Threading.Tasks;
+    using GraphQLCore.Execution;
 
     [TestFixture]
     public class GraphQLDirectiveTests
@@ -75,14 +79,13 @@ namespace GraphQLCore.Tests.Type.Directives
             }
             ");
 
-            // TODO Do not use GetResolver for validation of directive arguments
-            Assert.IsTrue(count <= 1);
+            Assert.IsTrue(count == 0);
         }
 
         [Test]
         public void DirectiveOnFieldNotIncludesFieldPostExecution_DoesCallGetResolver()
         {
-             this.testDirective.PostExecutionIncludeFieldIntoResult(null, null, null, null)
+            this.testDirective.PostExecutionIncludeFieldIntoResult(null, null, null, null)
                 .ReturnsForAnyArgs(false);
 
             var result = this.schema.Execute(@"
@@ -102,6 +105,29 @@ namespace GraphQLCore.Tests.Type.Directives
             var result = this.testDirective.GetArgument("unknown");
 
             Assert.IsNull(result);
+        }
+
+        [Test]
+        public async Task DirectiveOnField_Postpone_PostponesExecution()
+        {
+            this.testDirective.PostponeNodeResolve().Returns(true);
+
+            var subscription = this.schema.Subscribe(@"
+            {
+                foo @test
+            }
+            ");
+
+            var result = await subscription.ToList();
+            var postponed = result[1] as PartialExecutionResult;
+
+            Assert.AreEqual(2, result.Count);
+            Assert.IsEmpty(result[0].Data);
+            Assert.IsNull(result[0].Errors);
+
+            Assert.AreEqual("modified", postponed.Data);
+            Assert.IsNull(postponed.Errors);
+            Assert.AreEqual(new[] { "foo" }, postponed.Path);
         }
     }
 }

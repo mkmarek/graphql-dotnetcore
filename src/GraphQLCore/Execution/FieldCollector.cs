@@ -110,17 +110,11 @@
                 {
                     if (!directiveType.Locations.Any(e => e == location))
                         continue;
-                    IEnumerable<Task<dynamic>> postponedExecutions;
-                    if (directiveType.PostponeNodeResolve(scope, node, out postponedExecutions))
+
+                    if (directiveType.PostponeNodeResolve())
                     {
-                        foreach (var execution in postponedExecutions)
-                        {
-                            this.PostponedFieldQueue.Enqueue(new FieldExecution()
-                            {
-                                Path = scope.Path.Append(((GraphQLFieldSelection)node).GetPathName()),
-                                Result = execution
-                            });
-                        }
+                        this.PostponeField(scope, node);
+                        return false;
                     }
 
                     if (!directiveType.PreExecutionIncludeFieldIntoResult(directive, this.schemaRepository))
@@ -129,6 +123,17 @@
             }
 
             return true;
+        }
+
+        private void PostponeField(FieldScope scope, IWithDirectives node)
+        {
+            var execution = scope.GetSingleField((GraphQLFieldSelection)node);
+
+            this.PostponedFieldQueue.Enqueue(new FieldExecution()
+            {
+                Path = scope.Path.Append(((GraphQLFieldSelection)node).GetPathName()),
+                Result = execution
+            });
         }
     }
 }

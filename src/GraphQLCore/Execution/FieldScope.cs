@@ -51,8 +51,7 @@
         public async Task<dynamic> GetSingleField(
             GraphQLFieldSelection field)
         {
-            var result = new ExpandoObject();
-            var dictionary = (IDictionary<string, object>)result;
+            var dictionary = new ResultDictionary();
             return await this.GetDefinitionAndExecuteField(this.Type, field, dictionary);
         }
 

@@ -37,10 +37,5 @@
 
             return await AsyncUtils.HandleAsyncTaskIfAsync(result);
         }
-
-        public object GetResultSync()
-        {
-            return this.GetResult().Result;
-        }
     }
 }

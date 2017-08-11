@@ -93,10 +93,16 @@
 
             if (this.Operation.Operation == OperationType.Subscription)
             {
-                executionResults.First().GetAwaiter().GetResult();
+                var subscriptionResult = executionResults.First();
+                var result = subscriptionResult.GetAwaiter().GetResult();
+
+                if (result.Errors.Any())
+                    return subscriptionResult;
+
                 var subscriptionResults = Observable.FromEventPattern<EventHandler<OnMessageReceivedEventArgs>, OnMessageReceivedEventArgs>(
                         handler => this.GraphQLSchema.OnSubscriptionMessageReceived += handler,
                         handler => this.GraphQLSchema.OnSubscriptionMessageReceived -= handler)
+                    .Where(e => e.EventArgs.ClientId == this.clientId)
                     .Select(e => FromEventArgs(e.EventArgs));
 
                 return subscriptionResults;
@@ -146,7 +152,7 @@
                 Errors = scope.Errors.Any() ? scope.Errors : null
             };
         }
-        
+
         public void ResolveDefinition(ASTNode definition, string operationToExecute)
         {
             switch (definition.Kind)
@@ -270,7 +276,7 @@
             var firstTask = this.ExecuteAsync(operationToExecute);
             Task.WaitAll(firstTask);
             yield return firstTask;
-            
+
             var queue = this.fieldCollector?.PostponedFieldQueue;
             var isRunning = queue?.Count > 0;
             var notCompletedTasks = new List<Task>();
@@ -354,6 +360,7 @@
 
             return new SubscriptionExecutionResult()
             {
+                Errors = scope.Errors,
                 SubscriptionId = this.subscriptionId
             };
         }
@@ -433,7 +440,7 @@
                 var executedField = new ExecutedField()
                 {
                     Selection = field,
-                    Path = new List<object>()
+                    Path = new List<object>() { "__schema" }
                 };
 
                 return await scope.Context.ValueCompleter.CompleteValue(executedField, this.GraphQLSchema.IntrospectedSchema);
@@ -457,7 +464,7 @@
                 var executedField = new ExecutedField()
                 {
                     Selection = field,
-                    Path = new List<object>()
+                    Path = new List<object>() { "__type" }
                 };
 
                 return await scope.Context.ValueCompleter.CompleteValue(executedField, value);

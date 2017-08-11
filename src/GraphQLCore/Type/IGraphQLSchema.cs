@@ -33,7 +33,13 @@
 
         Task<ExecutionResult> ExecuteAsync(string query, dynamic variables, string operationToExecute, string clientId, string subscriptionId);
 
-        IObservable<ExecutionResult> Subscribe(string query, dynamic variables, string operationToExecute, string clientId = null, string subscriptionId = null);
+        IObservable<ExecutionResult> Subscribe(string query);
+
+        IObservable<ExecutionResult> Subscribe(string query, dynamic variables);
+
+        IObservable<ExecutionResult> Subscribe(string query, dynamic variables, string operationToExecute);
+
+        IObservable<ExecutionResult> Subscribe(string query, dynamic variables, string operationToExecute, string clientId, string subscriptionId);
 
         void Unsubscribe(string clientId, string subscriptionId);
 

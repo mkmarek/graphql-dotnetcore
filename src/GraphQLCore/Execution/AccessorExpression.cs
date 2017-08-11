@@ -25,10 +25,5 @@
             var accessorResult = this.Lambda.Compile().DynamicInvoke(new object[] { this.Parent });
             return await AsyncUtils.HandleAsyncTaskIfAsync(accessorResult);
         }
-
-        public object GetResultSync()
-        {
-            return this.GetResult().Result;
-        }
     }
 }
